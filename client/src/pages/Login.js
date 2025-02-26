@@ -1,0 +1,88 @@
+import React,{Fragment,useState} from "react";
+import SignUP from "./SignUp";
+import $ from 'jquery'
+import api from '../api/api'
+import {useDispatch,useSelector} from 'react-redux'
+let Login = (props) => {
+
+    //let isLoggedIn = useSelector((state) => console.log(state))
+
+    let showSignup = (e) => {
+        let target = e.currentTarget;
+        $(target).parents('.login-container').siblings('.signup-container').fadeIn('fast')
+
+    }
+
+    let [inputs,setInputs] = useState({})
+
+    let handleChange = (e) => {
+        let name = e.target.name;
+        let value = e.target.value;
+
+        setInputs(values => {
+            return {
+                ...values,
+                [name]: value
+            }
+        })
+
+    }
+
+    let [error,setError] = useState({})
+
+    let handleSubmit = async(e) => {
+        try {
+
+            let res = await api.post('/auth/login',inputs)
+
+            if(res.status === 202 ) {
+                let user = JSON.stringify(res.data);
+                localStorage.setItem('user',user)
+                window.location.reload()
+                // dispatch(setLogin({
+                //     isLoggedIn: user ? true: false
+                // }))
+
+            }else {
+                alert(res.data.message)
+            }
+            
+        } catch (error) {
+            console.log(error)
+        }
+        
+        
+
+    }
+
+    
+
+
+    return(
+        <Fragment>
+            <div id="login">
+                <div className="login-container">
+                    <div id="login-form">
+                            <div className="forms-container">
+                                <input onChange={handleChange} className="email" name="email" type="text" placeholder="Email address or phone number" />
+                                <input onChange={handleChange} type="password" name="password" className="password" placeholder="Password"/>
+                                <p id="loginErrorMsg" style={{color: 'red'}}>{error.message}</p>
+                                <input type="submit" onClick={handleSubmit} className="submit-button" value="Login"/>
+                                <a className="forgot-password">
+                                    Forgotten password? {window.location.hostname}
+                                </a>
+                            </div>
+
+                        <div onClick={showSignup} className="create-account-button">
+                            Create new account <i className="fa fa-arrow-alt-circle-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <SignUP></SignUP>
+            </div>
+        </Fragment>
+    )
+}
+
+export default Login;
