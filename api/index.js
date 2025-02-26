@@ -7,6 +7,7 @@ const mongoose = require('mongoose')
 const MONGODB_URI = process.env.MONGODB_URI
 mongoose.set('strictQuery', false)
 const socketIo = require('socket.io');
+
 const { createServer } = require('http')
 const cors = require('cors');
 const middilewares = require('./middlewares/middlewares')
