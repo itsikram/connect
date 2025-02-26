@@ -4,8 +4,7 @@ require('dotenv').config();
 const express = require('express')
 const PORT = process.env.PORT || 4000;
 const mongoose = require('mongoose')
-const monogAtlas = 'mongodb+srv://mdikram295:RUM9epmbVgeQ01nQ@icsbd.mm9fg.mongodb.net/'
-const MONGODB_URI = 'mongodb://localhost:27017/?directConnection=true'
+const MONGODB_URI = process.env.MONGODB_URI
 mongoose.set('strictQuery', false)
 const socketIo = require('socket.io');
 const { createServer } = require('http')
