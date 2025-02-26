@@ -100,7 +100,7 @@ app.get('/', async (req, res) => {
 
 
 
-mongoose.connect(monogAtlas, {}).then(e => {
+mongoose.connect(MONGODB_URI, {}).then(e => {
 
   httpServer.listen(PORT, (e) => {
     console.log(`Server is running on port ${PORT}`)
