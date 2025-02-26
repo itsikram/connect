@@ -2,9 +2,9 @@
 require('dotenv').config();
 
 const express = require('express')
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 4000;
 const mongoose = require('mongoose')
-const monogAtlas = process.env.MONGOOSE_SRING
+const monogAtlas = 'mongodb+srv://mdikram295:RUM9epmbVgeQ01nQ@icsbd.mm9fg.mongodb.net/'
 const MONGODB_URI = 'mongodb://localhost:27017/?directConnection=true'
 mongoose.set('strictQuery', false)
 const socketIo = require('socket.io');
