@@ -1,5 +1,5 @@
 const express = require('express')
-const PORT = 8000
+const PORT = process.env.PORT || 4000
 const mongoose = require('mongoose')
 const monogAtlas = 'mongodb+srv://ikramapple123:PiWIUW8KSqmwAE0R@ics.pstt2.mongodb.net/?retryWrites=true&w=majority&appName=ics'
 const MONGODB_URI = 'mongodb://localhost:27017/?directConnection=true'
