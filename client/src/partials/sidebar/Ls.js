@@ -13,7 +13,6 @@ let LeftSidebar = () => {
     const profilePath = "/"+userInfo.profile+"/"
 
 
-
     return (
         <Fragment>
             <div id="left-sidebar" className='text-left'>
@@ -22,7 +21,7 @@ let LeftSidebar = () => {
                         <Link to={profilePath} className='text-decoration-none'>
                             <div className='ls-nav-menu-item'>
                                 <div className='ls-profile-img'>
-                                    <UserPP profilePic={serverConfig.SERVER_URL+'image/uploads/'+profileData.profilePic}></UserPP>
+                                    <UserPP profilePic={profileData.profilePic} profile={profileData._id}></UserPP>
                                 </div> 
                                 
                                 <div className='ls-text user-name'>{profileData.user &&  profileData.user.firstName} {profileData.user && profileData.user.surname}</div>

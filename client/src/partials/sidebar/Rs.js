@@ -21,7 +21,6 @@ let RightSidebar = () => {
             
         }).then(res => {
             setFriendsData(res.data)
-
         }).catch(e => {
             console.log(e)
         })
@@ -41,7 +40,7 @@ let RightSidebar = () => {
                                 <div className='rs-profile-img-container'>
                                     <div className='active-icon'></div>
                                     <div className='rs-profile-img'>
-                                        <UserPP profilePic={`${serverConfig.SERVER_URL}image/uploads/${data.profilePic}`}></UserPP>
+                                        <UserPP profilePic={`${data.profilePic}`} profile={data._id}></UserPP>
                                         
                                     </div> 
                                 </div>

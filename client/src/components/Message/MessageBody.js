@@ -18,8 +18,7 @@ const MessageBody = () => {
     },[])
     return (
         <Fragment>
-            {!profile? <h2 className='text-center'>Select an user to start conversation</h2> : <Chat socket={socket}></Chat>}
-            
+            {!profile? <h2 className='text-center mt-3'>Select an user to start conversation</h2> : <Chat socket={socket}></Chat>}
             
         </Fragment>
 

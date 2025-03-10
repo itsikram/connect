@@ -4,7 +4,6 @@ import $ from 'jquery'
 import api from "../api/api";
 import { useSelector,useDispatch } from "react-redux";
 import ProfileButtons from "../components/Profile/ProfileButtons";
-import serverConfig from '../config.json'
 import CoverPic from "../components/Profile/CoverPic";
 import ProfilePic from "../components/Profile/ProfilePic";
 
@@ -24,8 +23,8 @@ let Profile = (props) => {
             
             api.post('/profile',{profile: params.profile}).then(res=> {
                 if(res.status === 200) {
-                    res.data.profilePic = serverConfig.SERVER_URL+'image/uploads/'+res.data.profilePic
-                    res.data.coverPic = serverConfig.SERVER_URL+'image/coverPic/'+res.data.coverPic
+                    res.data.profilePic = res.data.profilePic
+                    res.data.coverPic = res.data.coverPic
                     setProfileData(res.data)
 
                 }
@@ -52,10 +51,6 @@ let Profile = (props) => {
         target.siblings().removeClass('active')
 
     }
-
-
-
-
 
     return (
         <Fragment>

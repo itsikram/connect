@@ -3,6 +3,7 @@ import logo from '../../assets/images/logo.png';
 import { Link,Outlet,NavLink } from 'react-router-dom';
 import $ from 'jquery';
 
+const logo_src = 'https://programmerikram.com/wp-content/uploads/2025/03/ics_logo.png';
 
 
 let HeaderLeft = () => {
@@ -20,8 +21,6 @@ let HeaderLeft = () => {
           })
           
     }
-
-
 
     let onSearchFocusOut = () => {
         $('.header-search-back-container').hide()
@@ -43,7 +42,7 @@ let HeaderLeft = () => {
                                     <div className="header-left">
                             <div className="header-logo-container">
                                 <Link to="/">
-                                    <img className="header-logo" src={logo} alt="logo"></img>
+                                    <img className="header-logo" src={logo_src} alt="logo"></img>
                                 </Link>
                                 
                                 

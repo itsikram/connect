@@ -39,10 +39,10 @@ exports.profilePost = async(req,res,next) => {
 exports.updateCoverPost = async(req,res,next)=> {
 
     let profileId = req.body.profile
-    let coverPicName = req.file.filename || ''
+    let coverPicUrl = req.body.coverPicUrl
     try {
         let updateProfile = await Profile.findOneAndUpdate({_id: profileId},{
-            coverPic: coverPicName
+            coverPic: coverPicUrl
         })
         res.json(updateProfile)
 
@@ -58,7 +58,7 @@ exports.updateCoverPost = async(req,res,next)=> {
 
 exports.updateProfilePic = async(req,res,next) => {
     let profileId = req.profile._id;
-    let profilePicName = req.file.filename
+    let profilePicUrl = req.body.profilePicUrl
     let caption = req.body.caption
     let type = req.body.type || 'post'
 
@@ -68,14 +68,14 @@ exports.updateProfilePic = async(req,res,next) => {
         let post = new Post({
             type,
             caption,
-            photos: profilePicName,
+            photos: profilePicUrl,
             author: profileId
         })
 
         let savedPost = await post.save()
 
         let updatedProfile = await Profile.findByIdAndUpdate({_id: profileId},{
-            profilePic: profilePicName
+            profilePic: profilePicUrl
         },{new: true})
 
         if(savedPost && updatedProfile) {

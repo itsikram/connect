@@ -9,10 +9,10 @@ exports.createPost = async(req,res,next) => {
     try {
         let profileId = req.profile._id
         let caption = req.body.caption
-        let photos =  req.file ? req.file.filename : ''
+        let thumbnail_url = req.body.photo_url
         let post = new Post({
             caption,
-            photos,
+            photos: thumbnail_url,
             author: profileId
 
         })

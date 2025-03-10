@@ -1,6 +1,6 @@
 import React,{Fragment, useEffect, useState} from "react";
 import FGI from "./FGI";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import api from "../../api/api";
 
@@ -39,9 +39,9 @@ let FriendsSuggest = () => {
                     {
                         friends.map((friend,key)=> {
                             if(myProfile.friendReqs&&myProfile.friendReqs.includes(friend._id)){
-                                return <FGI key={key} profileReqs={friend.friendReqs} type="req"  id={friend._id} profilePic={friend.profilePic} fullName={friend.user.firstName+' '+friend.user.surname}></FGI>
+                                return <FGI key={key} profileReqs={friend.friendReqs} type="req"  id={friend._id} profilePic={friend.profilePic} fullName={friend.user.firstName+' '+ friend.user.surname}></FGI>
                             }
-                            return <FGI key={key} profileReqs={friend.friendReqs} type="sug"  id={friend._id} profilePic={friend.profilePic} fullName={friend.user.firstName+' '+friend.user.surname}></FGI>
+                            return <FGI key={key} profileReqs={friend.friendReqs} type="sug"  id={friend._id} profilePic={friend.profilePic} fullName={friend.user.firstName+' '+ friend.user.surname}></FGI>
                         })
                     }
 

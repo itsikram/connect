@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import api from '../api/api';
@@ -20,12 +20,17 @@ const Chat = ({ socket }) => {
     const [messages, setMessages] = useState([]);
     const [isLike, setIsLike] = useState(true);
     const [inputValue, setInputValue] = useState('');
-
+    const bottomRef = useRef(null);
 
     let params = useParams()
     let profileId = params.profile;
 
     useEffect(() => {
+
+        setTimeout(() => {
+            document.querySelector('#chatMessageList .chat-message-container:last-child').scrollIntoView({ behavior: "smooth" });
+
+        }, 1000);
         profileId = params.profile;
         if (profileId === userId) return; // Prevent self-chat
         const newRoom = [userId, profileId].sort().join('_');
@@ -42,7 +47,8 @@ const Chat = ({ socket }) => {
         });
         socket.on('newMessage', (msg) => {
             setMessages((prevMessages) => [...prevMessages, msg]);
-            console.log(msg)
+            document.querySelector('#chatMessageList .chat-message-container:last-child').scrollIntoView({ behavior: "smooth" });
+
         });
 
         return () => {
@@ -76,9 +82,19 @@ const Chat = ({ socket }) => {
         if (inputValue.trim() && room) {
             socket.emit('sendMessage', { room, senderId: userId, receiverId: profileId, message: inputValue });
             setInputValue('')
+            document.querySelector('#chatMessageList .chat-message-container:last-child').scrollIntoView({ behavior: "smooth" });
 
         }
     }
+
+    const handleKeyPress = (event) => {
+        console.log('kc', event.keyCode)
+        if (event.key === "Enter") {
+            handleSendMessage(event)
+            setInputValue(""); // Clear input after action
+        }
+    };
+
 
     let handleInputChange = (e) => {
         setIsLike(false)
@@ -92,7 +108,7 @@ const Chat = ({ socket }) => {
                 <div className='chat-header'>
                     <div className='chat-header-user'>
                         <div className='chat-header-profilePic'>
-                            <UserPP profilePic={`${serverConfig.SERVER_URL}image/uploads/${friendProfile.profilePic}`} active></UserPP>
+                            <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
                         </div>
                         <div className='chat-header-user-info'>
                             <h4 className='chat-header-username'> {`${friendProfile.user && friendProfile.user.firstName} ${friendProfile.user && friendProfile.user.surname}`}</h4>
@@ -118,34 +134,7 @@ const Chat = ({ socket }) => {
                 </div>
                 <div>
                     <div className='chat-body'>
-                        <div className='chat-message-list'>
-{/* 
-                            {
-                                messages.map((msg, index) => {
-                                    return (
-                                        <div key={index} className={`chat-message-container ${msg.senderId === userId ? 'message-sent' : 'message-receive'}`}>
-                                            <div className='chat-message-profilePic'>
-                                                <UserPP profilePic={`${serverConfig.SERVER_URL}image/uploads/${msg.senderId == userId ? friendProfile.profilePic : profile.profilePic}`} active></UserPP>
-                                            </div>
-                                            <div className='chat-message'> {msg.message} </div>
-                                            <div className='chat-message-options'>
-                                                <div className='chat-message-options-button reply'>
-                                                    <i className="fas fa-reply"></i>
-                                                </div>
-                                                <div className='chat-message-options-button reply'>
-                                                    <i className="fas fa-ellipsis-v"></i>
-                                                </div>
-                                            </div>
-                                            <div className='chat-message-seen-status'>
-                                                Seen
-                                            </div>
-                                        </div>
-
-                                    )
-                                })
-
-                            } */}
-
+                        <div className='chat-message-list' id='chatMessageList' ref={bottomRef} >
 
                             {
                                 messages.map((msg, index) => {
@@ -155,7 +144,7 @@ const Chat = ({ socket }) => {
                                             <div key={index} className='chat-message-container message-sent'>
 
                                                 <div className='chat-message-profilePic'>
-                                                <UserPP profilePic={`${serverConfig.SERVER_URL}image/uploads/${friendProfile.profilePic}`} active></UserPP>
+                                                    <UserPP profilePic={`${serverConfig.SERVER_URL}image/uploads/${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
                                                 </div>
                                                 <div className='chat-message'> {msg.message} </div>
                                                 <div className='chat-message-options'>
@@ -169,7 +158,7 @@ const Chat = ({ socket }) => {
                                                 <div className='chat-message-seen-status'>
                                                     Seen
                                                 </div>
-                                            </div> 
+                                            </div>
                                             :
                                             <div key={index} className='chat-message-container message-receive'>
                                                 <div className='chat-message-options'>
@@ -196,7 +185,7 @@ const Chat = ({ socket }) => {
                             {
                             }
 
-{/* 
+                            {/* 
                             <div className='chat-message-container message-receive'>
                                 <div className='chat-message-options'>
                                     <div className='chat-message-options-button reply'>
@@ -245,7 +234,7 @@ const Chat = ({ socket }) => {
                         </div>
                         <div className='new-message-form'>
                             <div className='new-message-input-container'>
-                                <input onChange={handleInputChange} placeholder='Send Message....' value={inputValue} className='new-message-input' />
+                                <input onChange={handleInputChange} onKeyDown={handleKeyPress} placeholder='Send Message....' value={inputValue} className='new-message-input' />
                             </div>
                             <div className='message-action-button-container'>
 

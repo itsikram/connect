@@ -84,7 +84,7 @@ const ChatBox = (props) => {
                 <div className='chat-header'>
                     <div className='chat-header-user'>
                         <div className='chat-header-profilePic'>
-                            <UserPP profilePic={`${serverConfig.SERVER_URL}image/uploads/${friendProfile.profilePic}`} active></UserPP>
+                            <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
                         </div>
                         <div className='chat-header-user-info'>
                             <h4 className='chat-header-username'> {`${friendProfile.user && friendProfile.user.firstName} ${friendProfile.user && friendProfile.user.surname}`}</h4>
@@ -114,7 +114,7 @@ const ChatBox = (props) => {
                         <div className='chat-message-container message-sent'>
 
                             <div className='chat-message-profilePic'>
-                                <UserPP></UserPP>    
+                                <UserPP profile={friendProfile._id}></UserPP>    
                             </div>
                         <div className='chat-message'> Message Receive </div>
                             <div className='chat-message-options'>
@@ -125,9 +125,9 @@ const ChatBox = (props) => {
                                     <i className="fas fa-ellipsis-v"></i>
                                 </div>
                             </div>
-                            <div className='chat-message-seen-status'>
+                            {/* <div className='chat-message-seen-status'>
                                 Seen
-                            </div>
+                            </div> */}
                         </div>
 
 
@@ -151,7 +151,7 @@ const ChatBox = (props) => {
                         <div className='chat-message-container message-sent'>
 
                         <div className='chat-message-profilePic'>
-                            <UserPP></UserPP>    
+                            <UserPP profile={friendProfile._id}></UserPP>    
                         </div>
                         <div className='chat-message'> Message Receive </div>
                         <div className='chat-message-options'>

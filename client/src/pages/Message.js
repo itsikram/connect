@@ -1,10 +1,8 @@
 import React,{Fragment, useEffect} from 'react'
 import {Container,Row,Col} from "react-bootstrap";
-import UserPP from "../components/UserPP";
 import MessageList from "../components/Message/MessageList";
 import MessageBody from '../components/Message/MessageBody';
 import MessageOptions from '../components/Message/MessageOptions.';
-import ChatBox from '../components/Message/ChatBox';
 const Message = () => {
 
 

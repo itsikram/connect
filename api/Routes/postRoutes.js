@@ -8,5 +8,4 @@ Router.post('/create',isAuth,photosUpload.single('photos'),createPost)
 Router.get('/myPosts',isAuth,getMyPosts)
 Router.get('/newsFeed',getNewsFeed)
 
-
 module.exports = Router;

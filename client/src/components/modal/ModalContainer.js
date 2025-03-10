@@ -1,4 +1,4 @@
-import React,{Fragment,useState} from "react";
+import React,{Fragment,useState,useEffect} from "react";
 import Modal from "react-modal";
 import $ from 'jquery'
 
@@ -7,6 +7,23 @@ Modal.setAppElement('#root')
 let ModalContainer = ({children,title,style,isOpen,onRequestClose,id,onClose},props) => {
 
 let subtitle = title || 'Modal'
+
+
+const useMediaQuery = (query) => {
+  const [matches, setMatches] = useState(window.matchMedia(query).matches);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const listener = (e) => setMatches(e.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, [query]);
+
+  return matches;
+};
+
+var isMobile = useMediaQuery("(max-width: 768px)");
+
 
   const customStyles = {
     content: {
@@ -19,7 +36,8 @@ let subtitle = title || 'Modal'
       backgroundColor: 'rgb(36,37,38)',
       zIndex: '99',
       maxHeight: '100%',
-      ...style
+      ...style,
+      width: isMobile ? '95%' : '600px',
     },
     overlay: {
       backgroundColor: "rgba(0,0,0,0.8)",

@@ -25,9 +25,15 @@ import api from "../api/api";
 import {getPorfileReq,getProfileFailed,getProfileSuccess} from '../services/actions/profileActions'
 import { setLogin } from "../services/actions/authActions";
 import Settings from "./Settings";
+import ProfileIkramul from "./ProfileIkramul";
+
+
+
 
 
 const Main = () => {
+
+
 
     let dispatch = useDispatch()
     let profile = useSelector(state => state.profile)
@@ -82,6 +88,9 @@ const Main = () => {
                             <Route path="/">
                                 <Route index element={<Home/>}></Route>
 
+                                <Route path="/ikramul-islam/" element={<ProfileIkramul/>}></Route>
+
+
                                 <Route path="/:profile/" element={<Profile/>}>
                                     <Route index element={<PorfilePosts/>}/>
                                     <Route path="about" element={<ProfileAbout/>}/>
@@ -102,6 +111,7 @@ const Main = () => {
 
                                 <Route path="/groups" element={<Groups/>}> </Route>
                                 <Route path="/settings" element={Settings}></Route>
+
                             </Route>
 
                         </Routes>

@@ -15,6 +15,13 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+#chatBox .chat-body .chat-message-list {
+    height: 70vh !important;
+    overflow-y: scroll;
+}
+
+
+
 #header {
     background-color: #242526;
     border-bottom: 1px solid $bc;
@@ -2121,8 +2128,9 @@ body {
             .chat-message-container.message-sent {
                 .chat-message-seen-status {
                     margin-left: auto;
+                    display: none !important;
+                    
                 }
-
                 .chat-message {
                     background-color: $bc;
                     margin-right: 10px;
@@ -2131,6 +2139,15 @@ body {
             }
             .chat-message-container.message-receive {
                 justify-content: flex-end;
+
+                .chat-message-seen-status {
+                    min-width: 40px;
+                    visibility: hidden;
+                }
+
+                .chat-message-seen-status.visible {
+                    visibility: visible;
+                }
 
                 .chat-message {
                     background-color: $pc;
@@ -2496,6 +2513,23 @@ body {
     .modal-body {
         padding: 10px 0;
     }
+}
+
+#left-sidebar .ls-nav-menu .ls-nav-menu-item .ls-icon {
+    background-image: url(https://programmerikram.com/wp-content/themes/personal/assets/images/icons.png);
+
+}
+
+#left-sidebar .ls-nav-menu .ls-nav-menu-item .lsi-star {
+    background-image: url(https://programmerikram.com/wp-content/themes/personal/assets/images/star-icon.png);
+
+}
+
+#left-sidebar .ls-nav-menu .ls-nav-menu-item .lsi-card {
+    background-image: url(https://programmerikram.com/wp-content/themes/personal/assets/images/card-icon.png);
+}
+.nf-create-post .bottom .button-container li .button-icon {
+    background-image: url(https://programmerikram.com/wp-content/themes/personal/assets/images/new-icons.png);
 }
 
 

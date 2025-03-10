@@ -5,6 +5,7 @@ const PostRoutes = require('./postRoutes')
 const friendRoutes = require('./friendRoutes')
 const reactRoutes = require('./reactRoutes')
 const commentRoutes = require('./commentRoutes')
+const uploadRoute = require('./uploadRoute')
 
 const routes = [
     {
@@ -30,6 +31,9 @@ const routes = [
     {
         path: '/api/comment',
         handler: commentRoutes
+    }, {
+        path: '/api/upload',
+        handler: uploadRoute
     }
 ]
 

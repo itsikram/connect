@@ -1,9 +1,11 @@
-import React,{Fragment} from 'react';
+import React, { Fragment, useState } from 'react';
 import $ from 'jquery'
 import serverConfig from '../../config.json'
 import { Link } from 'react-router-dom';
 import api from '../../api/api';
 import { useSelector } from 'react-redux';
+
+const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
 
 const PFI = (props) => {
@@ -15,37 +17,51 @@ const PFI = (props) => {
 
     let friendFullName = friend.user && friend.user.firstName + " " + friend.user.surname
 
+    const [imageExists, setImageExists] = useState(null);
+
+    var profilePic = `${friend.profilePic}`;
+    var pp_url = profilePic;
+    const checkImage = (url) => {
+        const img = new Image();
+        img.src = url;
+
+        img.onload = () => setImageExists(true);
+        img.onerror = () => setImageExists(false);
+    };
+
+    checkImage(profilePic)
+
+
+    if (!imageExists) {
+        pp_url = default_pp_src
+    }
+
+
     let handleFrndOptionClick = (e) => {
         let target = e.currentTarget
 
         $(target).children('.friend-options-menu').toggle()
     }
 
-    let clickRemoveFrndOption = async(e) =>{
- 
-
+    let clickRemoveFrndOption = async (e) => {
         try {
-            
 
-            let res = await api.post('/friend/removeFriend',{
+            let res = await api.post('/friend/removeFriend', {
                 profile: friend._id
             })
             $(e.currentTarget).parents('.friend-item').fadeOut()
 
-            
+
         } catch (error) {
             console.log(error)
         }
 
-
-
     }
-
-    let clickAddFrndOption = async(e) => {
+    let clickAddFrndOption = async (e) => {
         try {
 
             let target = e.currentTarget
-            await api.post('/friend/sendRequest/',{profile: friend._id})
+            await api.post('/friend/sendRequest/', { profile: friend._id })
             $(target).parents('.friend-item').hide()
 
         } catch (error) {
@@ -57,47 +73,47 @@ const PFI = (props) => {
             <div className='friend-item'>
 
                 <div className='friend-info'>
-                    <Link to={'/'+friend._id}>
+                    <Link to={'/' + friend._id}>
                         <div className='friend-profilePic'>
-                            <img src={`${serverConfig.SERVER_URL}image/uploads/${friend.profilePic}`} alt={friendFullName} ></img>
+                            <img src={pp_url} alt={friendFullName} ></img>
                         </div>
                         <div className='friend-details'>
                             <h4 className='friend-name text-capitalize'>{friendFullName}</h4>
                             {
-                                friend.mutual &&  <span className='friend-mutual'> 20 Mutual Friends</span>
+                                friend.mutual && <span className='friend-mutual'> 20 Mutual Friends</span>
                             }
-                            
+
                         </div>
                     </Link>
 
 
                 </div>
                 <div className='friend-options' onClick={handleFrndOptionClick}>
-                <i className='far fa-ellipsis-h'></i>
+                    <i className='far fa-ellipsis-h'></i>
 
                     <div className='friend-options-menu'>
                         {
-                            isFriend? 
-                            <div onClick={clickRemoveFrndOption} className='friend-options-menu-item'>
-                                <div className='menu-item-icon'>
-                                <i className="fas fa-user-times"></i>
+                            isFriend ?
+                                <div onClick={clickRemoveFrndOption} className='friend-options-menu-item'>
+                                    <div className='menu-item-icon'>
+                                        <i className="fas fa-user-times"></i>
+                                    </div>
+                                    <div className='menu-item-text'>Remove Friend</div>
                                 </div>
-                                <div className='menu-item-text'>Remove Friend</div>
-                            </div> 
-                        
-                        :
-                            <div onClick={clickAddFrndOption} className='friend-options-menu-item'>
-                                <div className='menu-item-icon'>
-                                <i className="fas fa-user-plus"></i>
+
+                                :
+                                <div onClick={clickAddFrndOption} className='friend-options-menu-item'>
+                                    <div className='menu-item-icon'>
+                                        <i className="fas fa-user-plus"></i>
+                                    </div>
+                                    <div className='menu-item-text'>Add Friend</div>
                                 </div>
-                            <div className='menu-item-text'>Add Friend</div>
-                        </div>
                         }
-                        
+
                     </div>
-                    
+
                 </div>
-                </div>
+            </div>
         </div>
     );
 }

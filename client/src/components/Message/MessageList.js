@@ -5,7 +5,7 @@ import {useSelector} from "react-redux";
 import config from '../../config.json'
 import { Link } from "react-router-dom";
 
-const serverProfilepath = config.SERVER_URL+"image/uploads/"
+
 
 
 let userInfo = JSON.parse((localStorage.getItem('user')||'{}'))
@@ -44,20 +44,21 @@ const MessageList = ()=> {
                     <ul className={"message-list"}>
                         {
                             messageList.map((messageItem,key) => {
+                                console.log('m items',messageItem)
                                 let authorFullName = messageItem.user.firstName + ' '+ messageItem.user.surname
                                 
                                 return <Link key={key} style={{textDecoration: 'none'}} to={`/message/${messageItem._id}`}>
                                 <li className={"message-list-item"}>
                                     <div className={"user-profilePic"}>
-                                        <UserPP profilePic={serverProfilepath+messageItem.profilePic}></UserPP>
+                                        <UserPP profilePic={messageItem.profilePic} profile={profileId}></UserPP>
                                     </div>
                                     <div className={'user-data'}>
                                         <h4 className={"message-author-name"}>{authorFullName}</h4>
                                         <p className={"last-message-data"}>
-                                            <span className={"last-message"}>kire koi?</span>
-                                            .
+                                            <span className={"last-message"}></span>
+                                            
 
-                                            <span className={"lest-msg-time"}>50m</span></p>
+                                            <span className={"lest-msg-time"}></span></p>
                                     </div>
                                 </li></Link> 
 

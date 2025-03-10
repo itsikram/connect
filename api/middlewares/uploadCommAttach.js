@@ -3,7 +3,7 @@ const path =  require("path")
 
 let photosStorage = multer.diskStorage({
     destination: (req,file,cb) => {
-        cb(null,'public/image/uploads/')
+        cb(null,'')
     },
     filename: (req, file, cb) => {
         cb(null, file.fieldname + '-' + Date.now() + '-' + file.originalname)

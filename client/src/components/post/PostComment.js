@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 const PostComment = (props) => {
     let post = props.post || {}
     let authProfilePicture = props.authProfilePicture
-
+    let authProfileId = props.authProfile;
     let myProfile = props.myProfile ? props.myProfile : {}
 
 
@@ -98,7 +98,7 @@ const PostComment = (props) => {
                          
                         return  <div key={key} className="comment-container">
                                     <div className="author-pp">
-                                        <UserPP profilePic={serverConfig.SERVER_URL+'image/uploads/'+comment.author.profilePic}></UserPP>
+                                        <UserPP profilePic={comment.author.profilePic} profile={comment.author._id}></UserPP>
                                         </div>
                                     <div className="comment-info">
                                         <div className="comment-box">
@@ -132,7 +132,7 @@ const PostComment = (props) => {
                                             </div>
                                             <div className="new-comment">
                                                 <div className="user-pp">
-                                                    <UserPP profilePic={serverConfig.SERVER_URL+'image/uploads/'+authProfilePicture}></UserPP>
+                                                    <UserPP profilePic={authProfilePicture} profile={authProfileId}></UserPP>
                                                 </div>
                                                 <div className="comment-field">
                                                     <input onKeyUp={handleCommentKeyUp} onChange={handleCommentBodyChange} className="field-comment-text" type="text" placeholder="Write a Public Comment"/>
