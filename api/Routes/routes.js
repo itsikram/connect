@@ -6,8 +6,14 @@ const friendRoutes = require('./friendRoutes')
 const reactRoutes = require('./reactRoutes')
 const commentRoutes = require('./commentRoutes')
 const uploadRoute = require('./uploadRoute')
+const path = require('path')
 
+let rootRoute = async (req,res) => {
+    return res.sendFile(path.join(__dirname, "build", "index.html"));
+
+}
 const routes = [
+
     {
         path: '/api/auth',
         handler: authRoutes

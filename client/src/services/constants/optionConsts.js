@@ -1,0 +1,3 @@
+export const SET_HEADER_HEIGHT = "SET_HEADER_HEIGHT"
+export const SET_BODY_HEIGHT = "SET_BODY_HEIGHT"
+

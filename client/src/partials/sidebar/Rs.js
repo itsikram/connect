@@ -1,9 +1,6 @@
 import React, {Fragment, useEffect, useState} from 'react';
-import profilePic from '../../assets/images/profile.jpg';
-import ai from '../../assets/images/ai.jpg'
-import { useSelector } from 'react-redux';
+
 import api from '../../api/api';
-import serverConfig from '../../config.json'
 import UserPP from '../../components/UserPP';
 
 
@@ -25,7 +22,7 @@ let RightSidebar = () => {
             console.log(e)
         })
 
-    },[])
+    },[profile])
 
     return (
         <Fragment>

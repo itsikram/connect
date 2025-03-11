@@ -8,11 +8,6 @@ body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-#chatBox .chat-body .chat-message-list {
-  height: 70vh !important;
-  overflow-y: scroll;
-}
-
 #header {
   background-color: #242526;
   border-bottom: 1px solid #3B3C3C;
@@ -1136,7 +1131,7 @@ body {
   width: 70%;
   margin: auto;
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   padding: 15px;
 }
 #profile #profile-about-content .tab-navigator {
@@ -1279,7 +1274,7 @@ body {
 
 #friends {
   display: flex;
-  align-items: start;
+  align-items: flex-start;
 }
 #friends .friends-sidebar {
   width: 29%;
@@ -1540,6 +1535,74 @@ body {
   cursor: pointer;
 }
 
+.profile-pic + .hr-mega-menu {
+  right: 0 !important;
+}
+
+.header-quick-menu-item .hr-mega-menu {
+  right: -30% !important;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container {
+  padding: 10px;
+  border-right: 1px solid #3B3C3C;
+  height: 100%;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-leftside-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-leftside-header .message-leftside-title {
+  font-size: 24px;
+  color: #fff;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-leftside-header .message-sidebar-header-menu .header-menu-icons {
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  background: #3B3C3C;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-list-container .message-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-list-container .message-list .message-list-item {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  border-radius: 5px;
+  transition: 0.1s;
+  margin-bottom: 5px;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-list-container .message-list .message-list-item .user-profile-img {
+  margin-right: 10px;
+  scale: 1.1;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-list-container .message-list .message-list-item .user-data {
+  color: #DFE1E6;
+  text-decoration: none !important;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-list-container .message-list .message-list-item .user-data .message-author-name {
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  text-transform: capitalize;
+  margin-bottom: -2px;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-list-container .message-list .message-list-item .user-data .last-message-data {
+  margin: 0;
+  font-size: 12px;
+}
+.header-quick-menu-item .hr-mega-menu .left-sidebar-container .message-list-container .message-list .message-list-item:hover {
+  background: #3B3C3C;
+}
+
 #message {
   background: #242526;
   margin-bottom: 5px;
@@ -1717,9 +1780,6 @@ body {
 #chatBox .chat-header .chat-header-action .chat-header-action-btn-container .action-button:hover {
   background-color: #3B3C3C;
 }
-#chatBox .chat-body .chat-message-list {
-  padding-top: 70px;
-}
 #chatBox .chat-body .chat-message-list .chat-message-container:hover .chat-message-options {
   display: flex;
 }
@@ -1767,7 +1827,6 @@ body {
   justify-content: flex-end;
 }
 #chatBox .chat-body .chat-message-list .chat-message-container.message-receive .chat-message-seen-status {
-  min-width: 40px;
   visibility: hidden;
 }
 #chatBox .chat-body .chat-message-list .chat-message-container.message-receive .chat-message-seen-status.visible {
@@ -2085,7 +2144,7 @@ body {
 
 @media only screen and (max-width: 768px) {
   #chatBox .chat-footer .new-message-container {
-    flex-direction: column;
+    flex-direction: row;
   }
   #message .right-sidebar-container {
     display: none;

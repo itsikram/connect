@@ -26,7 +26,7 @@ let FriendsSuggest = () => {
 
 
 
-    },[])
+    },[myProfile._id])
 
     return (
         <Fragment>

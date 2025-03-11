@@ -6,7 +6,7 @@ import {useDispatch,useSelector} from 'react-redux'
 let Login = (props) => {
 
     //let isLoggedIn = useSelector((state) => console.log(state))
-
+var dispatch = useDispatch();
     let showSignup = (e) => {
         let target = e.currentTarget;
         $(target).parents('.login-container').siblings('.signup-container').fadeIn('fast')
@@ -39,9 +39,7 @@ let Login = (props) => {
                 let user = JSON.stringify(res.data);
                 localStorage.setItem('user',user)
                 window.location.reload()
-                // dispatch(setLogin({
-                //     isLoggedIn: user ? true: false
-                // }))
+
 
             }else {
                 alert(res.data.message)
@@ -68,7 +66,7 @@ let Login = (props) => {
                                 <input onChange={handleChange} type="password" name="password" className="password" placeholder="Password"/>
                                 <p id="loginErrorMsg" style={{color: 'red'}}>{error.message}</p>
                                 <input type="submit" onClick={handleSubmit} className="submit-button" value="Login"/>
-                                <a className="forgot-password">
+                                <a href="#" className="forgot-password">
                                     Forgotten password? {window.location.hostname}
                                 </a>
                             </div>

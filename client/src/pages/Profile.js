@@ -9,7 +9,6 @@ import ProfilePic from "../components/Profile/ProfilePic";
 
 
 let Profile = (props) => {
-    let dispatch = useDispatch()
     let params = useParams()
 
     let myProfileData = useSelector(state => state.profile) || {}
@@ -23,8 +22,7 @@ let Profile = (props) => {
             
             api.post('/profile',{profile: params.profile}).then(res=> {
                 if(res.status === 200) {
-                    res.data.profilePic = res.data.profilePic
-                    res.data.coverPic = res.data.coverPic
+
                     setProfileData(res.data)
 
                 }

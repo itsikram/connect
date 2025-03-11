@@ -15,11 +15,6 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-#chatBox .chat-body .chat-message-list {
-    height: 70vh !important;
-    overflow-y: scroll;
-}
-
 
 
 #header {
@@ -1072,6 +1067,7 @@ body {
     
 }
 
+
 #profile {
 
     .profile-header {
@@ -1304,6 +1300,7 @@ body {
         align-items: flex-start;
 
 
+
         .intro {
             padding: 12px;
             background-color: $profilebg;
@@ -1376,7 +1373,7 @@ body {
         width: 70%;
         margin: auto;
         display: flex;
-        align-items: start;
+        align-items: flex-start;
         padding: 15px;
 
         .tab-navigator {
@@ -1555,7 +1552,7 @@ body {
 
 #friends {
     display: flex;
-    align-items: start;
+    align-items: flex-start;
 
     .friends-sidebar {
         width: 29%;
@@ -1868,6 +1865,89 @@ body {
     }
 }
 
+.profile-pic + .hr-mega-menu{
+        right: 0 !important ; 
+}
+.header-quick-menu-item .hr-mega-menu{
+    right: -30% !important;
+    .left-sidebar-container {
+        padding: 10px;
+        border-right: 1px solid $bc;
+        height: 100%;
+
+        .message-leftside-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .message-leftside-title {
+                font-size: 24px;
+                color: #fff;
+            }
+            .message-sidebar-header-menu {
+
+                .header-menu-icons {
+                    height: 30px;
+                    width: 30px;
+                    border-radius: 50%;
+                    background: $bc;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    cursor: pointer;
+                }
+            }
+        }
+        .message-list-container {
+
+            .message-list {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                cursor: pointer;
+                .message-list-item {
+                    display: flex;
+                    align-items: center;
+                    padding: 5px;
+                    border-radius: 5px;
+                    transition: 0.1s;
+                    margin-bottom: 5px;
+
+                    .user-profile-img {
+                        margin-right: 10px;
+                        scale: 1.1;
+                    }
+                    .user-data {
+                        
+                        color: $tc;
+                        text-decoration: none !important;
+                        .message-author-name {
+                            margin: 0;
+                            padding: 0;
+                            font-size: 18px;
+                            text-transform: capitalize;
+                            margin-bottom: -2px;
+                        }
+                        .last-message-data {
+                            margin: 0;
+                            font-size: 12px;
+                            .last-message{
+
+                            }
+                            .last-msg-time {
+
+                            }
+                        }
+                    }
+                }
+
+                .message-list-item:hover {
+                    background: $bc;
+                }
+            }
+        }
+    }
+}
 #message {
     background: $profilebg;
     margin-bottom: 5px;
@@ -2082,9 +2162,7 @@ body {
         }
     }
     .chat-body {
-        
         .chat-message-list {
-            padding-top: 70px;
             .chat-message-container:hover .chat-message-options {
                 display: flex;
             }
@@ -2141,7 +2219,6 @@ body {
                 justify-content: flex-end;
 
                 .chat-message-seen-status {
-                    min-width: 40px;
                     visibility: hidden;
                 }
 
@@ -2546,8 +2623,9 @@ body {
 
 @media only screen and (max-width: 768px){
 
+
     #chatBox .chat-footer .new-message-container {
-        flex-direction: column;
+        flex-direction: row;
     }
     #message .right-sidebar-container {
         display: none;

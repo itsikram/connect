@@ -3,7 +3,6 @@ import ModalContainer from "../modal/ModalContainer";
 import AvatarEditor from "react-avatar-editor";
 import api from "../../api/api";
 import { useSelector } from "react-redux";
-import serverConfig from '../../config.json'
 
 const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
@@ -182,7 +181,7 @@ let ProfilePic = ({ profileData }) => {
 
                 <ModalContainer
                     title="Upload Profile Pics"
-                    style={{ width: "600px", top: "50%" }}
+                    style={{ width: "600px", maxWidth: '95%', top: "50%" }}
                     isOpen={isPPModal}
                     onRequestClose={closePPModal}
                     id="pp-upload-modal"
@@ -212,7 +211,7 @@ let ProfilePic = ({ profileData }) => {
                                     color={[0, 0, 0, 0.5]} // RGBA
                                     scale={1.1}
                                     rotate={0}
-                                    style={{ margin: 'auto', marginBottom: '20px' }}
+                                    style={{ margin: 'auto', marginBottom: '20px',maxWidth: '100%',height: '100%',width: '100%' }}
                                 />
                             }
                             <input onChange={ppInputChange} name="profilePic" className="pp-upload-input" type='file'></input>

@@ -1,11 +1,8 @@
-import React, { Fragment, useState } from "react";
+import React, {  useState } from "react";
 import $ from 'jquery'
 import { useSelector } from 'react-redux'
 import UserPP from "../UserPP";
 import { Link } from "react-router-dom";
-import serverConfig from '../../config.json'
-import profileAi from '../../assets/images/ai.jpg'
-import postImage from '../../assets/images/postImage1.jpg'
 import Rlove from '../../assets/images/reacts/reactLove.svg';
 import Rhaha from '../../assets/images/reacts/reactHaha.svg';
 import Momemt from 'react-moment'
@@ -168,14 +165,14 @@ let Post = (props) => {
                     {post.caption}
                 </p>
                 {
-                    thumbExists &&
+                    (thumbExists &&
                     <div className="attachment">
                         <img src={postPhoto} alt="post" />
                     </div>
 
                     ||
 
-                    <p className="fs-5 text-center text-danger">Post image not available</p>
+                    <p className="fs-5 text-center text-danger">Post image not available</p>)
                 }
 
             </div>

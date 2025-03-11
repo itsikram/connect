@@ -1,13 +1,11 @@
 import React, { Fragment,useState } from "react";
-import { Link, Outlet, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import $ from 'jquery';
-import CreatePost from '../../components/post/CreatePost'
 import MegaMC from "../../components/MegaMC";
 import UserPP from "../../components/UserPP";
 import { useDispatch, useSelector } from "react-redux";
 import { logOut } from "../../store/authReducer";
-import serverConfig from '../../config.json'
-
+import MessageList from "../../components/Message/MessageList";
 let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
 const profilePath = "/" + userInfo.profile + "/"
 const default_pp_url = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
@@ -63,9 +61,12 @@ let HeaderRight = () => {
                     <li onClick={quickMenuBtnClick.bind(this)} className="header-quick-menu-item" title="Groups">
                         <div className="header-quick-menu-icon">
                             <i className="far fa-comment-alt-lines"></i>
-
                         </div>
+                        <MegaMC style={{ right: '0px !important', top: '100%', width: '300px', backgroundColor: '#29B1A9', borderRadius: '5px' }} className="hr-mega-menu">
+                            <MessageList/>
+                        </MegaMC>
                     </li>
+                    
                     <li onClick={quickMenuBtnClick} className="header-quick-menu-item" title="">
                         <div className="header-quick-menu-icon">
                             <i className="far fa-bell"></i>
@@ -105,7 +106,7 @@ let HeaderRight = () => {
                                         </div>
                                         <span className="menu-item-name">Settings</span>
                                     </Link>
-                                    <a href="" onClick={logOutBtn} className="profile-menu-item">
+                                    <a href="#" onClick={logOutBtn} className="profile-menu-item">
                                         <div className="menu-item-icon">
                                             <i className="fa fa-sign-out-alt"></i>
                                         </div>

@@ -4,7 +4,6 @@ import ModalContainer from '../modal/ModalContainer'
 import UserPP from "../UserPP";
 import $, { post } from 'jquery'
 import api from "../../api/api";
-import serverConfig from '../../config.json'
 
 let CreatePost = () => {
 
@@ -200,7 +199,7 @@ let CreatePost = () => {
                                 </div>
                                 <div className="cpm-attachment-control">
                                     <div className="cpm-attachment-preview">
-                                        <img src={postData.urls && postData.urls}></img>
+                                        <img src={postData.urls && postData.urls} alt="attachment preview"/>
                                     </div>
                                     <div className="cpm-attachment-upload">
                                         <div className="cpm-attachment-upload-overlay">

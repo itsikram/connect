@@ -1,4 +1,4 @@
-import React,{Fragment,useEffect} from "react";
+import React,{Fragment,useEffect,useState} from "react";
 
 import {BrowserRouter as BR, Routes,Route} from 'react-router-dom'
 
@@ -19,32 +19,51 @@ import FriendRequests from "../components/friend/FriendRequests";
 import FriendSuggest from "../components/friend/FriendSuggest"
 import FriendHome from "../components/friend/FriendHome";
 import { useDispatch,useSelector } from "react-redux";
-
 import { logOut } from "../store/authReducer";
 import api from "../api/api";
 import {getPorfileReq,getProfileFailed,getProfileSuccess} from '../services/actions/profileActions'
 import { setLogin } from "../services/actions/authActions";
+import { setBodyHeight,setHeaderHeight } from "../services/actions/optionAction";
 import Settings from "./Settings";
 import ProfileIkramul from "./ProfileIkramul";
 
-
-
+import { io } from 'socket.io-client';
+const socket = io.connect(process.env.REACT_APP_SERVER_ADDR)
 
 
 const Main = () => {
+    var dispatch = useDispatch();
+    const [room, setRoom] = useState('');
 
 
+    let userInfo = JSON.parse((localStorage.getItem('user')||'{}'))
+    const profileId = userInfo.profile
+    const userId = 'lakegaleg'
+    useEffect(() => {
+        if (profileId === userId) return; // Prevent self-chat
+        const newRoom = [userId, profileId].sort().join('_');
+        setRoom(newRoom);
+        socket.emit('startChat', { user1: userId, user2: profileId });
 
-    let dispatch = useDispatch()
-    let profile = useSelector(state => state.profile)
+        socket.on('roomJoined', ({ room }) => {
+            console.log(`Joined room from main: ${room}`);
+            localStorage.setItem('roomId', room);
+        });
+        socket.on('newMessage', (msg) => {
+            document.querySelector('#chatMessageList .chat-message-container:last-child').scrollIntoView({ behavior: "smooth" });
+            alert(msg)
+        });
 
+        return () => {
+            socket.off('newMessage');
+            socket.off('previousMessages');
+        };
+    },[])
 
-
+    dispatch(setBodyHeight(window.innerHeight));
 
     useEffect(()=> {
 
-        let userInfo = JSON.parse((localStorage.getItem('user')||'{}'))
-        const profileId = userInfo.profile
 
         api.post(`/profile`,{profile: profileId}).then(res => {
             dispatch(getPorfileReq())
@@ -60,21 +79,8 @@ const Main = () => {
             dispatch(getProfileFailed(e))
         })
 
-
-
-
-
-
-
     },[])
 
-
-
-
-    let logOuts = () => {
-        localStorage.removeItem('user')
-        dispatch(logOut())
-    }
     
 
     return (

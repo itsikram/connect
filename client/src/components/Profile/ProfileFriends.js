@@ -41,6 +41,7 @@ const ProfileFriends = () => {
                                 return  <PFI key={key} friend={friend}></PFI>
 
                             }
+                            return;
                         })
                     }
 

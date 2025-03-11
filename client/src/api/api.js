@@ -1,13 +1,12 @@
 import axios from "axios";
-import serverConfig from '../config.json';
 
 let user = localStorage.getItem("user") || '{}'
 let userJson = JSON.parse(user)
 let token = userJson.accessToken
-// import SERVER_URL from '../config.json'
 
+console.log(window.navigator.connection)
 const api = axios.create({
-    baseURL: serverConfig.SERVER_URL+'api/',
+    baseURL: process.env.REACT_APP_SERVER_ADDR+'/api/',
     headers: {
         'Authorization' : `${token}`,
         'ngrok-skip-browser-warning' : true,

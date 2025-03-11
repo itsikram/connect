@@ -1,4 +1,4 @@
-import React,{Fragment,useState,useEffect} from "react";
+import React,{Fragment,useState,useEffect,useRef} from "react";
 import { Container,Row,Col } from "react-bootstrap";
 import { Link,Outlet,NavLink } from 'react-router-dom';
 import MegaMC from "../../components/MegaMC";
@@ -7,8 +7,18 @@ import HeaderNav from "./HeaderNav";
 import HeaderRight from "./HeaderRight";
 import Ls from "../sidebar/Ls";
 import $ from 'jquery'
+import {setHeaderHeight} from "../../services/actions/optionAction.js";
 
-const Header = ()=> {
+import { useDispatch } from "react-redux";
+
+const Header = ()=> {    
+    var dispatch = useDispatch();
+
+
+    let headerRef = useRef(null);
+    const [height,setHeight] = useState(null);
+    dispatch(setHeaderHeight(height))
+
 
     $(window).on('scroll' ,(e) => {
         if(window.pageYOffset > 100) {
@@ -26,7 +36,12 @@ const Header = ()=> {
 
     let [match,setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)
 
-    useEffect(()=>{
+    useEffect(()=>{    
+
+        if(headerRef.current) {
+            setHeight(headerRef.current?.offsetHeight)
+
+        }
         window.matchMedia("(max-width:768px)").addEventListener('change',(e) =>{
             setMatch(e.matches)
         })
@@ -47,6 +62,7 @@ const Header = ()=> {
         
     }
 
+
     let MenuButton = () => {
         return(
             <Fragment>
@@ -60,7 +76,7 @@ const Header = ()=> {
 
     return(
         <Fragment>
-        <header className="header" id="header">
+        <header ref={headerRef} className="header" id="header">
             <Container className="header-container" fluid="xxl">
                 <Row>
                     <Col className="d-flex align-items-center">

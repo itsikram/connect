@@ -2,7 +2,6 @@ import React, {Fragment, useEffect, useState} from "react";
 import UserPP from "../UserPP";
 import api from "../../api/api";
 import {useSelector} from "react-redux";
-import config from '../../config.json'
 import { Link } from "react-router-dom";
 
 

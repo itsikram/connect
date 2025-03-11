@@ -33,7 +33,7 @@ let UserPP = (props) => {
                 
                 <div className='user-profile-img'>
                 <Link to={`/${profileId}/`}>
-                    <img src={pp_url} alt={'Profile Picture'}></img>
+                    <img src={pp_url} alt='Profile Picture'></img>
                     </Link>
                 </div> 
              </div>

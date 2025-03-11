@@ -3,15 +3,15 @@ import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import api from '../api/api';
 import UserPP from '../components/UserPP';
-import { io } from 'socket.io-client'
-import serverConfig from '../config.json'
+import { io } from 'socket.io-client';
+import MessageList from '../components/Message/MessageList';
 
-
-const URL = serverConfig.SERVER_URL
-const socket = io.connect(URL)
+const socket = io.connect(process.env.REACT_APP_SERVER_ADDR)
 const Chat = ({ socket }) => {
 
     let profile = useSelector(state => state.profile)
+    let headerHeight = useSelector(state => state.option.headerHeight)
+    let bodyHeight = useSelector(state => state.option.bodyHeight)
     let userId = profile._id
     let [friendProfile, setFriendProfile] = useState({})
     let [friendId, setFriendId] = useState({})
@@ -22,16 +22,27 @@ const Chat = ({ socket }) => {
     const [inputValue, setInputValue] = useState('');
     const bottomRef = useRef(null);
 
+    const chatHeader = useRef(null);
+    const chatFooter = useRef(null);
+
+
+
+    const chatHeaderHeight = chatHeader.current?.offsetHeight;
+    const chatFooterHeight = chatFooter.current?.offsetHeight;
+
+
+    const listContainerHeight = bodyHeight - headerHeight -chatHeaderHeight - chatFooterHeight
+
+
     let params = useParams()
     let profileId = params.profile;
 
     useEffect(() => {
 
         setTimeout(() => {
-            document.querySelector('#chatMessageList .chat-message-container:last-child').scrollIntoView({ behavior: "smooth" });
+            document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
 
         }, 1000);
-        profileId = params.profile;
         if (profileId === userId) return; // Prevent self-chat
         const newRoom = [userId, profileId].sort().join('_');
         setRoom(newRoom);
@@ -59,7 +70,6 @@ const Chat = ({ socket }) => {
 
 
     useEffect(() => {
-        profileId = params.profile;
         api.get('/profile', {
             params: {
                 profileId: profileId
@@ -74,15 +84,12 @@ const Chat = ({ socket }) => {
     }, [params])
 
 
-
-
-
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (inputValue.trim() && room) {
             socket.emit('sendMessage', { room, senderId: userId, receiverId: profileId, message: inputValue });
             setInputValue('')
-            document.querySelector('#chatMessageList .chat-message-container:last-child').scrollIntoView({ behavior: "smooth" });
+            document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
 
         }
     }
@@ -101,11 +108,19 @@ const Chat = ({ socket }) => {
         setInputValue(e.target.value)
     }
 
+    const cmlStyles = {
+        height: `${listContainerHeight + chatHeaderHeight}px`,
+        maxHeight: `${listContainerHeight + chatHeaderHeight}px`,
+        paddingTop: `${chatHeaderHeight}px`,
+        overflowY: 'scroll'
+    }
+    console.log(cmlStyles)
+
     return (
         <div>
 
-            <div id="chatBox">
-                <div className='chat-header'>
+            <div id="chatBox" style={{ height: `${bodyHeight - headerHeight}px` }}>
+                <div ref={chatHeader} className='chat-header'>
                     <div className='chat-header-user'>
                         <div className='chat-header-profilePic'>
                             <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
@@ -134,17 +149,17 @@ const Chat = ({ socket }) => {
                 </div>
                 <div>
                     <div className='chat-body'>
-                        <div className='chat-message-list' id='chatMessageList' ref={bottomRef} >
+                        <div className='chat-message-list' style={cmlStyles} id='chatMessageList' ref={bottomRef} >
 
                             {
                                 messages.map((msg, index) => {
                                     return (
 
-                                        msg.senderId != userId ?
+                                        msg.senderId !== userId ?
                                             <div key={index} className='chat-message-container message-sent'>
 
                                                 <div className='chat-message-profilePic'>
-                                                    <UserPP profilePic={`${serverConfig.SERVER_URL}image/uploads/${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
+                                                    <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
                                                 </div>
                                                 <div className='chat-message'> {msg.message} </div>
                                                 <div className='chat-message-options'>
@@ -211,7 +226,7 @@ const Chat = ({ socket }) => {
 
                 </div>
 
-                <div className="chat-footer">
+                <div ref={chatFooter} className="chat-footer">
                     <div className="new-message-container">
 
                         <div className='chat-new-attachment'>

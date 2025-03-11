@@ -1,6 +1,5 @@
 import React, { Fragment, useState } from 'react';
 import $ from 'jquery'
-import serverConfig from '../../config.json'
 import { Link } from 'react-router-dom';
 import api from '../../api/api';
 import { useSelector } from 'react-redux';

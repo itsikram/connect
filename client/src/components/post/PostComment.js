@@ -3,7 +3,6 @@ import $ from 'jquery'
 import UserPP from '../UserPP';
 import api from '../../api/api';
 import Moment from 'react-moment';
-import serverConfig from '../../config.json'
 import { Link } from 'react-router-dom';
 
 const PostComment = (props) => {
@@ -149,7 +148,7 @@ const PostComment = (props) => {
                                             <div className="comment-attachment-preview">
                                                         {
                                                             commentData.attachment &&
-                                                            <img src={URL.createObjectURL(commentData.attachment)}></img> 
+                                                            <img alt='comment attachment' src={URL.createObjectURL(commentData.attachment)}></img> 
                                                         }
                                             </div>
         </Fragment>

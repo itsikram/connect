@@ -1,5 +1,5 @@
 import api from "../api/api";
-import {createStore, applyMiddleware,compose} from 'redux'
+import {createStore, applyMiddleware,compose,combineReducers} from 'redux'
 import thunk from "redux-thunk";
 
 //constants
@@ -8,13 +8,24 @@ const GET_USER_REQUEST = 'GET_USER_REQUEST'
 const GET_USER_SUCCSESS ="GET_USER_SUCCSESS"
 const GET_USER_FAILED = 'GET_USER_FAILED'
 
+const SET_HEADER_HEIGHT = "SET_HEADER_HEIGHT"
+
 // user actions
 
 const initialState = () => {
     return {
         isLoading: false,
         user: {},
-        error: {}
+        error: {},
+        headerHeight: null,
+    }
+}
+
+
+const setHeaderHeight = (headerHeight) => {
+    return {
+        type: SET_HEADER_HEIGHT,
+        payload: headerHeight,
     }
 }
 
@@ -68,9 +79,22 @@ const userReducer = (state=initialState,action) => {
     }
 }
 
+const optionReducer = (state=initialState,action) => {
+    switch (action.type) {
+        case SET_HEADER_HEIGHT:
+            return {
+                ...state,
+                headerHeight: action.payload.headerHeight,
+            };
+
+        default:
+            return state;
+    }
+}
+
 const ReactReduxDevTools = window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__();
 
-const store = createStore(userReducer,compose(applyMiddleware(thunk),ReactReduxDevTools))
+const store = createStore(combineReducers(userReducer,optionReducer),compose(applyMiddleware(thunk),ReactReduxDevTools))
 
 store.subscribe = () => {
     console.log(store.getState())

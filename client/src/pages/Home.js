@@ -10,7 +10,6 @@ import api from "../api/api";
 
 let Home = () => {
 
-
     // setting state to store window width
 
     let [match,setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)
@@ -26,9 +25,6 @@ let Home = () => {
         window.matchMedia("(max-width:768px)").addEventListener('change',(e) =>{
             setMatch(e.matches)
         })
-
-
-
 
 
         // fetching newsfeed posts

@@ -1,10 +1,11 @@
 
 require('dotenv').config();
 
+const path = require("path");
 const express = require('express')
 const PORT = process.env.PORT || 4000;
 const mongoose = require('mongoose')
-const MONGODB_URI = process.env.MONGODB_URI
+const MONGODB_URI = process.env.NODE_ENV == 'production' ?  process.env.PROD_MONGODB_URI : process.env.DEV_MONGODB_URI;
 mongoose.set('strictQuery', false)
 const socketIo = require('socket.io');
 
@@ -35,7 +36,6 @@ const MessageSchema = new mongoose.Schema({
 const Message = mongoose.model('Message', MessageSchema);
 
 
-
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
@@ -43,7 +43,6 @@ io.on('connection', (socket) => {
   socket.on('startChat', async ({ user1, user2 }) => {
     const room = [user1, user2].sort().join('_'); // Ensures consistent room ID
     socket.join(room);
-    console.log(`${user1} and ${user2} joined room: ${room}`);
 
     const messages = await Message.find({ $or: [{ senderId: user1,receiverId: user2 }, { senderId: user2,receiverId: user1 }] }).sort({ timestamp: 1 }).limit(50);
     socket.emit('previousMessages', messages);
@@ -90,17 +89,14 @@ middilewares(app)
 routes(app)
 
 
-
 app.get('/', async (req, res) => {
 
-  res.json({
-    project: 'ics api'
-  })
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 })
 
+// Root route should serve index.html
 
-
-mongoose.connect(MONGODB_URI, {}).then(e => {
+mongoose.connect(process.env.PROD_MONGODB_URI, {}).then(e => {
 
   httpServer.listen(PORT, (e) => {
     console.log(`Server is running on port ${PORT}`)

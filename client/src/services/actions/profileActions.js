@@ -1,5 +1,4 @@
 import {GET_PROFILE_REQ,GET_PROFILE_FAILED,GET_PROFILE_SUCCESS} from '../constants/profileConsts'
-import serverConfig from '../../config.json'
 
 export const getPorfileReq = () => {
     return {
@@ -8,9 +7,9 @@ export const getPorfileReq = () => {
 }
 export const getProfileSuccess = (profileData) => {
     let profilePicUrl = profileData.profilePic
-    let coverPicUrl = `${serverConfig.SERVER_URL}image/coverPic/${profileData.coverPic}`
+    let coverPicUrl = profileData.coverPic
 
-    let profile = {...profileData, coverPic: coverPicUrl}
+    let profile = {...profileData, coverPic: coverPicUrl,profilePic: profilePicUrl}
     return {
         type: GET_PROFILE_SUCCESS,
         payload: profile

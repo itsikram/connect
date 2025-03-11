@@ -4,7 +4,6 @@ import {Button,ButtonGroup} from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useSelector,useDispatch } from 'react-redux';
 import UserPP from '../../components/UserPP';
-import serverConfig from '../../config.json'
 
 let LeftSidebar = () => {
     let profileData = useSelector(state => state.profile)

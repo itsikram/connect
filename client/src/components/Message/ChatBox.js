@@ -4,7 +4,6 @@ import $ from 'jquery'
 import {io} from 'socket.io-client'
 import { useParams } from 'react-router-dom';
 import api from '../../api/api';
-import serverConfig from '../../config.json'
 
 const URL = serverConfig
 const socket = io.connect(URL)

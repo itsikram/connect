@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import api from '../../api/api';
 import $ from 'jquery'
 import { useSelector } from 'react-redux';
-import serverConfig from '../../config.json'
 
 const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
