@@ -38,6 +38,14 @@ const Message = mongoose.model('Message', MessageSchema);
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
+  let rooms = [socket.handshake.query.profile]
+  let homeRoom = rooms[0]
+
+  console.log('User connected with Profile ID:', );
+
+  rooms.map(room =>{
+    socket.join(room);
+  })
 
   // Generate a unique room ID using user IDs
   socket.on('startChat', async ({ user1, user2 }) => {
@@ -62,7 +70,7 @@ io.on('connection', (socket) => {
     console.log(room, senderId, receiverId, message)
     const newMessage = new Message({ room, senderId, receiverId, message });
     await newMessage.save();
-    socket.emit('notification', 'ok')
+    io.to(receiverId).emit('notification', newMessage);
     io.to(room).emit('newMessage', newMessage);
   });
 
@@ -71,24 +79,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// io.on('connection',(socket) => {
-
-//     console.log(`User Connected ${socket.id}`)
-
-//     socket.on("join_room",(data) => {
-//         socket.join(data)
-//         console.log(`User with id: ${socket.id} Joined romm: ${data}`)
-//     })
-
-//     socket.on('send_message',(data) => {
-//         socket.to(data.room).emit("receive_message",data)
-//     })
-
-
-//     socket.on('disconnect',() => {
-//         console.log(`User Disconnected ${socket.id}`)
-//     })
-// })
 
 
 // Setting up middilewares

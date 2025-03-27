@@ -22,7 +22,7 @@ let StoryCard = (props) => {
             }
         })
         
-    }, [])
+    })
     return (
         <div className={`nf-story`}>
             <Link to={`/story/${story._id}`}>

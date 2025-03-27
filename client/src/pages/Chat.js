@@ -44,8 +44,9 @@ const Chat = ({ socket }) => {
         setmInputWith(messageInputWidth)
         setTimeout(() => {
             let lastMessageItem = document.querySelector('#chatMessageList .chat-message-container:last-child')
-            if(lastMessageItem) {
+            if (lastMessageItem) {
                 lastMessageItem.scrollIntoView({ behavior: "smooth" });
+                lastMessageItem.scrollTo({ top: '100%', behavior: 'smooth' });
 
             }
         }, 500);
@@ -57,6 +58,15 @@ const Chat = ({ socket }) => {
 
         socket.on('previousMessages', (msgs) => {
             setMessages(msgs);
+            setTimeout(() => {
+                let lastMessageItem = document.querySelector('#chatMessageList .chat-message-container:last-child')
+                if (lastMessageItem) {
+
+                lastMessageItem.scrollIntoView({ behavior: "smooth" });
+
+                lastMessageItem.scrollTo({ bottom: 0, behavior: 'smooth' });
+                }
+            },500)
         });
 
         socket.on('roomJoined', ({ room }) => {
@@ -64,7 +74,17 @@ const Chat = ({ socket }) => {
         });
         socket.on('newMessage', (msg) => {
             setMessages((prevMessages) => [...prevMessages, msg]);
-            document.querySelector('#chatMessageList .chat-message-container:last-child').scrollIntoView({ behavior: "smooth" });
+                setTimeout(() => {
+                    let lastMessageItem = document.querySelector('#chatMessageList .chat-message-container:last-child')
+                    if (lastMessageItem) {
+
+                    lastMessageItem.scrollIntoView({ behavior: "smooth" });
+
+                    lastMessageItem.scrollTo({ bottom: 0, behavior: 'smooth' });
+                    }
+                },500)
+
+            
         });
 
         return () => {
@@ -119,8 +139,10 @@ const Chat = ({ socket }) => {
         $(`.message-id-${messageId}`).remove();
     })
 
+    socket.off('deleteMessage')
 
-    let handleLikeMessage  = async (e) => {
+
+    let handleLikeMessage = async (e) => {
 
     }
     let handleShareMessage = async (e) => {
@@ -149,7 +171,7 @@ const Chat = ({ socket }) => {
 
     const cmlStyles = {
         height: `${listContainerHeight + chatHeaderHeight}px`,
-        maxHeight: `${listContainerHeight + chatHeaderHeight}px`,
+        maxHeight: `${listContainerHeight + chatHeaderHeight + 50 }px`,
         paddingTop: `${chatHeaderHeight}px`,
         overflowY: 'scroll'
     }
@@ -157,11 +179,11 @@ const Chat = ({ socket }) => {
     let getMessageTime = (timestamp) => {
         const inputDate = moment(timestamp);
         const now = moment();
-    
-    
+
+
         // Format based on condition
         const formattedTime = inputDate.format("DD/MM/YY hh:mm A")
-    
+
         return formattedTime;
     }
 

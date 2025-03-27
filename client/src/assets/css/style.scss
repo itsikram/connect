@@ -2863,7 +2863,7 @@ body {
                         border-radius: 20px;
                         color: $tc;
                         margin-right: 5px;
-                        transition: 0.3;
+                        transition: 0.35s;
                     }
                 }
 
@@ -3217,6 +3217,7 @@ body {
     #chatBox .chat-footer .new-message-container .new-message-form .new-message-input-container .new-message-input {
         min-width: 220px !important;
         margin-top: 5px;
+        transition: 0.5s;
     }
 
     .profile-info-container {

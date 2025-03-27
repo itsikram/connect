@@ -9,7 +9,8 @@ const api = axios.create({
     headers: {
         'Authorization' : `${token}`,
         'ngrok-skip-browser-warning' : true,
-        "User-Agent": "MyCustomUserAgent"
+        "User-Agent": "MyCustomUserAgent",
+        "Access-Control-Allow-Origin": "*",
         
     }
 })
