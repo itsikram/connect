@@ -9,7 +9,6 @@ let FriendRequests = () => {
 
     useEffect(() => {
         api.get('/friend/getRequest/').then((res)=> {
-            console.log(res.data)
             setReqData(res.data)
         }).catch(e => {
             console.log(e)

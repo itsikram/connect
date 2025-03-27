@@ -35,8 +35,6 @@ let SignUP = () => {
         try {
 
             api.post('/auth/signup',inputs).then(res=> {
-
-                console.log(res.data)
         
                     if(res.status === 201) {
                         $('#signup-form input').val("");
@@ -62,7 +60,10 @@ let SignUP = () => {
     return(
         <Fragment>
             <div className="signup-container">
+
                     <div id="signup-form">
+                    <h1 className="text-center login-heading primary-color mb-3 fw-bold">ICS - Signup</h1>
+
                             <div className="forms-container">
                                 <div className="full-name">
                                     <input onChange={handleChange} name="firstName" className="first-name field" type="text" placeholder="First Name" />

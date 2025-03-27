@@ -106,7 +106,6 @@ const fetchData = () => {
         dispatch(getUserRequest())
 
         api.get('/profile').then(res => {
-            console.log(res.data)
             dispatch(getUserSuccsess(res.data.user))
         }).catch(error => {
             dispatch(getUserFailed(error.message))

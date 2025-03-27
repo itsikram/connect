@@ -1,19 +1,18 @@
-import React,{Fragment,useState} from "react";
+import React, { Fragment, useState } from "react";
 import SignUP from "./SignUp";
 import $ from 'jquery'
 import api from '../api/api'
-import {useDispatch,useSelector} from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 let Login = (props) => {
 
-    //let isLoggedIn = useSelector((state) => console.log(state))
-var dispatch = useDispatch();
+    var dispatch = useDispatch();
     let showSignup = (e) => {
         let target = e.currentTarget;
         $(target).parents('.login-container').siblings('.signup-container').fadeIn('fast')
 
     }
 
-    let [inputs,setInputs] = useState({})
+    let [inputs, setInputs] = useState({})
 
     let handleChange = (e) => {
         let name = e.target.name;
@@ -28,48 +27,53 @@ var dispatch = useDispatch();
 
     }
 
-    let [error,setError] = useState({})
+    let [error, setError] = useState({})
 
-    let handleSubmit = async(e) => {
+    let handleSubmit = async (e) => {
         try {
 
-            let res = await api.post('/auth/login',inputs)
+            let res = await api.post('/auth/login', inputs)
 
-            if(res.status === 202 ) {
+            if (res.status === 202) {
                 let user = JSON.stringify(res.data);
-                localStorage.setItem('user',user)
+                localStorage.setItem('user', user)
                 window.location.reload()
 
 
-            }else {
+            } else {
                 alert(res.data.message)
             }
-            
+
         } catch (error) {
             console.log(error)
         }
-        
-        
+
+
 
     }
 
-    
 
 
-    return(
+
+    return (
         <Fragment>
             <div id="login">
                 <div className="login-container">
+                    <div className="logo-container text-center">
+                        <img src="https://programmerikram.com/wp-content/uploads/2025/03/ics_logo-1.png" alt="Ics Logo" />
+                    </div>
                     <div id="login-form">
-                            <div className="forms-container">
-                                <input onChange={handleChange} className="email" name="email" type="text" placeholder="Email address or phone number" />
-                                <input onChange={handleChange} type="password" name="password" className="password" placeholder="Password"/>
-                                <p id="loginErrorMsg" style={{color: 'red'}}>{error.message}</p>
-                                <input type="submit" onClick={handleSubmit} className="submit-button" value="Login"/>
-                                <a href="#" className="forgot-password">
-                                    Forgotten password? {window.location.hostname}
-                                </a>
-                            </div>
+                        <h1 className="text-center login-heading primary-color mb-3 fw-bold">ICS - Login</h1>
+
+                        <div className="forms-container">
+                            <input onChange={handleChange} className="email" name="email" type="text" placeholder="Email address or phone number" />
+                            <input onChange={handleChange} type="password" name="password" className="password" placeholder="Password" />
+                            <p id="loginErrorMsg" style={{ color: 'red' }}>{error.message}</p>
+                            <input type="submit" onClick={handleSubmit} className="submit-button" value="Login" />
+                            <a href="javascript:void(0)" className="forgot-password">
+                                Forgotten password? {window.location.hostname}
+                            </a>
+                        </div>
 
                         <div onClick={showSignup} className="create-account-button">
                             Create new account <i className="fa fa-arrow-alt-circle-right"></i>

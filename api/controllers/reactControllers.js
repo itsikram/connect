@@ -7,6 +7,16 @@ exports.postAddReact = async(req,res,next) => {
     let profile = req.profile._id
     let {type,post} = req.body
 
+    await Post.findOneAndUpdate({
+        _id: post
+    },{
+        $pull: {
+            reacts: {
+                profile: profile,
+            }
+        }
+    },{new: true})
+
     let addReact = await Post.findOneAndUpdate({
         _id: post
     },{
@@ -18,7 +28,6 @@ exports.postAddReact = async(req,res,next) => {
         }
     
     },{new: true})
-
 
     res.json(addReact)
         
@@ -47,5 +56,12 @@ exports.postRemoveReact = async(req,res,next) => {
     } catch (error) {
         next(error)
     }
+}
+
+exports.addStoryReact = async (req,res,next) => {
+    
+}
+exports.deleteStoryReact = async (req,res,next) => {
+
 }
 

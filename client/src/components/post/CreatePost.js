@@ -9,6 +9,8 @@ let CreatePost = () => {
 
 
     let profileData = useSelector(state => state.profile)
+    let profileId = profileData._id
+
 
     // setting visibilty state for post modal container
     let [isPostModal, setPostModal] = useState(false)
@@ -26,6 +28,30 @@ let CreatePost = () => {
         photos: null,
         urls: null
     })
+
+    const [hasStory, setHasStory] = useState(false);
+
+    useEffect(() => {
+        api.get('/profile/hasStory', {
+            params: {
+                profileId
+            }
+        }).then(res => {
+            if (res.status == 200) {
+                let storyStatus = res.data.hasStory
+
+                if (storyStatus == 'yes') {
+                    setHasStory(true)
+
+                }
+                if (storyStatus == 'no') {
+                    setHasStory(false)
+                }
+
+            }
+        })
+
+    },[hasStory])
 
 
     const useMediaQuery = (query) => {
@@ -67,7 +93,6 @@ let CreatePost = () => {
                 [name]: value,
             }
         })
-        console.log(postData)
 
 
     }
@@ -93,7 +118,6 @@ let CreatePost = () => {
         })
     }
 
-
     // handling post submit 
 
     let preventDefault = (e) => {
@@ -114,10 +138,10 @@ let CreatePost = () => {
                     'content-type': 'multipart/form-data'
                 }
             })
-            
+            console.log(uploadImageRes)
 
             if (uploadImageRes.status == 200) {
-                var uploadedImageUrl = uploadImageRes.data.url;
+                var uploadedImageUrl = uploadImageRes.data.secure_url;
                 postFormData.append('photo_url', uploadedImageUrl)
 
                 let res = await api.post('/post/create/', postFormData, {
@@ -125,11 +149,11 @@ let CreatePost = () => {
                         'content-type': 'multipart/form-data'
                     }
                 })
-    
+
                 if (res.status === 200) {
                     setPostModal(false)
                 }
-    
+
 
             }
 
@@ -146,7 +170,7 @@ let CreatePost = () => {
             <div className="nf-create-post">
                 <div className="top">
                     <div className="profile-pic">
-                        <UserPP profilePic={profileData.profilePic} profile={profileData._id}></UserPP>
+                        <UserPP profilePic={profileData.profilePic} hasStory={hasStory} profile={profileData._id}></UserPP>
                     </div>
                     <div onClick={handleCpFieldClick} className="cp-field">
                         <input readOnly placeholder={textInputPlaceHoder} className="cp-input" />
@@ -171,7 +195,7 @@ let CreatePost = () => {
                     id="create-post-modal"
                     onRequestClose={closeCreatePostModal}
                     title="Create A Post"
-                    style={{ width: isMobile ? '95%' :'600px' }}
+                    style={{ width: isMobile ? '95%' : '600px' }}
                 >
                     <div className="modal-header">
                         <div className="modal-title">
@@ -185,7 +209,7 @@ let CreatePost = () => {
                         <div className="cp-modal-container">
                             <div className="cpm-header">
                                 <div className="cpm-profilePic">
-                                    <UserPP profilePic={profileData.profilePic} profile={profileData._id}></UserPP>
+                                    <UserPP profilePic={profileData.profilePic} hasStory={hasStory} profile={profileData._id}></UserPP>
                                 </div>
                                 <div className="cpm-username">
                                     <h3>{profileName}</h3>
@@ -193,13 +217,13 @@ let CreatePost = () => {
                             </div>
                             <form className="cpm-form" onSubmit={preventDefault}>
                                 <div className="cpm-form-text">
-                                    <textarea name="caption" onChange={handleCaptionField} placeholder={textInputPlaceHoder} className="cpm-form-text-input">
+                                    <textarea name="caption" onChange={handleCaptionField} placeholder={textInputPlaceHoder} className="cpm-form-text-input" value={postData.caption}>
 
                                     </textarea>
                                 </div>
                                 <div className="cpm-attachment-control">
                                     <div className="cpm-attachment-preview">
-                                        <img src={postData.urls && postData.urls} alt="attachment preview"/>
+                                        <img src={postData.urls && postData.urls} alt="attachment preview" />
                                     </div>
                                     <div className="cpm-attachment-upload">
                                         <div className="cpm-attachment-upload-overlay">
@@ -224,7 +248,7 @@ let CreatePost = () => {
 
                                 </div>
                                 <div className="cpm-submit-button">
-                                    <button onClick={handlePostSubmit} type="submit"> Post </button>
+                                    <button onClick={handlePostSubmit} className="button" type="submit"> Post </button>
                                 </div>
                             </form>
                         </div>

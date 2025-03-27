@@ -20,8 +20,6 @@ const Message = () => {
 
     var isMobile = useMediaQuery("(max-width: 768px)");
 
-
-
     return (
         <Fragment>
             <div id={"message"}>

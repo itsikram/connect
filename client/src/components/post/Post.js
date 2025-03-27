@@ -1,16 +1,18 @@
-import React, {  useState } from "react";
+import React, { useState, useEffect } from "react";
 import $ from 'jquery'
 import { useSelector } from 'react-redux'
 import UserPP from "../UserPP";
 import { Link } from "react-router-dom";
-import Rlove from '../../assets/images/reacts/reactLove.svg';
-import Rhaha from '../../assets/images/reacts/reactHaha.svg';
+
 import Momemt from 'react-moment'
 import api from "../../api/api";
 import PostComment from "./PostComment";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS
 
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
-
+const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
+const Rhaha = 'https://programmerikram.com/wp-content/uploads/2025/03/haha-icon.svg';
 const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
 
@@ -19,12 +21,17 @@ let Post = (props) => {
     let myProfile = useSelector(state => state.profile)
     let myProfileId = myProfile._id;
     let postAuthorProfileId = post.author._id
-    let isAuth = myProfileId === postAuthorProfileId
-    let [totalLikes, setTotalLikes] = useState(post.reacts.length)
-
+    let [totalReacts, setTotalReacts] = useState(post.reacts.length)
+    let [totalShares, setTotalShares] = useState(post.shares.length)
+    let [totalComments, setTotalComments] = useState(post.comments.length)
+    let [reactType, setReactType] = useState(false);
+    let [isDeletedPost, setIsDeletedPost] = useState(false);
+    let [placedReacts, setPlacedReacts] = useState([]);
     const [imageExists, setImageExists] = useState(null);
     const [thumbExists, setThumbExists] = useState(null);
 
+
+    var isAuth = myProfileId === postAuthorProfileId ? true : false;
     var pp_url = props.profilePic;
     const checkImage = (url) => {
         const img = new Image();
@@ -34,73 +41,174 @@ let Post = (props) => {
         img.onerror = () => setImageExists(false);
     };
 
+    
+
+    useEffect(() => {
+        let storedReacts = [];
+        post.reacts.map(react => {
+            if (react.profile) {
+
+                switch (react.type) {
+                    case 'like':
+
+                        if (!storedReacts.includes('like')) {
+                            storedReacts.push('like')
+                        }
+
+                        break;
+                    case 'love':
+                        if (!storedReacts.includes('love')) {
+                            storedReacts.push('love')
+                        }
+                        break;
+                    case 'haha':
+                        if (!storedReacts.includes('haha')) {
+                            storedReacts.push('haha')
+                        }
+                        break;
+                }
+                if (react.profile === myProfileId) {
+                    setReactType(react.type)
+                }
+            }
+
+        })
+
+        setPlacedReacts(storedReacts);
+
+    }, [])
+
     let postPhoto = post.photos
-
-
     const checkThumbImage = (url) => {
         const img = new Image();
         img.src = url;
 
         img.onload = () => setThumbExists(true);
         img.onerror = () => setThumbExists(false);
-    }; 
-    
+    };
+
     checkThumbImage(postPhoto)
-
-
-    
     checkImage(pp_url);
 
-    if(!imageExists) {
+    if (!imageExists) {
         pp_url = default_pp_src;
     }
-
     let type = post.type || 'post'
-    let isLiked = (post, profile) => {
-        let isLiked = false;
-        post.reacts.map(react => {
-            //console.log(react.profile,profile)
-            if (react.profile === profile) {
-                isLiked = true
-            } else {
-                isLiked = false
-            }
-        })
-        return isLiked
+
+
+    let hideThisPost = async(e) => {
+        let target = e.currentTarget;
+
+        if(isAuth) {
+            confirmAlert({
+                title: "Confirm Action",
+                message: "Are you sure you want to delete this post?",
+                buttons: [
+                  {
+                    label: "Yes",
+                    onClick: async() => {
+                        let deleteRes = await api.post('/post/delete', { postId: post._id,authorId: post.author._id })
+                        if (deleteRes.status === 200) {
+                            $(target).parents('.nf-post').css({
+                                'min-height' : '0px',
+                                'padding' : '10px'
+                        });
+                            $(target).parents('.nf-post').html('<p class="fs-6 mb-0 text-center text-danger">'+deleteRes.data.message+'</p>');
+                        } else {
+                            alert('Failed to delete post')
+                        }
+                    },
+                  },
+                  {
+                    label: "No",
+                    onClick: () => {},
+                  },
+                ],
+              });
+
+
+        }else {
+            $(target).parents('.nf-post').hide();
+        }
     }
 
-
-    let hideThisPost = (e) => {
-        let target = e.currentTarget;
-        $(target).parents('.nf-post').hide();
-    }
-
-    let likeOnClick = async (e) => {
-
-        let target = e.currentTarget;
-        if ($(target).hasClass('liked')) {
-            $(target).find('.icon i').removeClass('fas')
-            $(target).find('.icon i').addClass('far')
-            let res = await api.post('/react/removeReact', { post: post._id })
-
-            if (res.status === 200) {
-                setTotalLikes(state => state - 1)
-
-                $(target).removeClass('liked')
-            }
-
+    let removeReact = async (target = null) => {
+        let res = await api.post('/react/removeReact', { post: post._id })
+        if (res.status === 200) {
+            setTotalReacts(res.data.reacts.length)
+            
+            setReactType('')
+            return true;
         } else {
-            $(target).find('.icon i').removeClass('far')
-            $(target).find('.icon i').addClass('fas')
+            return false;
+        }
+    }
+    let placeReact = async (type, target = null) => {
+        let placeRes = await api.post('/react/addReact', { type, post: post._id })
+        if (placeRes.status === 200) {
+            setTotalReacts(placeRes.data.reacts.length)
+            setPlacedReacts([...placedReacts,type])
+            setReactType(type)
 
-            let res = await api.post('/react/addReact', { type: 'like', post: post._id })
-            if (res.status === 200) {
-                $(target).addClass('liked')
-                setTotalLikes(state => state + 1)
-            }
+            return true;
+        } else {
+            return false;
         }
 
     }
+
+    let likeBtnOnClick = async (e) => {
+        let target = e.currentTarget;
+        if ($(target).parent().hasClass('reacted')) {
+            removeReact()
+            $(target).parent().removeClass('reacted')
+
+        } else {
+            placeReact('like', target)
+            $(target).parent().addClass('reacted')
+        }
+    }
+
+    let likeOnClick = async (e) => {
+        let target = e.currentTarget;
+        if ($(target).hasClass('reacted')) {
+            removeReact()
+            $(target).removeClass('reacted')
+
+        } else {
+            placeReact('like', target)
+            $(target).addClass('reacted')
+            $(e.currentTarget).siblings().removeClass('reacted')
+        }
+    }
+
+    let loveOnClick = (e) => {
+        if ($(e.currentTarget).hasClass('reacted')) {
+            removeReact();
+            $(e.currentTarget).removeClass('reacted')
+
+        } else {
+            placeReact('love')
+            $(e.currentTarget).siblings().removeClass('reacted')
+
+            $(e.currentTarget).addClass('reacted')
+
+
+        }
+    }
+
+    let hahaOnClick = (e) => {
+        if ($(e.currentTarget).hasClass('reacted')) {
+            removeReact();
+            $(e.currentTarget).removeClass('reacted')
+        } else {
+            placeReact('haha')
+            $(e.currentTarget).siblings().removeClass('reacted')
+
+            $(e.currentTarget).addClass('reacted')
+        }
+    }
+
     let likeMouseOver = e => {
 
     }
@@ -139,7 +247,7 @@ let Post = (props) => {
                 <div className="author-info">
                     <div className="left">
                         <div className="author-pp">
-                            <UserPP profilePic={postAuthorPP} profile={authProfileId} active={true}></UserPP>
+                            <UserPP profilePic={postAuthorPP} profile={post.author._id} active={true}></UserPP>
                         </div>
                         <div className="post-nd-container">
                             <Link to={'/' + post.author._id}>
@@ -154,7 +262,10 @@ let Post = (props) => {
 
                     </div>
                     <div className="right">
-                        <button className="post-three-dot"><i className="far fa-ellipsis-h"></i></button>
+                        {
+                            isAuth && <button className="post-three-dot"><i className="far fa-ellipsis-h"></i></button>
+                        }
+                        
                         <button onClick={hideThisPost.bind(this)} className="post-close"> <i className="far fa-times"></i></button>
                     </div>
                 </div>
@@ -166,35 +277,44 @@ let Post = (props) => {
                 </p>
                 {
                     (thumbExists &&
-                    <div className="attachment">
-                        <img src={postPhoto} alt="post" />
-                    </div>
+                        <div className="attachment">
+                            <img src={postPhoto} alt="post" />
+                        </div>
 
-                    ||
+                        ||
 
-                    <p className="fs-5 text-center text-danger">Post image not available</p>)
+                        <p className="fs-5 text-center text-danger">Post image not available</p>)
                 }
 
             </div>
             <div className="footer">
                 <div className="react-count">
                     <div className="reacts">
-                        <div className="react love d-none">
-                            <img src={Rlove} alt="love" />
-                        </div>
-                        <div className="react like">
-                            <img src={Rlike} alt="like" />
-                        </div>
-                        <div className="react haha d-none">
-                            <img src={Rhaha} alt="haha" />
-                        </div>
+
+
+                        {
+                            placedReacts.includes('like') ? <div className="react"> <img src={Rlike} alt="like" />  </div>: <span></span>
+
+                        }
+                        {
+                            placedReacts.includes('love') ? <div className="react"> <img src={Rlove} alt="love" /> </div>: <span></span>
+
+                        }
+                        {
+                            placedReacts.includes('haha') ? <div className="react"> <img src={Rhaha} alt="love" /> </div>: <span></span>
+
+                        }
+
+
                         <span className="text">
-                            {post.reacts && totalLikes} Likes
+                            {post.reacts && totalReacts} {totalReacts > 1 ? 'Reacts' : 'React'}
                         </span>
                     </div>
                     <div className="comment-share">
                         <div className="comment">
-                            <div className="text">6K</div>
+                            <div className="text">{post.comments && totalComments}
+
+                            </div>
                             <div className="icon">
                                 <i className="far fa-comment-alt"></i>
                             </div>
@@ -202,7 +322,7 @@ let Post = (props) => {
                         </div>
                         <div className="shares">
                             <div className="text">
-                                877
+                                {post.shares && totalShares}
                             </div>
                             <div className="icon">
                                 <i className="fa fa-share"></i>
@@ -215,11 +335,32 @@ let Post = (props) => {
                 </div>
                 <div className="like-comment-share">
                     <div className="buttons-container">
-                        <div onClick={likeOnClick} onMouseOver={likeMouseOver} className={`like button ${isLiked(post, myProfileId) ? 'liked' : ''}`}>
-                            <span className="icon">
-                                <i className="far fa-thumbs-up"></i>
-                            </span>
-                            <span className="text">Like</span>
+                        <div className={`react-buttons button ${reactType ? 'reacted' : ''}`}>
+                            <div onClick={likeBtnOnClick} onMouseOver={likeMouseOver} className={`react-like ${reactType == true ? 'reacted' : ''}`}>
+                                <span className="react-icon" datatype={reactType || ''}>
+                                    {
+                                        reactType == 'haha' ? <img src={Rhaha} alt="haha" /> : <span></span>
+                                    }
+                                    {
+                                        reactType == 'love' ? <img src={Rlove} alt="love" /> : <span></span> 
+                                    }
+                                    {
+                                        reactType == false || reactType == 'like' ? <img src={Rlike} alt="like" /> : <span></span> 
+                                    }
+                                </span>
+                                <span className="text text-capitalize">{reactType ? reactType : 'like'}</span>
+                            </div>
+                            <div className="post-react-container">
+                                <div className={`react react-like ${reactType == 'like' ? 'reacted' : ''}`} onClick={likeOnClick} id="postReactLike" title="Like">
+                                    <img src={Rlike} alt="love" />
+                                </div>
+                                <div className={`react react-love ${reactType == 'love' ? 'reacted' : ''}`} onClick={loveOnClick} id="postReactLove" title="Love">
+                                    <img src={Rlove} alt="love" />
+                                </div>
+                                <div className={`react react-haha ${reactType == 'haha' ? 'reacted' : ''}`} onClick={hahaOnClick} id="postReactHaha" title="Haha">
+                                    <img src={Rhaha} alt="haha" />
+                                </div>
+                            </div>
                         </div>
                         <div onClick={commentOnClick} className="comment button">
                             <span className="icon">
@@ -235,7 +376,7 @@ let Post = (props) => {
                         </div>
                     </div>
                 </div>
-                <PostComment post={post} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>
+                <PostComment post={post} commentState={setTotalComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>
 
 
             </div>

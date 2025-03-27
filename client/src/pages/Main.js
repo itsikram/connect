@@ -10,6 +10,8 @@ import Watch from "./Watch";
 import Marketplace from './Marketplace'
 import Groups from './Groups'
 import Message from "./Message";
+import Story from "./Story";
+import SingleStory from "../components/story/SingleStory";
 
 import ProfileAbout from "../components/Profile/ProfileAbout";
 import PorfilePosts from "../components/Profile/PorfilePosts";
@@ -27,9 +29,7 @@ import { setBodyHeight,setHeaderHeight } from "../services/actions/optionAction"
 import Settings from "./Settings";
 import ProfileIkramul from "./ProfileIkramul";
 
-import { io } from 'socket.io-client';
-const socket = io.connect(process.env.REACT_APP_SERVER_ADDR)
-
+import socket from '../common/socket.js'
 
 const Main = () => {
     var dispatch = useDispatch();
@@ -38,26 +38,16 @@ const Main = () => {
 
     let userInfo = JSON.parse((localStorage.getItem('user')||'{}'))
     const profileId = userInfo.profile
-    const userId = 'lakegaleg'
     useEffect(() => {
-        if (profileId === userId) return; // Prevent self-chat
-        const newRoom = [userId, profileId].sort().join('_');
-        setRoom(newRoom);
-        socket.emit('startChat', { user1: userId, user2: profileId });
 
-        socket.on('roomJoined', ({ room }) => {
-            console.log(`Joined room from main: ${room}`);
-            localStorage.setItem('roomId', room);
-        });
-        socket.on('newMessage', (msg) => {
-            document.querySelector('#chatMessageList .chat-message-container:last-child').scrollIntoView({ behavior: "smooth" });
+        socket.on('notification', (msg) => {
             alert(msg)
-        });
+        })
 
-        return () => {
-            socket.off('newMessage');
-            socket.off('previousMessages');
-        };
+        // return () => {
+        //     socket.off('newMessage');
+        //     socket.off('previousMessages');
+        // };
     },[])
 
     dispatch(setBodyHeight(window.innerHeight));
@@ -96,18 +86,21 @@ const Main = () => {
 
                                 <Route path="/ikramul-islam/" element={<ProfileIkramul/>}></Route>
 
-
                                 <Route path="/:profile/" element={<Profile/>}>
                                     <Route index element={<PorfilePosts/>}/>
                                     <Route path="about" element={<ProfileAbout/>}/>
                                     <Route path="friends" element={<ProfileFriends/>}></Route>
+                                </Route>
+                                <Route path="/story/" element={<Story/>}>
+                                    <Route index element={<Story/>}/>
+                                    <Route path=":storyId" element={<SingleStory/>}/>
                                 </Route>
                                 <Route path="/friends/" element={<Friends/>}> 
                                     <Route index element={<FriendHome/>}></Route>
                                     <Route path="requests" element={<FriendRequests/>}></Route>
                                     <Route path="suggestions" element={<FriendSuggest/>}></Route>
 
-                                </Route>FriendHome
+                                </Route>
                                 <Route path="/watch" element={<Watch/>}> </Route>
                                 <Route path="/message" element={<Message/>}>
                                     <Route path=":profile/" element={<Profile/>}></Route>

@@ -33,7 +33,7 @@ let FriendsSuggest = () => {
             <div id="friends-container" className="mb-5" >
                 <div className="heading">
                     <h4 className="heading-title">People You May Know</h4>
-                    <a to="/friends/requests" className="view-more-btn">See All</a>
+                    {/* <a to="/friends/requests" className="view-more-btn">See All</a> */}
                 </div>
                 <div className="friend-grid-container">
                     {

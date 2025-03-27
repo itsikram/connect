@@ -73,8 +73,8 @@ let PorfilePosts = () => {
                         <p className="bio-text">
                             {bio || myProfileData.bio}
                         </p>
-                        <textarea onChange={updateBioData} className={"bio-text-textarea"}>
-                            lorem ipsum
+                        <textarea onChange={updateBioData} value={bio} className={"bio-text-textarea"}>
+                            
                         </textarea>
                         {
                             isAuth &&  <div onClick={handleEditBio} className="edit-button"> Edit bio</div>

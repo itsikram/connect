@@ -11,7 +11,6 @@ exports.uploadPost = async (req, res, next) => {
         if (error) { 
             return res.status(500).json({ error }); 
         } 
-        console.log('upload iamge',result);
         res.json(result); 
     }); 
     streamifier.createReadStream(req.file.buffer).pipe(uploadStream);

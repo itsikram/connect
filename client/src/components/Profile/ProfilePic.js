@@ -3,10 +3,11 @@ import ModalContainer from "../modal/ModalContainer";
 import AvatarEditor from "react-avatar-editor";
 import api from "../../api/api";
 import { useSelector } from "react-redux";
-
+import {useParams} from "react-router-dom"
 const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
 let ProfilePic = ({ profileData }) => {
+    let {profile} = useParams()
 
     let myProfileData = useSelector(state => state.profile)
     // handle profile pic upload
@@ -17,7 +18,17 @@ let ProfilePic = ({ profileData }) => {
     const [profileImage, setProfileimage] = useState()
 
     const [imageExists, setImageExists] = useState(null);
-
+    const [hasStory, setHasStory] = useState(false);
+    const [ppCaption, setPpCaption] = useState('');
+    useEffect(() => {
+        api.get('/profile/hasStory?profileId='+profile).then(res => {
+            if(res.status == 200) {
+                console.log(res.data)
+                setHasStory(res.data.hasStory)
+            }
+        })
+        
+    }, [profile])
     var profilePic = profileData.profilePic;
     var pp_url = profilePic;
     const checkImage = (url) => {
@@ -60,6 +71,10 @@ let ProfilePic = ({ profileData }) => {
         setIsPPViewModal(false);
     }
 
+    let handleppTextareChange = (e) => {
+        setPpCaption(e.target.value)
+    }
+
 
     let handlePPUploadSubmit = async (e) => {
         e.preventDefault()
@@ -72,7 +87,6 @@ let ProfilePic = ({ profileData }) => {
                     lastModified: new Date().getTime()
 
                 })
-                console.log(profilePicFile, profileImage)
 
                 let ppFormData = new FormData();
                 ppFormData.append('image', profilePicFile)
@@ -86,11 +100,10 @@ let ProfilePic = ({ profileData }) => {
                 if(uplaodPPRes.status === 200) {
 
                     let profilePicUrl = uplaodPPRes.data.url;
-                    console.log('pp url',profilePicUrl)
                     let PPostFormData = new FormData()
                     PPostFormData.append('profilePicUrl', profilePicUrl)
                     PPostFormData.append('type', 'profilePic')
-                    PPostFormData.append('caption', e.target.caption.value)
+                    PPostFormData.append('caption', ppCaption)
                     let res = await api.post('/profile/update/profilePic', PPostFormData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
@@ -143,7 +156,7 @@ let ProfilePic = ({ profileData }) => {
     return (
         <Fragment>
             <div className="profile-pic">
-                <div className="profilePic-container"  onClick={PPContainerClick}>
+                <div className={`profilePic-container ${hasStory =='yes' ? 'has-story' : ''}`}  onClick={PPContainerClick}>
                     <img src={pp_url} alt="Profile Pic" />
 
                 </div>
@@ -198,7 +211,7 @@ let ProfilePic = ({ profileData }) => {
                     </div>
                     <div className="modal-body">
                         <form onSubmit={handlePPUploadSubmit}>
-                            <textarea placeholder="What's in your Mind?" name='caption' className="post-caption"></textarea>
+                            <textarea onChange={handleppTextareChange.bind(this)} placeholder="What's in your Mind?" name='caption' className="post-caption" value={ppCaption}></textarea>
 
                             {
                                 profileImage && <AvatarEditor

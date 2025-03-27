@@ -44,16 +44,25 @@ io.on('connection', (socket) => {
     const room = [user1, user2].sort().join('_'); // Ensures consistent room ID
     socket.join(room);
 
-    const messages = await Message.find({ $or: [{ senderId: user1,receiverId: user2 }, { senderId: user2,receiverId: user1 }] }).sort({ timestamp: 1 }).limit(50);
+    const messages = await Message.find({ $or: [{ senderId: user1,receiverId: user2 }, { senderId: user2,receiverId: user1 }] }).sort({ timestamp: 1 }).limit(1000);
     socket.emit('previousMessages', messages);
 
     socket.emit('roomJoined', { room });
   });
 
+  socket.on('deleteMessage',async( messageId) => {
+    let deletedMessages = await Message.findOneAndDelete({_id: messageId});
+    if(deletedMessages) {
+      console.log(deletedMessages)
+      socket.emit('deleteMessage',messageId);
+    }
+  })
+
   socket.on('sendMessage', async ({ room, senderId, receiverId, message }) => {
     console.log(room, senderId, receiverId, message)
     const newMessage = new Message({ room, senderId, receiverId, message });
     await newMessage.save();
+    socket.emit('notification', 'ok')
     io.to(room).emit('newMessage', newMessage);
   });
 
@@ -90,8 +99,7 @@ routes(app)
 
 
 app.get('/', async (req, res) => {
-
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  return res.json({message: 'workign fine'});
 })
 
 // Root route should serve index.html

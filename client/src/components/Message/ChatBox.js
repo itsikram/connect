@@ -55,7 +55,6 @@ const ChatBox = (props) => {
     // handle on click send button 
 
     let sendButtonClick = async(e) => {
-        console.log(newMessage)
     }
 
 
@@ -219,7 +218,7 @@ const ChatBox = (props) => {
                             <div onClick={sendButtonClick} className='message-action-button send-message'>
                                 <i className="fas fa-paper-plane"></i>
                             </div>
-                            <div className='message-action-button send-like'>
+                            <div onClick={likeButtonClick} className='message-action-button send-like'>
                                 <i className="fas fa-thumbs-up"></i>
                             </div>
 

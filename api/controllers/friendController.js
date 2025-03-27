@@ -64,12 +64,10 @@ exports.getProfileFrnd = async(req,res,next) => {
     try {
         let profile = req.query.profile
         let isSingle = req.query.single && req.query.single
-        console.log(isSingle)
         if(isSingle){
             let friendData = await profile.findOne({_id:profile})
             return res.json(friendData)
         }
-        console.log(req.query.profile)
 
         let friendProfile = await Profile.findOne({
             _id: profile
@@ -78,7 +76,7 @@ exports.getProfileFrnd = async(req,res,next) => {
             select: ['profilePic'],
             populate: {
                 path: 'user',
-                select: ['firstName','surname']
+                select: ['firstName','surname','profile']
             }
         })
 
@@ -106,7 +104,6 @@ exports.getProfileSuggetions = async(req,res,next) => {
         }).populate('user')
 
         res.json(getFrndSuggetions)
-        console.log(getFrndSuggetions,myFriends)
         
     } catch (error) {
         next(error)

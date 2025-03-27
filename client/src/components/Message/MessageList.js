@@ -43,13 +43,12 @@ const MessageList = ()=> {
                     <ul className={"message-list"}>
                         {
                             messageList.map((messageItem,key) => {
-                                console.log('m items',messageItem)
                                 let authorFullName = messageItem.user.firstName + ' '+ messageItem.user.surname
                                 
                                 return <Link key={key} style={{textDecoration: 'none'}} to={`/message/${messageItem._id}`}>
                                 <li className={"message-list-item"}>
                                     <div className={"user-profilePic"}>
-                                        <UserPP profilePic={messageItem.profilePic} profile={profileId}></UserPP>
+                                        <UserPP profilePic={messageItem.profilePic} profile={messageItem.user.profile}></UserPP>
                                     </div>
                                     <div className={'user-data'}>
                                         <h4 className={"message-author-name"}>{authorFullName}</h4>

@@ -1,10 +1,10 @@
 import React, { useEffect, useState, Fragment } from 'react';
 import { useParams } from 'react-router-dom';
 import Chat from '../../pages/Chat';
-import { io } from 'socket.io-client'
+import socket from '../../common/socket';
 
 
-const socket = io.connect(process.env.REACT_APP_SERVER_ADDR)
+// const socket = io.connect(process.env.REACT_APP_SERVER_ADDR)
 
 
 const MessageBody = () => {

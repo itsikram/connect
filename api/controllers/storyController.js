@@ -1,27 +1,24 @@
-const Post = require('../models/Post')
+const Story = require('../models/Story')
 const Profile = require('../models/Profile')
-const User = require('../models/User')
 const Comment = require('../models/Comment')
-const jwt = require('jsonwebtoken')
 
 
-exports.createPost = async(req,res,next) => {
+
+exports.postStory = async(req,res,next) => {
     try {
         let profileId = req.profile._id
-        let caption = req.body.caption
-        let thumbnail_url = req.body.photo_url
-        let post = new Post({
-            caption,
-            photos: thumbnail_url,
+        let image = req.body.image
+        let story = new Story({
+            image,
             author: profileId
-
         })
 
-        let savedData = await post.save()
-        res.json({
-            message: 'Post Created Successfully'
-        }).status(200)
-
+        let savedData = await story.save()
+        if(savedData) {
+            res.json({
+                message: 'Story Created Successfully'
+            }).status(200)
+        }
         
     } catch (error) {
         next(error)
@@ -29,39 +26,34 @@ exports.createPost = async(req,res,next) => {
 
 }
 
-exports.deletePost = async (req,res,next) => {
+exports.deleteStory = async (req,res,next) => {
     try {
         let profileId = req.profile._id
-        let postId = req.body.postId
+        let storyId = req.body.storyId
         let authorId = req.body.authorId;
          
         if(profileId == authorId) {
-            let deletePost = await Post.findOneAndDelete({_id: postId})
+            let deleteStory = await Story.findOneAndDelete({_id: storyId})
 
-            if(deletePost) {
+            if(deleteStory) {
                 res.json({
-                    message: 'Post Deleted Successfully'
+                    message: 'Story Deleted Successfully'
                 }).status(200)
             }
-
-
         }
 
-
-
-        
     } catch (error) {
         next(error)
     }
 }
 
-exports.getMyPosts = async(req,res,next) => {
+exports.getMyStories = async(req,res,next) => {
 
     try {
         let profile_id = req.query.profile;
 
 
-        let posts = await Post.find({author: profile_id}).populate([
+        let stories = await Story.find({author: profile_id}).populate([
             {
                 path: 'author',
                 model: Profile,
@@ -83,27 +75,43 @@ exports.getMyPosts = async(req,res,next) => {
             }
         ]).sort({'createdAt': -1})
 
-        res.json(posts).status(200)
+        res.json(stories).status(200)
         
     } catch (error) {
         next(error)
     }
 }
 
-exports.getSinglePost = async(req,res,next) => {
+exports.getSingleStory = async(req,res,next) => {
     try {
 
-        let profile = req.profile;
-        let postId = ''
+        let storyId = req.query.storyId;
 
-        let post = await Post.findOne({_id: psotId}).populate({
-            path: 'author',
-            ref: 'profile',
-            populate: {
-                path: 'user',
-                ref: 'user'
+        let story = await Story.findById(storyId).populate([
+            {
+                path: 'author',
+                model: Profile,
+                populate: {
+                    path: 'user'
+                }
+            },
+            {
+                path: 'comments',
+                model: Comment,
+                populate: {
+                    path: 'author',
+                    select: ['profilePic','user'],
+                    populate: {
+                        path: 'user',
+                        select: ['firstName','surname']
+                    }
+                }
             }
-        })
+        ]).limit(10).sort({'createdAt': -1})
+        console.log('s id',storyId,story)
+
+        return res.json(story).status(200)
+
         
     } catch (error) {
         console.log(error)
@@ -111,12 +119,10 @@ exports.getSinglePost = async(req,res,next) => {
 }
 
 
-exports.getNewsFeed = async(req,res,next) => {
-    let profile = req.profile
+exports.getAllStories = async(req,res,next) => {
 
     try {
-
-        let newsFeedPosts = await Post.find().populate([
+        let newsFeedStories = await Story.find().populate([
             {
                 path: 'author',
                 model: Profile,
@@ -138,7 +144,7 @@ exports.getNewsFeed = async(req,res,next) => {
             }
         ]).limit(10).sort({'createdAt': -1})
 
-        res.json(newsFeedPosts)
+        res.json(newsFeedStories).status(200)
         
     } catch (error) {
         console.log(error)

@@ -1,7 +1,6 @@
 import React,{Fragment} from "react";
 
 let Watch = () => {
-    console.log('check log watch')
 
     return (
         <Fragment>
