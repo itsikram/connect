@@ -6,7 +6,7 @@ import api from "../../api/api";
 let StoryCard = (props) => {
     let story = props.data || {}
     let profileId = story.author._id || false;
-    const [hasStory, setHasStory] = useState(props.hasStory || false);
+    const [hasStory, setHasStory] = useState(true);
     useEffect(() => {
 
         api.get('/profile/hasStory',{params: {
@@ -21,8 +21,8 @@ let StoryCard = (props) => {
                 }
             }
         })
-        
-    })
+
+    },[])
     return (
         <div className={`nf-story`}>
             <Link to={`/story/${story._id}`}>

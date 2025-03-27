@@ -14,11 +14,12 @@ const SingleStory = (props) => {
         api.get('/story/single', { params: { storyId: storyId } }).then(res => {
             if (res.status == 200) {
                 setStory(res.data)
+                console.log(res.data)
             }
         }).catch(e => {
             console.log(e)
         })
-    }, [storyId])
+    },[storyId])
 
     useEffect(() => {
         const getAverageColor = (imageUrl) => {
@@ -57,7 +58,7 @@ const SingleStory = (props) => {
         if (story.image) {
           getAverageColor(story.image);
         }
-      }, [story]);
+      }, [storyId]);
       console.log(storyBg)
 
     return (
@@ -65,7 +66,8 @@ const SingleStory = (props) => {
             <div className='single-story-container'>
                 <div className='single-story' style={{ background: storyBg }}>
                     <div className='single-story-pp-container'>
-                        {/* <UserPP profilePic={story?.author.profilePic} hasStory={false} ></UserPP> */}
+                        {story.author && (<UserPP profilePic={story.author.profilePic} profile={story.author} hasStory={false} ></UserPP>)
+                    }
                     </div>
                     <div className='single-story-image-container' style={{ background: `url(${story.image})` }} >
                          {/* <img src={story.image} alt='Story Image' className='single-story-image' />  */}

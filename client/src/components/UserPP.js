@@ -6,31 +6,8 @@ const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/d
 let UserPP = (props) => {
 
     const [imageExists, setImageExists] = useState(null);
-    const [hasStory, setHasStory] = useState(false);
+    const [hasStory, setHasStory] = useState(props.hasStory);
 
-    useEffect(() => {
-        if(props.hasStory == true) {
-            return setHasStory(true)
-        }
-        // if(props.checkStory == 'no' && props.hasStory == false) {
-        //     api.get('/profile/hasStory',{params: {
-        //         profileId
-        //     }}).then(res => {
-        //         if(res.status == 200) {
-        //             let storyStatus = res.data.hasStory
-                    
-        //             if(storyStatus == 'yes') {
-        //                 setHasStory(true)
-    
-        //             }
-        //             if(storyStatus == 'no') {
-        //                 setHasStory(false)
-        //             }
-    
-        //         }
-        //     })
-        // }        
-    })
     var profileId = props.profile && props.profile;
     var pp_url = props.profilePic;
     const checkImage = (url) => {

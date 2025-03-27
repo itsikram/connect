@@ -5,7 +5,7 @@ import StoryLists from "../components/story/StoryLists";
 import SingleStory from "../components/story/SingleStory";
 import api from "../api/api";
 import $ from 'jquery'
-import { useParams } from "react-router-dom";
+import { useParams , useNavigate } from "react-router-dom";
 
 let Story = () => {
 
@@ -13,16 +13,8 @@ let Story = () => {
     // setting state to store posts data
     let [stories, setStories] = useState([])
     let storyContainer = useRef()
-    function scrollLeft(e) {
-        storyContainer.current.scrollBy({ left: -300, behavior: 'smooth' })
-
-    }
-
-    function scrollRight(e) {
-        storyContainer.current.scrollBy({ left: 300, behavior: 'smooth' })
-    }
     let [match, setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)
-
+    const navigate = useNavigate();
     useEffect(() => {
         // window width 
         window.matchMedia("(max-width:768px)").addEventListener('change', (e) => {
@@ -39,6 +31,18 @@ let Story = () => {
 
     }, [storyId])
 
+    function handleNextClick(e) {
+        const currentIndex = stories.findIndex( story => story._id === storyId)
+        const nextStoryId = stories[currentIndex + 1]._id
+        navigate(nextStoryId)
+
+    }
+
+    function handlePrevClick(e) {
+        storyContainer.current.scrollBy({ left: 300, behavior: 'smooth' })
+    }
+
+    console.log(stories)
     return (
         <Fragment>
                 <Container fluid className="story-container py-3">
@@ -53,10 +57,10 @@ let Story = () => {
 
                                 <SingleStory></SingleStory>
 
-                                    <div className="nf-story-arrow-left" onClick={scrollLeft.bind(this)} >
+                                    <div className="nf-story-arrow-left" onClick={handlePrevClick.bind(this)} >
                                         <i className="fa fa-chevron-left"></i>
                                     </div>
-                                    <div className="nf-story-arrow-right" onClick={scrollRight.bind(this)} >
+                                    <div className="nf-story-arrow-right" onClick={handleNextClick.bind(this)} >
                                         <i className="fa fa-chevron-right"></i>
                                     </div>
 
