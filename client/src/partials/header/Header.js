@@ -89,7 +89,7 @@ const Header = ()=> {
                         
                         {match && <MenuButton/>}
                         
-                        <MegaMC className="header-mm-dropdown" style={{top: '100%',left: 0,width: '300px',backgroundColor: '#000'}}>
+                        <MegaMC className="header-mm-dropdown" style={{top: '100%',left: 0,width: '300px',zIndex: '999999'}}>
                             <Ls/>
                         </MegaMC>
                     </Col>

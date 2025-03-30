@@ -14,10 +14,10 @@ const Chat = ({ socket }) => {
     let bodyHeight = useSelector(state => state.option.bodyHeight)
     let userId = profile._id
     let [friendProfile, setFriendProfile] = useState({})
-    let [friendId, setFriendId] = useState({})
     const [room, setRoom] = useState('');
     const [messages, setMessages] = useState([]);
     const [isLike, setIsLike] = useState(true);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [mInputWith, setmInputWith] = useState(true);
     const [inputValue, setInputValue] = useState('');
     const bottomRef = useRef(null);
@@ -36,82 +36,59 @@ const Chat = ({ socket }) => {
     // messageInput.current.style.width = messageInputWidth;
     const listContainerHeight = bodyHeight - headerHeight - chatHeaderHeight - chatFooterHeight
     let params = useParams()
-    let profileId = params.profile;
-    const newRoom = [userId, profileId].sort().join('_');
+    let friendId = params.profile;
+
 
     useEffect(() => {
-        let messageInputWidth = chatFooterWidth - newAttachmentWidth - messageActionButtonContainerWidth - 10
-        setmInputWith(messageInputWidth)
-        setTimeout(() => {
-            let lastMessageItem = document.querySelector('#chatMessageList .chat-message-container:last-child')
-            if (lastMessageItem) {
-                lastMessageItem.scrollIntoView({ behavior: "smooth" });
-                lastMessageItem.scrollTo({ top: '100%', behavior: 'smooth' });
-
+        api.get('/profile', {
+            params: {
+                profileId: friendId
             }
-        }, 500);
+        }).then((res) => {
+            setFriendProfile(res.data)
+
+        }).catch(e => console.log(e))
 
 
-        if (profileId === userId) return; // Prevent self-chat
+    }, [params])
+
+
+
+    useEffect(() => {
+
+        setTimeout(() => {
+            document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
+        }, 1200);
+
+        if (friendId === userId) return; // Prevent self-chat
+        const newRoom = [userId, friendId].sort().join('_');
+        socket.emit('startChat', { user1: userId, user2: friendId });
         setRoom(newRoom);
-        socket.emit('startChat', { user1: userId, user2: profileId });
+        socket.on('roomJoined', ({ room }) => {
+            console.log(`Joined room: ${room}`);
+            localStorage.setItem('roomId', room);
+        });
 
         socket.on('previousMessages', (msgs) => {
             setMessages(msgs);
-            setTimeout(() => {
-                let lastMessageItem = document.querySelector('#chatMessageList .chat-message-container:last-child')
-                if (lastMessageItem) {
-
-                lastMessageItem.scrollIntoView({ behavior: "smooth" });
-
-                lastMessageItem.scrollTo({ bottom: 0, behavior: 'smooth' });
-                }
-            },500)
-        });
-
-        socket.on('roomJoined', ({ room }) => {
-            console.log(`Joined room: ${room}`);
         });
         socket.on('newMessage', (msg) => {
             setMessages((prevMessages) => [...prevMessages, msg]);
-                setTimeout(() => {
-                    let lastMessageItem = document.querySelector('#chatMessageList .chat-message-container:last-child')
-                    if (lastMessageItem) {
-
-                    lastMessageItem.scrollIntoView({ behavior: "smooth" });
-
-                    lastMessageItem.scrollTo({ bottom: 0, behavior: 'smooth' });
-                    }
-                },500)
-
-            
+            setTimeout(() => {
+                document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
+            }, 500);
         });
 
         return () => {
             socket.off('newMessage');
             socket.off('previousMessages');
         };
-    }, [socket, newRoom, params]);
-
-
-    useEffect(() => {
-        api.get('/profile', {
-            params: {
-                profileId: profileId
-            }
-        }).then((res) => {
-            setFriendProfile(res.data)
-            setFriendId(res.data.id)
-        }).catch(e => console.log(e))
-
-
-    }, [socket, params])
-
+    }, [params, friendProfile]);
 
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (inputValue.trim() && room) {
-            socket.emit('sendMessage', { room, senderId: userId, receiverId: profileId, message: inputValue });
+            socket.emit('sendMessage', { room, senderId: userId, receiverId: friendId, message: inputValue });
             setInputValue('')
 
             setTimeout(() => {
@@ -170,11 +147,11 @@ const Chat = ({ socket }) => {
     }
 
     const cmlStyles = {
-        height: `${listContainerHeight + chatHeaderHeight}px`,
-        maxHeight: `${listContainerHeight + chatHeaderHeight + 50 }px`,
-        paddingTop: `${chatHeaderHeight}px`,
-        overflowY: 'scroll'
-    }
+         height: `${listContainerHeight + (isMobile ? (chatHeaderHeight * 2) - chatFooterHeight : chatHeaderHeight)}px`, 
+         maxHeight: `${listContainerHeight + (isMobile ? (chatHeaderHeight * 2) - chatFooterHeight : chatHeaderHeight)}px`, 
+         paddingTop: `${chatHeaderHeight}px`,
+          overflowY: 'scroll' 
+        }
 
     let getMessageTime = (timestamp) => {
         const inputDate = moment(timestamp);
