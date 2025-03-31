@@ -6,7 +6,7 @@ const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/d
 let UserPP = (props) => {
 
     const [imageExists, setImageExists] = useState(null);
-    const [hasStory, setHasStory] = useState(props.hasStory);
+    const [hasStory, setHasStory] = useState(props.hasStory || false);
 
     var profileId = props.profile && props.profile;
     var pp_url = props.profilePic;

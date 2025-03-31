@@ -1,5 +1,5 @@
-import { SET_HEADER_HEIGHT,SET_BODY_HEIGHT } from "../constants/optionConsts";
-let initialState = {headerHeight: null,bodyHeight: null}
+import { SET_HEADER_HEIGHT,SET_BODY_HEIGHT,SET_LOADING } from "../constants/optionConsts";
+let initialState = {headerHeight: null,bodyHeight: null,isLoading: true}
 const optionReducer = (state=initialState,action) => {
     switch (action.type) {
         case SET_HEADER_HEIGHT:
@@ -9,12 +9,19 @@ const optionReducer = (state=initialState,action) => {
             };
             break;
 
-            case SET_BODY_HEIGHT:
+            case SET_LOADING:
             return {
                 ...state,
-                bodyHeight: action.payload,
+                isLoading: action.payload,
             };
             break;
+
+            case SET_BODY_HEIGHT:
+                return {
+                    ...state,
+                    bodyHeight: action.payload,
+                };
+                break;
 
 
         default:

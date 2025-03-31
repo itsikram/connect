@@ -3,6 +3,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import MessageList from "../components/Message/MessageList";
 import MessageBody from '../components/Message/MessageBody';
 import MessageOptions from '../components/Message/MessageOptions.';
+
 const Message = () => {
 
     const useMediaQuery = (query) => {

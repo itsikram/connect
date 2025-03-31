@@ -8,19 +8,19 @@ let StoryCard = (props) => {
     let profileId = story.author._id || false;
     const [hasStory, setHasStory] = useState(true);
     useEffect(() => {
+        setHasStory(true)
 
-        api.get('/profile/hasStory',{params: {
-            profileId
-        }}).then(res => {
-            if(res.status == 200) {
-                if(res.data.hasStory == 'yes') {
-                    setHasStory(true)
-                }else {
-                    setHasStory(false)
+        // api.get('/profile/hasStory',{params: {
+        //     profileId
+        // }}).then(res => {
+        //     if(res.status == 200) {
+        //         if(res.data.hasStory == 'yes') {
+        //         }else {
+        //             setHasStory(false)
 
-                }
-            }
-        })
+        //         }
+        //     }
+        // })
 
     },[])
     return (

@@ -6,10 +6,14 @@ import { useSelector, useDispatch } from "react-redux";
 import ProfileButtons from "../components/Profile/ProfileButtons";
 import CoverPic from "../components/Profile/CoverPic";
 import ProfilePic from "../components/Profile/ProfilePic";
+import { setLoading } from "../services/actions/optionAction";
+
 
 
 let Profile = (props) => {
     let params = useParams()
+    let dispatch = useDispatch()
+    let isLoading = useSelector(state => state.option.isLoading)
 
     let myProfileData = useSelector(state => state.profile) || {}
     let myProfileId = myProfileData._id
@@ -17,14 +21,14 @@ let Profile = (props) => {
 
     // setting effects
     useEffect(() => {
+        dispatch(setLoading(true))
 
         try {
 
             api.post('/profile', { profile: params.profile }).then(res => {
                 if (res.status === 200) {
-
                     setProfileData(res.data)
-
+                    dispatch(setLoading(false))
                 }
 
             }).catch(e => {
@@ -35,7 +39,7 @@ let Profile = (props) => {
             console(error)
         }
 
-    }, [params.profile])
+    }, [])
     let profilePath = "/" + profileData._id + "/"
 
     const SkeletonLoader = () => (

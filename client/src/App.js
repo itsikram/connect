@@ -12,6 +12,8 @@ import {useJwt} from 'react-jwt'
 function App() {
 
   let dispatch = useDispatch()
+  // let myProfile = useSelector(state => state.profile)
+  
   let user = localStorage.getItem("user") || '{}'
   let userJson = JSON.parse(user)
   let {isExpired} = useJwt(userJson.accessToken)

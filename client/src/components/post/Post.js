@@ -25,7 +25,6 @@ let Post = (props) => {
     let [totalShares, setTotalShares] = useState(post.shares.length)
     let [totalComments, setTotalComments] = useState(post.comments.length)
     let [reactType, setReactType] = useState(false);
-    let [isDeletedPost, setIsDeletedPost] = useState(false);
     let [placedReacts, setPlacedReacts] = useState([]);
     const [imageExists, setImageExists] = useState(null);
     const [thumbExists, setThumbExists] = useState(null);
@@ -133,6 +132,8 @@ let Post = (props) => {
     }
 
     let removeReact = async (target = null) => {
+        setTotalReacts(state => state - 1)
+
         let res = await api.post('/react/removeReact', { post: post._id })
         if (res.status === 200) {
             setTotalReacts(res.data.reacts.length)
@@ -144,6 +145,8 @@ let Post = (props) => {
         }
     }
     let placeReact = async (type, target = null) => {
+        setTotalReacts(state => state + 1)
+
         let placeRes = await api.post('/react/addReact', { type, post: post._id })
         if (placeRes.status === 200) {
             setTotalReacts(placeRes.data.reacts.length)
@@ -167,22 +170,33 @@ let Post = (props) => {
             placeReact('like', target)
             $(target).parent().addClass('reacted')
         }
+
     }
 
     let likeOnClick = async (e) => {
         let target = e.currentTarget;
+        $(target).parents('.post-react-container').css('visibility', 'hidden');
         if ($(target).hasClass('reacted')) {
             removeReact()
             $(target).removeClass('reacted')
+
 
         } else {
             placeReact('like', target)
             $(target).addClass('reacted')
             $(e.currentTarget).siblings().removeClass('reacted')
         }
+        setTimeout(() => {
+            $(target).parents('.post-react-container').css('visibility', 'visible');
+
+        },500)
+
+
     }
 
     let loveOnClick = (e) => {
+        let target = e.currentTarget;
+        $(target).parents('.post-react-container').css('visibility', 'hidden');
         if ($(e.currentTarget).hasClass('reacted')) {
             removeReact();
             $(e.currentTarget).removeClass('reacted')
@@ -190,14 +204,19 @@ let Post = (props) => {
         } else {
             placeReact('love')
             $(e.currentTarget).siblings().removeClass('reacted')
-
             $(e.currentTarget).addClass('reacted')
-
-
         }
+        setTimeout(() => {
+            $(target).parents('.post-react-container').css('visibility', 'visible');
+
+        },500)
+
     }
 
     let hahaOnClick = (e) => {
+        let target = e.currentTarget;
+        $(target).parents('.post-react-container').css('visibility', 'hidden');
+
         if ($(e.currentTarget).hasClass('reacted')) {
             removeReact();
             $(e.currentTarget).removeClass('reacted')
@@ -207,9 +226,15 @@ let Post = (props) => {
 
             $(e.currentTarget).addClass('reacted')
         }
+        setTimeout(() => {
+            $(target).parents('.post-react-container').css('visibility', 'visible');
+
+        },500)
     }
 
     let likeMouseOver = e => {
+        let target = e.currentTarget
+        $(target).children('.post-react-container').css('visibility', 'visible');
 
     }
     let commentOnClick = (e) => {

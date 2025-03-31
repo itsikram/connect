@@ -19,6 +19,49 @@ body {
     height: 100vh;
 }
 
+
+
+
+#site-loader {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center !important;
+    justify-content: center;
+    background-color: #18191A;
+    z-index: 1000000000000000000000000000;
+    top: 0;
+    left: 0;
+
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .loader-logo-container {
+        height: 100px;
+        width: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        animation: spin 2s linear infinite;
+        user-select: none;
+        background-color: #fff;
+
+        img {
+            width: 100%;
+            height: 100%;
+            user-select: none;
+        }
+    }
+}
+
 #header {
     background-color: #242526;
     border-bottom: 1px solid $bc;
@@ -156,13 +199,16 @@ body {
 
             .header-mm-button {
                 border-radius: 50%;
-                padding: 7px 10px;
+                // padding: 7px 10px;
+                height: 40px;
+                width: 40px;
                 display: flex;
                 align-items: center;
+                justify-content: center;
                 cursor: pointer;
 
                 i {
-                    font-size: 20px;
+                    font-size: 22px;
                 }
             }
 
@@ -178,6 +224,8 @@ body {
         }
 
         .header-right {
+            position: relative;
+
             .header-quick-menu-container {
 
                 .header-quick-menu {
@@ -193,7 +241,7 @@ body {
                         padding: 5px 6px;
                         transition: 0.1s;
                         display: inline-block;
-                        position: relative;
+                        // position: relative;
                         cursor: pointer;
                         border-radius: 50%;
 
@@ -257,7 +305,7 @@ body {
                         }
                     }
 
-                    .header-quick-menu-item.active {
+                    .header-quick-menu-item.active .header-quick-menu-icon {
 
                         color: $pc;
                         background-color: rgba(58, 196, 187, 0.4);
@@ -274,7 +322,7 @@ body {
 
                     .profile-pic {
                         img {
-                            width: 30px;
+                            width: 40px;
                             border-radius: 50%;
 
                         }
@@ -291,8 +339,12 @@ body {
 
                     .header-quick-menu-icon {
                         font-size: 22px;
-                        display: inline;
-                        padding: 0 7px;
+                        display: flex;
+                        height: 40px;
+                        width: 40px;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 50%;
                     }
 
                     .header-quick-menu-icon.hr-three-dot i {
@@ -309,7 +361,7 @@ body {
     }
 
     .header-logo {
-        width: 35px;
+        width: 40px;
         border-radius: 50%;
     }
 }
@@ -1215,11 +1267,13 @@ body {
                 width: 75%;
                 margin: auto;
                 position: relative;
+
                 .single-story-pp-container {
                     position: absolute;
                     left: 30px;
                     top: 20px
                 }
+
                 .single-story-image-container {
                     border-radius: 10px;
                     border: 3px solid $pc;
@@ -1231,6 +1285,7 @@ body {
                     background-repeat: no-repeat !important;
                     min-height: 80vh;
                     backdrop-filter: blur(10px);
+
                     img {
                         width: 80%;
                         // display: none;
@@ -2332,7 +2387,8 @@ body {
 }
 
 .header-quick-menu-item .hr-mega-menu {
-    right: -30% !important;
+    right: 50% !important;
+    transform: translateX(50%);
 
     .left-sidebar-container {
         padding: 10px;
@@ -2580,6 +2636,23 @@ body {
     position: relative;
     min-height: 90vh;
 
+    /* Hide scrollbar track */
+    ::-webkit-scrollbar {
+        width: 2px !important;
+        /* Adjust the width */
+    }
+
+    /* Scrollbar thumb (draggable part) */
+    ::-webkit-scrollbar-thumb {
+        background-color: red;
+        border-radius: 10px;
+    }
+
+    /* Scrollbar track (the background part) */
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
     .chat-header {
 
         display: flex;
@@ -2647,6 +2720,7 @@ body {
 
     .chat-body {
         .chat-message-list {
+
             .chat-message-container:hover .chat-message-options {
                 display: flex;
             }
@@ -2681,6 +2755,9 @@ body {
                         height: 30px;
                         width: 30px;
                         margin: 0 3px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
                     }
 
                     .chat-message-option.delete {
@@ -2693,7 +2770,7 @@ body {
                 }
 
                 .chat-message-profilePic {
-                    margin-right: 5px;
+                    margin-right: 0px;
                     transform: scale(0.8);
                     cursor: pointer;
                 }
@@ -2703,7 +2780,7 @@ body {
                     border-radius: 20px;
                     color: $tc;
                     position: relative;
-                    max-width: 75%;
+                    max-width: 72%;
                     margin: 5px !important;
                     margin-right: 10px !important;
 
@@ -2742,12 +2819,13 @@ body {
 
                 .chat-message-options {
                     left: 100% !important;
-                    margin-left: 10px;
+                    margin-left: 3px;
                 }
 
                 .chat-message {
                     background-color: $bc;
                     margin-right: 10px;
+                    margin-left: 0 !important;
                 }
 
             }
@@ -2758,6 +2836,7 @@ body {
                 .chat-message-options {
                     right: 100% !important;
                     margin-right: 10px;
+                    z-index: 99;
                 }
 
                 .chat-message-seen-status {
@@ -2769,6 +2848,7 @@ body {
                     align-items: center;
                     justify-content: center;
                     margin-top: 7px;
+                    visibility: hidden;
 
                     img {
                         width: 100%;
@@ -3207,6 +3287,24 @@ body {
 @media only screen and (max-width: 768px) {
 
 
+
+    #chatBox .chat-body .chat-message-list .chat-message-container:last-child .chat-message-options {
+        bottom: 0;
+        transform: translateY(-80%);
+        height: fit-content;
+    }
+    #chatBox .chat-body .chat-message-list .chat-message-container .chat-message-options {
+        flex-direction: column;
+        
+        .chat-message-option {
+            margin: 3px 0;
+        }
+    }
+
+    .header-right {
+        position: unset !important;
+    }
+
     #chatBox .chat-footer .new-message-container {
         flex-direction: row;
     }
@@ -3230,6 +3328,11 @@ body {
         padding: 10px 0;
     }
 
+    #header .header-container .header-middle .header-mm-dropdown {
+        left: 50% !important;
+        transform: translateX(-50%);
+    }
+
     #pp-upload-modal,
     #cp-upload-modal {
         width: 90% !important;
@@ -3246,7 +3349,7 @@ body {
     #left-sidebar {
         margin-top: 0;
 
-        position: fixed;
+        position: unset;
 
         min-width: 200px;
 
@@ -3268,9 +3371,15 @@ body {
     #header .header-container .header-left .header-search-container {
         padding: 10px;
         border-radius: 50%;
+        height: 40px;
+        width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         i.header-search-icon {
-            font-size: 15px !important;
+            font-size: 22px !important;
+            font-weight: 500;
         }
 
         input {

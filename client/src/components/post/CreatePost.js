@@ -51,7 +51,7 @@ let CreatePost = () => {
             }
         })
 
-    })
+    },[])
 
 
     const useMediaQuery = (query) => {

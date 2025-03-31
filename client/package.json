@@ -32,6 +32,7 @@
     "react-router-guarded-routes": "^0.4.5",
     "react-scripts": "^5.0.1",
     "react-scroll-to-bottom": "^4.2.0",
+    "react-toastify": "^11.0.5",
     "redux": "^4.2.1",
     "redux-thunk": "^2.4.2",
     "sass": "^1.58.0",

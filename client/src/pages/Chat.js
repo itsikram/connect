@@ -1,14 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useId } from 'react';
+import { setLoading } from '../services/actions/optionAction';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import api from '../api/api';
 import UserPP from '../components/UserPP';
 import { io } from 'socket.io-client';
 import MessageList from '../components/Message/MessageList';
 import moment from "moment";
 import $ from 'jquery'
-const Chat = ({ socket }) => {
 
+
+const Chat = ({ socket }) => {
+    let dispatch = useDispatch();
     let profile = useSelector(state => state.profile)
     let headerHeight = useSelector(state => state.option.headerHeight)
     let bodyHeight = useSelector(state => state.option.bodyHeight)
@@ -17,6 +20,8 @@ const Chat = ({ socket }) => {
     const [room, setRoom] = useState('');
     const [messages, setMessages] = useState([]);
     const [isLike, setIsLike] = useState(true);
+    const [isTyping, setIsTyping] = useState(false);
+    const [typeMessage, setTypeMessage] = useState('');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [mInputWith, setmInputWith] = useState(true);
     const [inputValue, setInputValue] = useState('');
@@ -32,26 +37,29 @@ const Chat = ({ socket }) => {
     const chatFooterWidth = chatFooter.current?.offsetWidth;
     const newAttachmentWidth = chatNewAttachment.current?.offsetWidth;
     const messageActionButtonContainerWidth = messageActionButtonContainer.current?.offsetWidth;
+    // let isLoading = useSelector(state => state.option.isLoading);
 
     // messageInput.current.style.width = messageInputWidth;
     const listContainerHeight = bodyHeight - headerHeight - chatHeaderHeight - chatFooterHeight
     let params = useParams()
     let friendId = params.profile;
 
-
     useEffect(() => {
+
         api.get('/profile', {
             params: {
                 profileId: friendId
             }
         }).then((res) => {
+            // alert('data load')
             setFriendProfile(res.data)
+            dispatch(setLoading(false))
 
         }).catch(e => console.log(e))
 
 
-    }, [params])
 
+    }, [params, friendId])
 
 
     useEffect(() => {
@@ -60,7 +68,7 @@ const Chat = ({ socket }) => {
             document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
         }, 1200);
 
-        if (friendId === userId) return; // Prevent self-chat
+        if (!friendId || !userId) return; // Prevent self-chat
         const newRoom = [userId, friendId].sort().join('_');
         socket.emit('startChat', { user1: userId, user2: friendId });
         setRoom(newRoom);
@@ -69,8 +77,11 @@ const Chat = ({ socket }) => {
             localStorage.setItem('roomId', room);
         });
 
+
+
         socket.on('previousMessages', (msgs) => {
             setMessages(msgs);
+
         });
         socket.on('newMessage', (msg) => {
             setMessages((prevMessages) => [...prevMessages, msg]);
@@ -78,18 +89,64 @@ const Chat = ({ socket }) => {
                 document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
             }, 500);
         });
+        socket.on('deleteMessage', (messageId) => {
+            $(`#chatBox .chat-body .chat-message-list .chat-message-container.message-id-${messageId}`).remove();
+        })
+
+        socket.on('typing', ({ isTyping, type }) => {
+            if (isTyping == true) {
+                setIsTyping(true)
+                setTypeMessage(type)
+                setTimeout(() => {
+                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
+                }, 500);
+            } else {
+                setIsTyping(false)
+            }
+
+        })
+
+        socket.on('update_type', ({type}) => {
+            setTypeMessage(type)
+        })
 
         return () => {
             socket.off('newMessage');
             socket.off('previousMessages');
+            socket.off('deleteMessage')
+            socket.off('update_type')
+            socket.off('typing')
+
+
         };
     }, [params, friendProfile]);
+
+    useEffect(() => {
+
+        if (messages.length > 0) {
+            setTimeout(() => {
+                let lastMessage = messages[messages.length - 1];
+                if (lastMessage.senderId !== userId) {
+                    socket.emit('seenMessage', lastMessage);
+                }
+            }, 2000);
+        }
+        socket.on('seenMessage', (msg) => {
+            $('#chatMessageList .message-sent.chat-message-container .chat-message-seen-status').css('visibility', 'hidden');
+            $('#chatMessageList .message-sent.chat-message-container.message-id-' + msg._id + ':last-child .chat-message-seen-status').css('visibility', 'visible');
+        })
+
+        return () => {
+            socket.off('seenMessage');
+        }
+    }, [params, messages])
 
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (inputValue.trim() && room) {
             socket.emit('sendMessage', { room, senderId: userId, receiverId: friendId, message: inputValue });
             setInputValue('')
+            setIsTyping(false)
 
             setTimeout(() => {
                 document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
@@ -97,6 +154,19 @@ const Chat = ({ socket }) => {
             }, 500);
 
         }
+    }
+
+    let addTyping = (e) => {
+        socket.emit('typing', { room, isTyping: true, type: inputValue })
+    }
+
+    let removeTyping = () => {
+        socket.emit('typing', { room, isTyping: false, type: inputValue })
+    }
+
+    let updateTyping = (e) => {
+        let value = e.target.value;
+        socket.emit('update_type', { room, type: value })
     }
     const enterEvent = new KeyboardEvent("keydown", {
         key: "Enter",
@@ -111,19 +181,14 @@ const Chat = ({ socket }) => {
 
     }
 
-    socket.on('deleteMessage', (messageId) => {
 
-        $(`.message-id-${messageId}`).remove();
-    })
-
-    socket.off('deleteMessage')
 
 
     let handleLikeMessage = async (e) => {
 
     }
-    let handleShareMessage = async (e) => {
-
+    let handleSpeakMessage = async (e) => {
+        socket.emit('speak_message', $(e.currentTarget).attr('dataid'), friendId);
     }
     const handleKeyPress = (event) => {
         if (event.key === "Enter") {
@@ -146,12 +211,11 @@ const Chat = ({ socket }) => {
         setInputValue(e.target.value)
     }
 
-    const cmlStyles = {
-         height: `${listContainerHeight + (isMobile ? (chatHeaderHeight * 2) - chatFooterHeight : chatHeaderHeight)}px`, 
-         maxHeight: `${listContainerHeight + (isMobile ? (chatHeaderHeight * 2) - chatFooterHeight : chatHeaderHeight)}px`, 
-         paddingTop: `${chatHeaderHeight}px`,
-          overflowY: 'scroll' 
-        }
+    const cmlStyles = { 
+        height: `${listContainerHeight + (isMobile ? (headerHeight) + chatFooterHeight : headerHeight)}px`,
+         maxHeight: `${listContainerHeight + (isMobile ? (chatHeaderHeight) + chatFooterHeight : chatHeaderHeight)}px`,
+          paddingTop: `${chatHeaderHeight}px`,
+           overflowY: 'scroll' }
 
     let getMessageTime = (timestamp) => {
         const inputDate = moment(timestamp);
@@ -214,7 +278,7 @@ const Chat = ({ socket }) => {
                                                 <div className='chat-message'>
                                                     <div className='chat-message-options'>
                                                         <button type='button' dataid={msg._id} className='chat-message-option like' onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
-                                                        <button type='button' dataid={msg._id} className='chat-message-option share' onClick={handleShareMessage.bind(this)}><i className="fa fa-share"></i></button>
+                                                        <button type='button' dataid={msg._id} className='chat-message-option share' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
 
                                                         <button type='button' dataid={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(msg)}><i className="fa fa-trash"></i></button>
                                                     </div>
@@ -236,7 +300,7 @@ const Chat = ({ socket }) => {
                                                 <div className='chat-message'>
                                                     <div className='chat-message-options'>
                                                         <button type='button' dataid={msg._id} className='chat-message-option like' onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
-                                                        <button type='button' dataid={msg._id} className='chat-message-option share' onClick={handleShareMessage.bind(this)}><i className="fa fa-share"></i></button>
+                                                        <button type='button' dataid={msg._id} className='chat-message-option share speaker' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
 
                                                         <button type='button' dataid={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(this)}><i className="fa fa-trash"></i></button>
                                                     </div>
@@ -248,10 +312,12 @@ const Chat = ({ socket }) => {
 
                                                 </div>
 
+                                                {
 
-                                                <div className='chat-message-seen-status'>
-                                                    <img src={friendProfile.profilePic} alt='Seen' />
-                                                </div>
+                                                    <div className='chat-message-seen-status' style={{ 'visibility': (messages[messages.length - 1]._id === msg._id && msg.isSeen == true) ? 'visible' : 'hidden' }}>
+                                                        <img src={friendProfile.profilePic} alt='Seen' />
+                                                    </div>
+                                                }
                                             </div>
 
 
@@ -259,6 +325,24 @@ const Chat = ({ socket }) => {
                                 })
 
                             }
+
+                            {
+                                isTyping && (
+                                    <div className={`chat-message-container message-receive message-typing`}>
+                                    <div className='chat-message-profilePic'>
+                                        <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
+                                    </div>
+                                    <div className='chat-message'>
+    
+                                        <p className='message-container mb-0'>
+                                            {typeMessage || '...'}
+                                        </p>
+                                    </div>
+    
+                                </div>
+                                )
+                            }
+
 
 
                         </div>
@@ -289,7 +373,7 @@ const Chat = ({ socket }) => {
                         </div>
                         <div className='new-message-form'>
                             <div className='new-message-input-container'>
-                                <input ref={messageInput} style={{ width: mInputWith + 'px' }} onChange={handleInputChange} onKeyDown={handleKeyPress} placeholder='Send Message....' value={inputValue} id='newMessageInput' className='new-message-input' />
+                                <input ref={messageInput} style={{ width: mInputWith + 'px' }} onChange={handleInputChange} onKeyDown={handleKeyPress} placeholder='Send Message....' value={inputValue} id='newMessageInput' className='new-message-input' onFocus={addTyping} onKeyUp={updateTyping.bind(this)} onBlur={removeTyping} />
                             </div>
                             <div ref={messageActionButtonContainer} className='message-action-button-container'>
 

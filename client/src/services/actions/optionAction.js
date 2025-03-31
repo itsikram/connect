@@ -1,4 +1,4 @@
-import {SET_HEADER_HEIGHT,SET_BODY_HEIGHT} from '../constants/optionConsts'
+import {SET_HEADER_HEIGHT,SET_BODY_HEIGHT,SET_LOADING} from '../constants/optionConsts'
 
 export const setHeaderHeight = (height) => {
 
@@ -15,3 +15,11 @@ export const setBodyHeight= (height) => {
         payload: height
     }
 } 
+
+export const setLoading = (loading) => {
+    return {
+        type: SET_LOADING,
+        payload: loading
+    }
+
+}

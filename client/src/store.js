@@ -1,7 +1,7 @@
 import { createStore,compose,applyMiddleware,combineReducers } from "redux"
 import profileReducer from "./services/reducers/profileReducer"
 import thunk from 'redux-thunk'
-import authReducer from "./store/authReducer";
+import authReducer from "./store(unused)/authReducer";
 
 import optionReducer from "./services/reducers/optionReducer";
 

@@ -4,7 +4,7 @@ import $ from 'jquery';
 import MegaMC from "../../components/MegaMC";
 import UserPP from "../../components/UserPP";
 import { useDispatch, useSelector } from "react-redux";
-import { logOut } from "../../store/authReducer";
+import { logOut } from "../../store(unused)/authReducer";
 import MessageList from "../../components/Message/MessageList";
 let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
 const profilePath = "/" + userInfo.profile + "/"
