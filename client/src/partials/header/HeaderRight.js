@@ -1,11 +1,12 @@
-import React, { Fragment,useState } from "react";
-import { Link } from 'react-router-dom';
+import React, { Fragment, useEffect, useState, useRef } from "react";
+import { Link, useLocation } from 'react-router-dom';
 import $ from 'jquery';
 import MegaMC from "../../components/MegaMC";
 import UserPP from "../../components/UserPP";
 import { useDispatch, useSelector } from "react-redux";
 import { logOut } from "../../store(unused)/authReducer";
 import MessageList from "../../components/Message/MessageList";
+import { current } from "@reduxjs/toolkit";
 let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
 const profilePath = "/" + userInfo.profile + "/"
 const default_pp_url = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
@@ -13,8 +14,11 @@ const default_pp_url = 'https://programmerikram.com/wp-content/uploads/2025/03/d
 let HeaderRight = () => {
     let profileData = useSelector(state => state.profile)
     let dispatch = useDispatch()
-
-
+    let [isMsgMenu, setIsMsgMenu] = useState(false);
+    let [isProfileMenu, setIsProfileMenu] = useState(false);
+    let location = useLocation();
+    let msgMegaMenuContainer = useRef(null);
+    let msgMegaMenu = msgMegaMenuContainer.current ? msgMegaMenuContainer.current.children[0] : null;
     const [imageExists, setImageExists] = useState(null);
     var pp_url = profileData.profilePic;
     const checkImage = (url) => {
@@ -30,20 +34,39 @@ let HeaderRight = () => {
     if (!imageExists) {
         pp_url = default_pp_url;
     }
+
+
+    useEffect(() => {
+        setIsMsgMenu(false)
+        setIsProfileMenu(false)
+    }, [location])
+
+    let showMsgList = (e) => {
+        setIsMsgMenu(!isMsgMenu)
+
+    }
+
+    let clickProfileBtn = () => {
+        setIsProfileMenu(!isProfileMenu)
+    }
+
     let quickMenuBtnClick = (e) => {
-        let target = e.currentTarget;
+        
 
-        $(target).siblings().removeClass('active')
-        if ($(target).hasClass('active') !== true) {
-            $(target).addClass('active')
+        // let target = e.currentTarget;
 
-            $(target).children('.hr-mega-menu').show('fast')
+        // $(target).siblings().removeClass('active')
 
-        } else {
-            $(target).removeClass('active')
-            $(target).children('.hr-mega-menu').hide('fast')
-            $(target).siblings().removeClass('active')
-        }
+        // if ($(target).hasClass('active') !== true) {
+        //     $(target).addClass('active')
+
+        //     $(target).children('.hr-mega-menu').show('fast')
+
+        // } else {
+        //     $(target).removeClass('active')
+        //     $(target).children('.hr-mega-menu').hide('fast')
+        //     $(target).siblings().removeClass('active')
+        // }
 
 
     }
@@ -52,21 +75,26 @@ let HeaderRight = () => {
     let logOutBtn = (e) => {
         dispatch(logOut())
         localStorage.removeItem('user')
-
+        window.location.reload();
     }
     return (
         <Fragment>
             <div className="header-quick-menu-container">
                 <ul className="header-quick-menu">
-                    <li onClick={quickMenuBtnClick.bind(this)} className="header-quick-menu-item" title="Groups">
+                    <li onClick={showMsgList} className={`header-quick-menu-item ${isMsgMenu ? 'active': ''}`} title="Groups">
                         <div className="header-quick-menu-icon">
                             <i className="far fa-comment-alt-lines"></i>
                         </div>
-                        <MegaMC style={{ right: '0px !important', top: '100%', width: '300px', backgroundColor: '#29B1A9', borderRadius: '5px' }} className="hr-mega-menu">
-                            <MessageList/>
-                        </MegaMC>
+                        {
+                            isMsgMenu && (
+                                <MegaMC style={{ right: '0px !important', top: '100%', width: '300px', backgroundColor: '#29B1A9', borderRadius: '5px', display: 'block' }} className="hr-mega-menu">
+                                    <MessageList />
+                                </MegaMC>
+                            )
+                        }
+
                     </li>
-                    
+
                     <li onClick={quickMenuBtnClick} className="header-quick-menu-item" title="">
                         <div className="header-quick-menu-icon">
                             <i className="far fa-bell"></i>
@@ -82,12 +110,13 @@ let HeaderRight = () => {
 
                         </div>
                     </li>
-                    <li onClick={quickMenuBtnClick} className="header-quick-menu-item item-profile" title="">
+                    <li onClick={clickProfileBtn} className="header-quick-menu-item item-profile" title="">
                         <div className="profile-pic">
                             <img src={pp_url} alt="Author Name" />
 
                         </div>
-                        <MegaMC style={{ right: 0, top: '100%', width: '300px', backgroundColor: '#29B1A9', borderRadius: '5px' }} className="hr-mega-menu">
+                        { isProfileMenu && (
+                        <MegaMC style={{ right: 0, top: '100%', width: '300px', backgroundColor: '#29B1A9', borderRadius: '5px',display: 'block' }} className="hr-mega-menu">
                             <div className="hr-mm-container">
                                 <Link to={profilePath}>
 
@@ -116,6 +145,7 @@ let HeaderRight = () => {
 
                             </div>
                         </MegaMC>
+                        )}
                     </li>
                 </ul>
             </div>

@@ -32,6 +32,11 @@ let userSchema = new Schema({
         trim: true,
         Required: true
     },
+    lastLogin :{
+        type : Number,
+        default: new Date(Date.now()).getTime(),
+        
+    },
     profile: {
         'ref' : 'Profile',
         type: Schema.Types.ObjectId

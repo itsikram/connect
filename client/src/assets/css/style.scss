@@ -208,7 +208,7 @@ body {
                 cursor: pointer;
 
                 i {
-                    font-size: 22px;
+                    font-size: 20px;
                 }
             }
 
@@ -1358,6 +1358,7 @@ body {
 
 .user-profile-img-container {
     position: relative;
+    z-index: 9;
 
     .active-icon {
         position: absolute;
@@ -1402,7 +1403,7 @@ body {
 
     #nf-story-container {
         position: relative;
-
+        min-height: 160px;
         .nf-story-overflow-container {
             overflow-x: auto;
             white-space: nowrap;
@@ -1419,6 +1420,7 @@ body {
                 margin-right: 10px;
                 display: inline-block;
                 overflow: hidden;
+
 
                 .nf-story-pp-container {
                     position: absolute;

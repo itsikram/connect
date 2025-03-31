@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
-import { BrowserRouter as BR, Routes, Route, Link, useParams } from 'react-router-dom'
+import { BrowserRouter as BR, Routes, Route, Link, useParams,useLocation } from 'react-router-dom'
 import Header from '../partials/header/Header';
 import Home from "./Home";
 import Profile from "./Profile";
@@ -47,6 +47,7 @@ const Main = () => {
     let isLoading = useSelector(state => state.option.isLoading);
     let params = useParams();
 
+
     const notify = (msg, senderName,senderPP) => {
         console.log(msg)
         toast(
@@ -81,6 +82,7 @@ const Main = () => {
         window.speechSynthesis.speak(speech);
     };
     let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
+    console.log(userInfo)
     const profileId = userInfo.profile
     useEffect(() => {
         socket.on('notification', (msg, senderName,senderPP) => {
@@ -130,6 +132,9 @@ const Main = () => {
             dispatch(setLoading(false))
         }
 
+        setTimeout(() => {
+            socket.emit('update_last_login',userInfo.user_id)
+        },5000)
 
     }, [params])
 

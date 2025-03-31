@@ -53,7 +53,6 @@ let Post = (props) => {
                         if (!storedReacts.includes('like')) {
                             storedReacts.push('like')
                         }
-
                         break;
                     case 'love':
                         if (!storedReacts.includes('love')) {

@@ -2,6 +2,7 @@
 require('dotenv').config();
 const path = require("path");
 const Profile = require('./models/Profile');
+const User = require('./models/User');
 const express = require('express')
 const PORT = process.env.PORT || 4000;
 const mongoose = require('mongoose')
@@ -113,6 +114,58 @@ io.on('connection', (socket) => {
 
   });
 
+  socket.on('update_last_login', async function(userId) {
+    if(!userId) return;
+    let user =  await User.findOneAndUpdate({_id:userId},{lastLogin: new Date(Date.now()).getTime() },{new: true});
+  })
+
+
+  socket.on('is_active',async(profileId,userId = null) => {
+    let isActive = false
+    let userLastLogin = false;
+
+
+    // if(!userId) return;
+
+
+    if(profileId) {
+      let profile = await Profile.findById(profileId).populate('user');
+      
+      if(profile.user.lastLogin > 100) {
+        userLastLogin = new Date(profile.user.lastLogin).getTime();
+      }
+      ;
+    }
+
+    if(!userLastLogin)  {
+      let user = await User.findById(userId);
+      if(!user) return;
+      userLastLogin =  new Date(user.lastLogin).getTime();
+    }
+
+    let currentTime = Date.now()
+
+    // if ((currentTime.getTime() - 5 * 60 * 1000) - userLastLogin) {
+    //   console.log("The difference is 5 minutes or more.");
+    // } else {
+    //   console.log("The difference is less than 5 minutes.");
+    //   isActive = true;
+    // }
+
+    if(currentTime -5 * 60 * 1000 > userLastLogin ) {
+      isActive = true
+    }else {
+      isActive = false;
+    }
+
+    console.log(currentTime,userLastLogin,isActive);
+
+
+
+    io.to(profileId).emit('is_active',isActive);
+  })
+
+
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);
   });
@@ -141,4 +194,7 @@ mongoose.connect(process.env.PROD_MONGODB_URI, {}).then(e => {
 }).catch(e => {
   console.log(e)
 })
+
+
+
 

@@ -18,12 +18,12 @@ let Home = () => {
     let dispatch = useDispatch()
     let storyContainer = useRef()
     function scrollLeft(e) {
-        storyContainer.current.scrollBy({left: -300, behavior: 'smooth'})
+        storyContainer.current.scrollBy({ left: -300, behavior: 'smooth' })
 
     }
 
     function scrollRight(e) {
-        storyContainer.current.scrollBy({left: 300, behavior: 'smooth'})
+        storyContainer.current.scrollBy({ left: 300, behavior: 'smooth' })
     }
     let [match, setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)
 
@@ -35,7 +35,7 @@ let Home = () => {
     let loadData = async () => {
 
         let nfRes = await api.get('/post/newsFeed/')
-        if(nfRes.status === 200) {
+        if (nfRes.status === 200) {
             setNewsFeed(nfRes.data)
         }
 
@@ -46,7 +46,7 @@ let Home = () => {
         }
 
         dispatch(setLoading(false))
-        
+
     }
 
     useEffect(() => {
@@ -73,28 +73,34 @@ let Home = () => {
 
                         <Col md="6">
 
+                        <CreatePost></CreatePost>
+
                             <div id="newsfeed-container" className="newsfeed-container">
 
+                                {
+                                    stories.length > 0 && (
+                                        <div id="nf-story-container" >
+                                            <div ref={storyContainer} className="nf-story-overflow-container">
 
-                                <div id="nf-story-container" >
-                                    <div  ref={storyContainer} className="nf-story-overflow-container">
+                                                {
+                                                    stories.length > 0 &&
+                                                    stories.map(story => {
+                                                        return <StoryCard key={story._id} data={story}></StoryCard>
+                                                    })
+                                                }
+                                            </div>
 
-                                    {
-                                        stories.map(story => {
-                                            return <StoryCard key={story._id} data={story}></StoryCard>
-                                        })
-                                    }
-                                    </div>
+                                            <div className="nf-story-arrow-left" onClick={scrollLeft.bind(this)} >
+                                                <i className="fa fa-chevron-left"></i>
+                                            </div>
+                                            <div className="nf-story-arrow-right" onClick={scrollRight.bind(this)} >
+                                                <i className="fa fa-chevron-right"></i>
+                                            </div>
 
-                                    <div className="nf-story-arrow-left" onClick={scrollLeft.bind(this)} >
-                                        <i className="fa fa-chevron-left"></i>
-                                    </div>
-                                    <div className="nf-story-arrow-right" onClick={scrollRight.bind(this)} >
-                                        <i className="fa fa-chevron-right"></i>
-                                    </div>
+                                        </div>
+                                    )
+                                }
 
-                                </div>
-                                <CreatePost></CreatePost>
 
 
                                 <div id="nf-post-container">
@@ -114,7 +120,6 @@ let Home = () => {
 
                         <Col md="3">
                             {!match && <Rs></Rs>}
-
                         </Col>
 
                     </Row>
