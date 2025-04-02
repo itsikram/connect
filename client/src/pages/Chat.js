@@ -8,6 +8,7 @@ import { io } from 'socket.io-client';
 import MessageList from '../components/Message/MessageList';
 import moment from "moment";
 import $ from 'jquery'
+import EmotionDetection from '../components/Message/EmotionDetection';
 
 
 const Chat = ({ socket }) => {
@@ -232,6 +233,7 @@ const Chat = ({ socket }) => {
         <div>
 
             <div id="chatBox" style={{ height: `${bodyHeight - headerHeight}px` }}>
+                <EmotionDetection />
                 <div ref={chatHeader} className='chat-header'>
                     <div className='chat-header-user'>
                         <div className='chat-header-profilePic'>
@@ -242,7 +244,6 @@ const Chat = ({ socket }) => {
                             <span className='chat-header-active-status'>Active Now</span>
                         </div>
                     </div>
-
 
                     <div className='chat-header-action'>
                         <div className='chat-header-action-btn-container'>
