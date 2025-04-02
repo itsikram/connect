@@ -9,6 +9,7 @@ import MessageList from '../components/Message/MessageList';
 import moment from "moment";
 import $ from 'jquery'
 import EmotionDetection from '../components/Message/EmotionDetection';
+import * as faceapi from "face-api.js";
 
 
 const Chat = ({ socket }) => {
@@ -44,6 +45,14 @@ const Chat = ({ socket }) => {
     const listContainerHeight = bodyHeight - headerHeight - chatHeaderHeight - chatFooterHeight
     let params = useParams()
     let friendId = params.profile;
+
+    const emotionVideoRef = useRef(null);
+    const [emotion, setEmotion] = useState(false);
+    const [myEmotion,setMyEmotion ] = useState(false)
+
+
+
+
 
     useEffect(() => {
 
@@ -107,10 +116,9 @@ const Chat = ({ socket }) => {
 
         })
 
-        socket.on('update_type', ({type}) => {
+        socket.on('update_type', ({ type }) => {
             setTypeMessage(type)
         })
-
         return () => {
             socket.off('newMessage');
             socket.off('previousMessages');
@@ -142,13 +150,77 @@ const Chat = ({ socket }) => {
         }
     }, [params, messages])
 
+    useEffect(() => {
+
+
+        if(room) {
+            console.log(room,'room')
+            startVideo();
+            loadModels();
+        }
+
+    }, [room,params]);
+
+
+
+    useEffect(() => {
+
+        console.log(myEmotion)
+        if(myEmotion && friendId) {
+           socket.emit('emotion_change',{room: room, emotion: myEmotion,friendId})
+
+        }
+    },[myEmotion,friendId])
+
+    useEffect(() => {
+        socket.on('emotion_change', (emotion) => {
+            setEmotion(emotion)
+        })
+
+        return () => {
+            socket.off('emotion_change')
+        }
+    },[emotion])
+
+    const startVideo = () => {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                emotionVideoRef.current.srcObject = stream;
+            })
+            .catch((err) => console.error("Error accessing webcam: ", err));
+    };
+
+    const loadModels = async () => {
+        await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+        await faceapi.nets.faceExpressionNet.loadFromUri("/models");
+        detectEmotions();
+    };
+
+    const detectEmotions = () => {
+        setInterval(async () => {
+            if (emotionVideoRef.current) {
+                const detections = await faceapi.detectAllFaces(emotionVideoRef.current, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceExpressions();
+
+                if (detections.length > 0) {
+                    const emotions = detections[0].expressions;
+                    const maxEmotion = Object.keys(emotions).reduce((a, b) => emotions[a] > emotions[b] ? a : b);
+                    if(room && myEmotion !== maxEmotion) {
+                        setMyEmotion(maxEmotion)
+                    }
+                }
+
+            }
+        }, 500);
+
+    }
+
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (inputValue.trim() && room) {
             socket.emit('sendMessage', { room, senderId: userId, receiverId: friendId, message: inputValue });
             setInputValue('')
             setIsTyping(false)
-
             setTimeout(() => {
                 document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
 
@@ -183,8 +255,6 @@ const Chat = ({ socket }) => {
     }
 
 
-
-
     let handleLikeMessage = async (e) => {
 
     }
@@ -212,11 +282,12 @@ const Chat = ({ socket }) => {
         setInputValue(e.target.value)
     }
 
-    const cmlStyles = { 
+    const cmlStyles = {
         height: `${listContainerHeight + (isMobile ? (headerHeight) + chatFooterHeight : headerHeight)}px`,
-         maxHeight: `${listContainerHeight + (isMobile ? (chatHeaderHeight) + chatFooterHeight : chatHeaderHeight)}px`,
-          paddingTop: `${chatHeaderHeight}px`,
-           overflowY: 'scroll' }
+        maxHeight: `${listContainerHeight + (isMobile ? (chatHeaderHeight) + chatFooterHeight : chatHeaderHeight)}px`,
+        paddingTop: `${chatHeaderHeight}px`,
+        overflowY: 'scroll'
+    }
 
     let getMessageTime = (timestamp) => {
         const inputDate = moment(timestamp);
@@ -231,9 +302,9 @@ const Chat = ({ socket }) => {
 
     return (
         <div>
+            <video style={{ display: 'none' }} ref={emotionVideoRef} autoPlay muted width="600" height="400" />
 
             <div id="chatBox" style={{ height: `${bodyHeight - headerHeight}px` }}>
-                <EmotionDetection />
                 <div ref={chatHeader} className='chat-header'>
                     <div className='chat-header-user'>
                         <div className='chat-header-profilePic'>
@@ -241,7 +312,13 @@ const Chat = ({ socket }) => {
                         </div>
                         <div className='chat-header-user-info'>
                             <h4 className='chat-header-username'> {`${friendProfile.user && friendProfile.user.firstName} ${friendProfile.user && friendProfile.user.surname}`}</h4>
-                            <span className='chat-header-active-status'>Active Now</span>
+                            <span className='chat-header-active-status'>Active Now</span> 
+
+                            {
+                                emotion&& (<span className='chat-header-active-status'> Emotion {emotion}</span>)
+                            }
+                            
+
                         </div>
                     </div>
 
@@ -330,17 +407,17 @@ const Chat = ({ socket }) => {
                             {
                                 isTyping && (
                                     <div className={`chat-message-container message-receive message-typing`}>
-                                    <div className='chat-message-profilePic'>
-                                        <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
+                                        <div className='chat-message-profilePic'>
+                                            <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
+                                        </div>
+                                        <div className='chat-message'>
+
+                                            <p className='message-container mb-0'>
+                                                {typeMessage || '...'}
+                                            </p>
+                                        </div>
+
                                     </div>
-                                    <div className='chat-message'>
-    
-                                        <p className='message-container mb-0'>
-                                            {typeMessage || '...'}
-                                        </p>
-                                    </div>
-    
-                                </div>
                                 )
                             }
 

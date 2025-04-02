@@ -87,6 +87,10 @@ io.on('connection', (socket) => {
     io.to(room).emit('newMessage', newMessage);
   });
 
+  socket.on('emotion_change', ({ room, emotion,friendId }) =>{
+    io.to(friendId).emit('emotion_change', emotion);
+  })
+
   socket.on('typing', ({ room, isTyping, type }) => {
     console.log(room, isTyping, true);
     if (isTyping) {
@@ -113,6 +117,8 @@ io.on('connection', (socket) => {
     }
 
   });
+
+  
 
   socket.on('update_last_login', async function(userId) {
     if(!userId) return;

@@ -3,7 +3,6 @@ import * as faceapi from "face-api.js";
 
 const EmotionDetection = () => {
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   const [emotion, setEmotion] = useState("");
 
   useEffect(() => {
@@ -24,7 +23,6 @@ const EmotionDetection = () => {
     await faceapi.nets.faceExpressionNet.loadFromUri("/models");
     detectEmotions();
   };
-  alert('calling')
 
   const detectEmotions = () => {
     setInterval(async () => {
@@ -38,27 +36,15 @@ const EmotionDetection = () => {
           setEmotion(maxEmotion);
         }
 
-        if (canvasRef.current) {
-          const canvas = canvasRef.current;
-          const displaySize = { width: videoRef.current.width, height: videoRef.current.height };
-          faceapi.matchDimensions(canvas, displaySize);
-          const resizedDetections = faceapi.resizeResults(detections, displaySize);
-          canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-          faceapi.draw.drawDetections(canvas, resizedDetections);
-          faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
-        }
       }
     }, 500);
   };
-
   return (
     <div>
-      <h2>Emotion Detection</h2>
-      <video ref={videoRef} autoPlay muted width="600" height="400" />
-      <canvas ref={canvasRef} width="600" height="400" style={{ position: "absolute" }} />
-      <h3>Detected Emotion: {emotion}</h3>
+      <video style={{display: 'none'}} ref={videoRef} autoPlay muted width="600" height="400" />
     </div>
   );
 };
+
 
 export default EmotionDetection;
