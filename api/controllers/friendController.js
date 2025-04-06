@@ -1,28 +1,36 @@
 const Profile = require('../models/Profile')
 
-exports.postFrndReq = async(req,res,next) => {
+exports.postFrndReq = async (req, res, next) => {
     try {
-        let myProfile = req.profile
         let profile = req.body.profile
-        if(myProfile.friends.includes(profile)){
-            
+
+        let myProfile = await Profile.findById(req.profile._id)
+        if (myProfile.friends.includes(profile)) {
+
             return res.json({
                 message: 'Already Friend'
             })
         }
 
         let frndProfile = await Profile.findOne({
-            _id: profile
+            _id: profile,
+            'friends': {
+                $ne: myProfile._id,
+            }
         })
 
-        if(frndProfile.friendReqs.includes(myProfile._id)){
+        if (frndProfile.friendReqs.includes(myProfile._id)) {
             return res.json({
                 message: 'Already Requested'
             })
         }
 
-        let frndReq = await Profile.findOneAndUpdate({_id: frndProfile._id},{
-            
+        let frndReq = await Profile.findOneAndUpdate({
+            _id: frndProfile._id, 
+            friendReqs: {
+                $ne: myProfile._id,
+            }
+        }, {
             $push: {
                 friendReqs: myProfile._id
             }
@@ -30,16 +38,16 @@ exports.postFrndReq = async(req,res,next) => {
 
         return res.json(frndReq)
 
-        
+
     } catch (error) {
         next(error)
     }
 
 }
 
-exports.getFrndReq = async(req,res,next) => {
+exports.getFrndReq = async (req, res, next) => {
     try {
-        
+
         let myProfile = req.profile
         let profile = req.query.profile;
         let myProfileReqsId = myProfile.friendReqs
@@ -47,7 +55,7 @@ exports.getFrndReq = async(req,res,next) => {
             _id: myProfileReqsId
         }).populate({
             path: 'user',
-            select: ['firstName','surname']
+            select: ['firstName', 'surname']
         }).select('profilePic')
 
         return res.status(200).json(getFrndReqsInfo)
@@ -59,13 +67,14 @@ exports.getFrndReq = async(req,res,next) => {
     }
 
 }
-exports.getProfileFrnd = async(req,res,next) => {
+exports.getProfileFrnd = async (req, res, next) => {
 
     try {
         let profile = req.query.profile
+        if(profile == false) return next();
         let isSingle = req.query.single && req.query.single
-        if(isSingle){
-            let friendData = await profile.findOne({_id:profile})
+        if (isSingle) {
+            let friendData = await profile.findOne({ _id: profile })
             return res.json(friendData)
         }
 
@@ -76,11 +85,11 @@ exports.getProfileFrnd = async(req,res,next) => {
             select: ['profilePic'],
             populate: {
                 path: 'user',
-                select: ['firstName','surname','profile']
+                select: ['firstName', 'surname', 'profile']
             }
         })
 
-        let friendsData = friendProfile.friends? friendProfile.friends : {message: 'No Friends Found'}
+        let friendsData = friendProfile.friends ? friendProfile.friends : { message: 'No Friends Found' }
         res.json(friendsData)
 
 
@@ -90,7 +99,7 @@ exports.getProfileFrnd = async(req,res,next) => {
 
 }
 
-exports.getProfileSuggetions = async(req,res,next) => {
+exports.getProfileSuggetions = async (req, res, next) => {
     try {
 
         let profile = req.profile
@@ -104,7 +113,7 @@ exports.getProfileSuggetions = async(req,res,next) => {
         }).populate('user')
 
         res.json(getFrndSuggetions)
-        
+
     } catch (error) {
         next(error)
     }
@@ -112,38 +121,50 @@ exports.getProfileSuggetions = async(req,res,next) => {
 
 
 
-exports.postFrndAccept = async(req,res,next) => {
+exports.postFrndAccept = async (req, res, next) => {
     try {
         let profile = req.body.profile
         let myProfile = req.profile
 
         let updateFrndProfile = await Profile.findOneAndUpdate({
-            _id: profile
-        },{
+            _id: profile,
+            friends: {
+                $ne: myProfile._id,
+            }
+        }, {
             $push: {
                 friends: myProfile._id
             }
         })
 
         let updateMyProfile = await Profile.findByIdAndUpdate({
-            _id: myProfile._id
-        },{
+            _id: myProfile._id,
+            friends: {
+                $ne: profile,
+            }
+        }, {
             $push: {
                 friends: profile
             },
+        })
+
+
+        let updateFrnd = await Profile.findOneAndUpdate({
+            _id: myProfile._id
+        }, {
             $pull: {
                 friendReqs: profile
             }
-        })
+        }, { new: true })
 
 
         return res.status(200).json({
-            message:'Friend Request Accepted'
+            message: 'Friend Request Accepted'
         })
 
 
-       
-    
+
+
     } catch (error) {
         next(error)
     }
@@ -151,18 +172,18 @@ exports.postFrndAccept = async(req,res,next) => {
 
 }
 
-exports.postFrndDelete = async(req,res,next)=> {
+exports.postFrndDelete = async (req, res, next) => {
     try {
         let friendProfileId = req.body.profile
         let myProfile = req.profile
 
         let updateMyProfile = await Profile.findOneAndUpdate({
             _id: myProfile._id
-        },{
-            $pull : {
+        }, {
+            $pull: {
                 friendReqs: friendProfileId
             }
-        },{new: true})
+        }, { new: true })
 
         res.json(updateMyProfile)
 
@@ -172,26 +193,26 @@ exports.postFrndDelete = async(req,res,next)=> {
 
 }
 
-exports.postRemoveFrndReq = async(req,res,next) => {
+exports.postRemoveFrndReq = async (req, res, next) => {
     try {
         let frndProfileId = req.body.profile
         let myProfile = req.profile
 
         let updateFrnd = await Profile.findOneAndUpdate({
             _id: frndProfileId
-        },{
+        }, {
             $pull: {
                 friendReqs: myProfile._id
             }
-        },{new: true})
+        }, { new: true })
         res.json(updateFrnd)
-        
+
     } catch (e) {
         next(e)
     }
 }
 
-exports.postRemoveFrnd = async(req,res,next) => {
+exports.postRemoveFrnd = async (req, res, next) => {
     try {
 
         let myProfile = req.profile
@@ -201,7 +222,7 @@ exports.postRemoveFrnd = async(req,res,next) => {
 
         let updateMyProfile = await Profile.findOneAndUpdate({
             _id: myProfile._id
-        },{
+        }, {
             $pull: {
                 friends: frndProfile
             }
@@ -209,19 +230,19 @@ exports.postRemoveFrnd = async(req,res,next) => {
 
         let updateFrndProfile = await Profile.findByIdAndUpdate({
             _id: frndProfile
-        },{
+        }, {
             $pull: {
                 friends: myProfile._id
             }
         })
 
-        if (updateMyProfile && updateFrndProfile){
+        if (updateMyProfile && updateFrndProfile) {
 
             return res.json({
                 message: 'Friend removed From your profile'
             })
         }
-        
+
     } catch (error) {
         next(error)
     }

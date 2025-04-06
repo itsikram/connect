@@ -30,7 +30,7 @@ body {
     align-items: center !important;
     justify-content: center;
     background-color: #18191A;
-    z-index: 1000000000000000000000000000;
+    z-index: 999999999999;
     top: 0;
     left: 0;
 
@@ -245,64 +245,7 @@ body {
                         cursor: pointer;
                         border-radius: 50%;
 
-                        .hr-mm-container {
-                            padding: 10px;
-                            display: flex;
-                            flex-direction: column;
 
-                            a {
-                                text-decoration: none;
-                            }
-
-
-                            .all-profiles {
-
-                                display: flex;
-                                align-items: center;
-                                padding: 10px;
-                                background-color: $bbgc;
-                                cursor: pointer;
-                                border-radius: 10px;
-
-                                span {
-                                    margin-left: 10px;
-                                    color: $tc;
-                                    font-size: 18px;
-                                }
-                            }
-
-                            .profile-menus {
-                                background-color: $bbgc;
-                                border-radius: 10px;
-                                margin-top: 10px;
-                                padding: 10px;
-
-                                .profile-menu-item {
-                                    display: flex;
-                                    color: $tc;
-                                    margin-top: 5px;
-                                    align-items: center;
-                                    border-radius: 5px;
-
-                                    .menu-item-icon {
-                                        font-size: 20px;
-                                        margin-right: 5px;
-                                        padding: 5px 10px;
-                                        border-radius: 50%;
-                                        background-color: $bc;
-                                    }
-
-                                    .menu-item-name {
-                                        font-size: 18px;
-                                    }
-                                }
-
-                                .profile-menu-item:hover {
-                                    background-color: $bc;
-                                }
-                            }
-
-                        }
                     }
 
                     .header-quick-menu-item.active .header-quick-menu-icon {
@@ -354,6 +297,64 @@ body {
 
                 }
 
+
+            }
+            .hr-mm-container {
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+
+                a {
+                    text-decoration: none;
+                }
+
+
+                .all-profiles {
+
+                    display: flex;
+                    align-items: center;
+                    padding: 10px;
+                    background-color: $bbgc;
+                    cursor: pointer;
+                    border-radius: 10px;
+
+                    span {
+                        margin-left: 10px;
+                        color: $tc;
+                        font-size: 18px;
+                    }
+                }
+
+                .profile-menus {
+                    background-color: $bbgc;
+                    border-radius: 10px;
+                    margin-top: 10px;
+                    padding: 10px;
+
+                    .profile-menu-item {
+                        display: flex;
+                        color: $tc;
+                        margin-top: 5px;
+                        align-items: center;
+                        border-radius: 5px;
+
+                        .menu-item-icon {
+                            font-size: 20px;
+                            margin-right: 5px;
+                            padding: 5px 10px;
+                            border-radius: 50%;
+                            background-color: $bc;
+                        }
+
+                        .menu-item-name {
+                            font-size: 18px;
+                        }
+                    }
+
+                    .profile-menu-item:hover {
+                        background-color: $bc;
+                    }
+                }
 
             }
         }
@@ -615,6 +616,7 @@ body {
     border-radius: 5px;
     margin-bottom: 15px;
     padding: 12px;
+    margin-top: 20px;
 
 
     .top {
@@ -2660,9 +2662,7 @@ body {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 10px;
         border-bottom: 1px solid $bc;
-        position: absolute;
         width: 100%;
         background-color: $profilebg;
         z-index: 999;

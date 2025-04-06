@@ -43,8 +43,6 @@ io.on('connection', (socket) => {
   let rooms = [socket.handshake.query.profile]
   let homeRoom = rooms[0]
 
-  console.log('User connected with Profile ID:',);
-
   rooms.map(room => {
     socket.join(room);
   })
@@ -63,7 +61,6 @@ io.on('connection', (socket) => {
   socket.on('deleteMessage', async (messageId) => {
     let deletedMessages = await Message.findOneAndDelete({ _id: messageId });
     if (deletedMessages) {
-      console.log(deletedMessages)
       io.to(deletedMessages.room).emit('deleteMessage', messageId);
     }
   })
@@ -76,7 +73,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('sendMessage', async ({ room, senderId, receiverId, message }) => {
-    console.log(room, senderId, receiverId, message)
     const newMessage = new Message({ room, senderId, receiverId, message });
     await newMessage.save();
     let profileData = await Profile.findById(senderId).populate('user');
@@ -91,12 +87,11 @@ io.on('connection', (socket) => {
     io.to(friendId).emit('emotion_change', emotion);
   })
 
-  socket.on('typing', ({ room, isTyping, type }) => {
-    console.log(room, isTyping, true);
+  socket.on('typing', ({ room, isTyping, type,receiverId }) => {
     if (isTyping) {
-      socket.to(room).emit('typing', { isTyping: true, type });
+      socket.to(room).emit('typing', {receiverId, isTyping: true, type });
     } else {
-      socket.to(room).emit('typing', { isTyping: false });
+      socket.to(room).emit('typing', {receiverId, isTyping: false });
     }
     // socket.to(room).emit('typing');
   }

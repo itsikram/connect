@@ -4,11 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import api from '../api/api';
 import UserPP from '../components/UserPP';
-import { io } from 'socket.io-client';
-import MessageList from '../components/Message/MessageList';
 import moment from "moment";
 import $ from 'jquery'
-import EmotionDetection from '../components/Message/EmotionDetection';
 import * as faceapi from "face-api.js";
 
 
@@ -21,10 +18,8 @@ const Chat = ({ socket }) => {
     let [friendProfile, setFriendProfile] = useState({})
     const [room, setRoom] = useState('');
     const [messages, setMessages] = useState([]);
-    const [isLike, setIsLike] = useState(true);
     const [isTyping, setIsTyping] = useState(false);
     const [typeMessage, setTypeMessage] = useState('');
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [mInputWith, setmInputWith] = useState(true);
     const [inputValue, setInputValue] = useState('');
     const bottomRef = useRef(null);
@@ -36,9 +31,9 @@ const Chat = ({ socket }) => {
 
     const chatHeaderHeight = chatHeader.current?.offsetHeight;
     const chatFooterHeight = chatFooter.current?.offsetHeight;
-    const chatFooterWidth = chatFooter.current?.offsetWidth;
-    const newAttachmentWidth = chatNewAttachment.current?.offsetWidth;
-    const messageActionButtonContainerWidth = messageActionButtonContainer.current?.offsetWidth;
+    // const chatFooterWidth = chatFooter.current?.offsetWidth;
+    // const newAttachmentWidth = chatNewAttachment.current?.offsetWidth;
+    // const messageActionButtonContainerWidth = messageActionButtonContainer.current?.offsetWidth;
     // let isLoading = useSelector(state => state.option.isLoading);
 
     // messageInput.current.style.width = messageInputWidth;
@@ -48,11 +43,7 @@ const Chat = ({ socket }) => {
 
     const emotionVideoRef = useRef(null);
     const [emotion, setEmotion] = useState(false);
-    const [myEmotion,setMyEmotion ] = useState(false)
-
-
-
-
+    const [myEmotion, setMyEmotion] = useState(false)
 
     useEffect(() => {
 
@@ -66,11 +57,9 @@ const Chat = ({ socket }) => {
             dispatch(setLoading(false))
 
         }).catch(e => console.log(e))
-
-
+        // stopVideo()
 
     }, [params, friendId])
-
 
     useEffect(() => {
 
@@ -94,24 +83,38 @@ const Chat = ({ socket }) => {
 
         });
         socket.on('newMessage', (msg) => {
-            setMessages((prevMessages) => [...prevMessages, msg]);
-            setTimeout(() => {
-                document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
-            }, 500);
-        });
-        socket.on('deleteMessage', (messageId) => {
-            $(`#chatBox .chat-body .chat-message-list .chat-message-container.message-id-${messageId}`).remove();
-        })
-
-        socket.on('typing', ({ isTyping, type }) => {
-            if (isTyping == true) {
-                setIsTyping(true)
-                setTypeMessage(type)
+            if (msg.receiverId == userId && msg.senderId == friendId) {
+                setMessages((prevMessages) => [...prevMessages, msg]);
                 setTimeout(() => {
                     document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
                 }, 500);
-            } else {
-                setIsTyping(false)
+            }
+            if (msg.senderId == userId && msg.receiverId == friendId) {
+                setMessages((prevMessages) => [...prevMessages, msg]);
+                setTimeout(() => {
+                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
+                }, 500);
+            }
+
+        });
+        socket.on('deleteMessage', (messageId) => {
+            if ($(`#chatBox .chat-body .chat-message-list`).has(`.chat-message-container.message-id-${messageId}`)) {
+                $(`#chatBox .chat-body .chat-message-list .chat-message-container.message-id-${messageId}`).hide();
+            }
+        })
+
+        socket.on('typing', ({ receiverId, isTyping, type }) => {
+
+            if (receiverId == friendId) {
+                if (isTyping == true) {
+                    setIsTyping(true)
+                    setTypeMessage(type)
+                    setTimeout(() => {
+                        document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
+                    }, 500);
+                } else {
+                    setIsTyping(false)
+                }
             }
 
         })
@@ -151,26 +154,22 @@ const Chat = ({ socket }) => {
     }, [params, messages])
 
     useEffect(() => {
-
-
-        if(room) {
-            console.log(room,'room')
+        if (room) {
+            console.log(room, 'room')
             startVideo();
             loadModels();
         }
 
-    }, [room,params]);
-
-
+    }, [room, params]);
 
     useEffect(() => {
 
         console.log(myEmotion)
-        if(myEmotion && friendId) {
-           socket.emit('emotion_change',{room: room, emotion: myEmotion,friendId})
+        if (myEmotion && friendId) {
+            socket.emit('emotion_change', { room: room, emotion: myEmotion, friendId })
 
         }
-    },[myEmotion,friendId])
+    }, [myEmotion, friendId])
 
     useEffect(() => {
         socket.on('emotion_change', (emotion) => {
@@ -180,15 +179,29 @@ const Chat = ({ socket }) => {
         return () => {
             socket.off('emotion_change')
         }
-    },[emotion])
+    }, [emotion])
 
     const startVideo = () => {
+        if(!navigator.mediaDevices) return;
+        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+                emotionVideoRef.current.srcObject = stream;
+            }).catch((err) => console.error("Error accessing webcam: ", err));
+    };
+    const stopVideo = () => {
+        if (!navigator.mediaDevices) return;
         navigator.mediaDevices.getUserMedia({ video: true })
             .then((stream) => {
-                emotionVideoRef.current.srcObject = stream;
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    document.getElementById('video').srcObject = null;
+                  }
             })
             .catch((err) => console.error("Error accessing webcam: ", err));
     };
+
+    let handleVideoCallBtn = () => {
+
+    }
 
     const loadModels = async () => {
         await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
@@ -205,7 +218,7 @@ const Chat = ({ socket }) => {
                 if (detections.length > 0) {
                     const emotions = detections[0].expressions;
                     const maxEmotion = Object.keys(emotions).reduce((a, b) => emotions[a] > emotions[b] ? a : b);
-                    if(room && myEmotion !== maxEmotion) {
+                    if (room && myEmotion !== maxEmotion) {
                         setMyEmotion(maxEmotion)
                     }
                 }
@@ -230,11 +243,11 @@ const Chat = ({ socket }) => {
     }
 
     let addTyping = (e) => {
-        socket.emit('typing', { room, isTyping: true, type: inputValue })
+        socket.emit('typing', { receiverId: userId, room, isTyping: true, type: inputValue })
     }
 
     let removeTyping = () => {
-        socket.emit('typing', { room, isTyping: false, type: inputValue })
+        socket.emit('typing', { receiverId: userId, room, isTyping: false, type: inputValue })
     }
 
     let updateTyping = (e) => {
@@ -253,7 +266,6 @@ const Chat = ({ socket }) => {
         socket.emit('deleteMessage', messageId);
 
     }
-
 
     let handleLikeMessage = async (e) => {
 
@@ -278,14 +290,12 @@ const Chat = ({ socket }) => {
 
 
     let handleInputChange = (e) => {
-        setIsLike(false)
         setInputValue(e.target.value)
     }
 
     const cmlStyles = {
-        height: `${listContainerHeight + (isMobile ? (headerHeight) + chatFooterHeight : headerHeight)}px`,
-        maxHeight: `${listContainerHeight + (isMobile ? (chatHeaderHeight) + chatFooterHeight : chatHeaderHeight)}px`,
-        paddingTop: `${chatHeaderHeight}px`,
+        height: `${listContainerHeight}px`,
+        maxHeight: `${listContainerHeight}px`,
         overflowY: 'scroll'
     }
 
@@ -302,7 +312,7 @@ const Chat = ({ socket }) => {
 
     return (
         <div>
-            <video style={{ display: 'none' }} ref={emotionVideoRef} autoPlay muted width="600" height="400" />
+            <video style={{ display: 'block' }} ref={emotionVideoRef} autoPlay muted width="600" height="400" />
 
             <div id="chatBox" style={{ height: `${bodyHeight - headerHeight}px` }}>
                 <div ref={chatHeader} className='chat-header'>
@@ -311,13 +321,13 @@ const Chat = ({ socket }) => {
                             <UserPP profilePic={`${friendProfile.profilePic}`} hasStory={false} profile={friendProfile._id} active></UserPP>
                         </div>
                         <div className='chat-header-user-info'>
-                            <h4 className='chat-header-username'> {`${friendProfile.user && friendProfile.user.firstName} ${friendProfile.user && friendProfile.user.surname}`}</h4>
-                            <span className='chat-header-active-status'>Active Now</span> 
+                            <h4 className='chat-header-username'> {`${friendProfile?.user?.firstName ? friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname : friendProfile.fullName}`}</h4>
+                            <span className='chat-header-active-status'>Active Now</span>
 
                             {
-                                emotion&& (<span className='chat-header-active-status'> Emotion {emotion}</span>)
+                                emotion && (<span className='chat-header-active-status'> Emotion {emotion}</span>)
                             }
-                            
+
 
                         </div>
                     </div>
@@ -327,7 +337,7 @@ const Chat = ({ socket }) => {
                             <div className='call-button action-button'>
                                 <i className="fas fa-phone-alt"></i>
                             </div>
-                            <div className='video-call-button action-button'>
+                            <div onClick={handleVideoCallBtn} className='video-call-button action-button'>
                                 <i className="fas fa-video"></i>
                             </div>
                             <div className='info-button action-button'>
@@ -473,8 +483,6 @@ const Chat = ({ socket }) => {
 
                 </div>
             </div>
-
-
 
         </div>
     );

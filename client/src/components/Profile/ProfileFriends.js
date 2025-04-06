@@ -8,11 +8,12 @@ const ProfileFriends = () => {
 
     let myProfile = useSelector(state => state.profile)
     let [friendsData,setFriendsData] = useState([])
+    let [isAuth, setIsAuth] = useState(false)
 
     let params = useParams()
 
-
     useEffect(()=> {
+        setIsAuth(params.profile === myProfile._id ? true : false)
 
         api.get('/friend/getFriends',{
             params: {
@@ -37,11 +38,13 @@ const ProfileFriends = () => {
 
                     {
                         friendsData.map((friend,key)=> {
-                            if (friend._id !== myProfile._id) {
+                            if (!isAuth) {
+                                return  <PFI key={key} friend={friend}></PFI>
+
+                            }else if(friend._id !== myProfile._id) {
                                 return  <PFI key={key} friend={friend}></PFI>
 
                             }
-                            return;
                         })
                     }
 

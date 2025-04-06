@@ -2,14 +2,13 @@ const {Schema,model } = require('mongoose')
 const User = require('./User')
 
 
-
 let profileSchema = new Schema({
     username: {
         type: String,
         minLength: 5,
         maxLength: 50
     },
-    nickname: {
+    fullName: {
         type: String,
     },
     coverPic: {
@@ -28,7 +27,6 @@ let profileSchema = new Schema({
     friends: [{
         type: Schema.Types.ObjectId,
         ref: 'Profile'
-
     }],
     friendReqs: [{
         type: Schema.Types.ObjectId,

@@ -27,6 +27,7 @@ exports.signUp = async(req,res,next) => {
             let userData = await saveUser.save();
             let profileData = new Profile({
                 user: userData._id,
+                fullName: firstName +' ' + surname
             })
 
             let profile = await profileData.save()

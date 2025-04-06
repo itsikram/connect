@@ -5,7 +5,6 @@ import api from '../api/api'
 import { useDispatch, useSelector } from 'react-redux'
 let Login = (props) => {
 
-    var dispatch = useDispatch();
     let showSignup = (e) => {
         let target = e.currentTarget;
         $(target).parents('.login-container').siblings('.signup-container').fadeIn('fast')

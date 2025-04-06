@@ -10,7 +10,6 @@ exports.prefileHasStory = async function(req, res, next) {
 
     let profileId = req.query.profileId
     let hasStory = await Story.exists({author: profileId ,createdAt: { $gte: twentyFourHoursAgo }})
-    console.log('story',hasStory)
     if(hasStory == null) {
         return res.json({'message': 'Story Not Available','hasStory': 'no'}).status(200)
 
@@ -23,6 +22,8 @@ exports.prefileHasStory = async function(req, res, next) {
 }
 exports.profileGet = async function(req, res, next) {
     let profileId = req.query.profileId
+    if(profileId == false) return;
+
     let profileData = await Profile.findById(profileId).populate('user')
     if(profileData) {
         return res.json(profileData)
@@ -38,16 +39,13 @@ exports.profilePost = async(req,res,next) => {
 
     try {
         let profileId = req.body.profile
+        if(profileId == false) return;
 
-        let profileData = await Profile.findById(profileId).populate('user')
-
+        let profileData = await Profile.findById(profileId).populate(['friends','user'])
         if(profileData) {
             return res.json(profileData)
         }
 
-
-        
-        
     } catch (error) {
         console.log(error)
     }

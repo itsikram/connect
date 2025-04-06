@@ -18,6 +18,8 @@ let Profile = (props) => {
     let myProfileData = useSelector(state => state.profile) || {}
     let myProfileId = myProfileData._id
     let [profileData, setProfileData] = useState({ ...myProfileData })
+    let [isAuth, setIsAuth] = useState(false)
+    let [isFriend, setIsFriend] = useState(false)
 
     // setting effects
     useEffect(() => {
@@ -28,6 +30,7 @@ let Profile = (props) => {
             api.post('/profile', { profile: params.profile }).then(res => {
                 if (res.status === 200) {
                     setProfileData(res.data)
+
                     dispatch(setLoading(false))
                 }
 
@@ -39,7 +42,17 @@ let Profile = (props) => {
             console(error)
         }
 
-    }, [])
+    }, [params])
+
+    useEffect(() => {
+        setIsAuth(params.profile === myProfileId? true : false)
+        
+        myProfileData.friends && myProfileData.friends.filter(friendData => {
+            if (friendData._id === params.profile) {
+                setIsFriend(true)
+            }
+        })
+    },[myProfileData])
     let profilePath = "/" + profileData._id + "/"
 
     const SkeletonLoader = () => (
@@ -49,8 +62,8 @@ let Profile = (props) => {
             <div className="w-60 h-4 bg-gray-300 rounded"></div>
         </div>
     );
-    let isAuth = myProfileData._id === profileData._id
-    let isFriend = myProfileData.friends && myProfileData.friends.includes(profileData._id)
+
+        console.log('if',isFriend)
 
     // handle Active classes of profile Tab  menu
     let profileTabItemClick = (e) => {

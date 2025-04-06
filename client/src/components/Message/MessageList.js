@@ -42,8 +42,8 @@ const MessageList = ()=> {
                 <div className={"message-list-container"}>
                     <ul className={"message-list"}>
                         {
-                            messageList.map((messageItem,key) => {
-                                let authorFullName = messageItem.user.firstName + ' '+ messageItem.user.surname
+                           myProfile.friends && myProfile.friends.length > 0 ? myProfile.friends&& myProfile.friends.map((messageItem,key) => {
+                                let authorFullName = messageItem.fullName
                                 
                                 return <Link key={key} style={{textDecoration: 'none'}} to={`/message/${messageItem._id}`}>
                                 <li className={"message-list-item"}>
@@ -54,17 +54,13 @@ const MessageList = ()=> {
                                         <h4 className={"message-author-name"}>{authorFullName}</h4>
                                         <p className={"last-message-data"}>
                                             <span className={"last-message"}></span>
-                                            
-
-                                            <span className={"lest-msg-time"}></span></p>
+                                            <span className={"last-msg-time"}></span></p>
                                     </div>
                                 </li></Link> 
 
-                            })
+                            }) : <h4 className={"data-not-found"}>No Message List to Show</h4>
                         }
-                        {
-                            messageList.length ===0 && <h4 className={"data-not-found"}>No Message List to Show</h4>
-                        }
+                       
                     </ul>
                 </div>
             </div>

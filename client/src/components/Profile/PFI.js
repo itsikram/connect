@@ -1,6 +1,6 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState,useEffect } from 'react';
 import $ from 'jquery'
-import { Link } from 'react-router-dom';
+import { Link,useParams } from 'react-router-dom';
 import api from '../../api/api';
 import { useSelector } from 'react-redux';
 
@@ -10,8 +10,21 @@ const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/d
 const PFI = (props) => {
     let friend = props.friend
     let myProfile = useSelector(state => state.profile)
+    let params = useParams();
 
-    let isFriend = myProfile.friends && myProfile.friends.includes(friend._id)
+    let [isFriend, setIsFriend] = useState(false)
+
+    useEffect(() => {
+        myProfile.friends && myProfile.friends.filter(singleFrnd => {
+            if (singleFrnd._id === friend._id) {
+                setIsFriend(true)
+            }
+        })
+                
+    },[params])
+
+
+    // let isFriend = myProfile.friends && myProfile.friends.includes(friend._id)
     let isMe = myProfile._id === friend._id
 
     let friendFullName = friend.user && friend.user.firstName + " " + friend.user.surname

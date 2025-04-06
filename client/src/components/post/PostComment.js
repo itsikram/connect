@@ -161,7 +161,7 @@ const PostComment = (props) => {
                                         </div>
                                         <p className="comment-text">{comment.body}</p>
                                         {
-                                            isValidUrl(comment.attachment) &&
+                                            comment.attachment &&
                                             <div className='comment-attachment-container'>
                                                 <img src={comment.attachment} alt='attachment' />
                                             </div>

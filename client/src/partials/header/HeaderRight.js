@@ -16,6 +16,7 @@ let HeaderRight = () => {
     let dispatch = useDispatch()
     let [isMsgMenu, setIsMsgMenu] = useState(false);
     let [isProfileMenu, setIsProfileMenu] = useState(false);
+    let [isNotificationMenu, setIsNotificationMenu] = useState(false);
     let location = useLocation();
     let msgMegaMenuContainer = useRef(null);
     let msgMegaMenu = msgMegaMenuContainer.current ? msgMegaMenuContainer.current.children[0] : null;
@@ -48,6 +49,10 @@ let HeaderRight = () => {
 
     let clickProfileBtn = () => {
         setIsProfileMenu(!isProfileMenu)
+    }
+
+    let showNotificationList = () => {
+        setIsNotificationMenu(!isNotificationMenu)
     }
 
     let quickMenuBtnClick = (e) => {
@@ -95,27 +100,29 @@ let HeaderRight = () => {
 
                     </li>
 
-                    <li onClick={quickMenuBtnClick} className="header-quick-menu-item" title="">
+                    <li onClick={showNotificationList} className="header-quick-menu-item" title="">
                         <div className="header-quick-menu-icon">
                             <i className="far fa-bell"></i>
 
                         </div>
                     </li>
-                    <li onClick={quickMenuBtnClick} className="header-quick-menu-item" title="">
-                        <div className="header-quick-menu-icon hr-three-dot">
+                {/* <li onClick={quickMenuBtnClick} className="header-quick-menu-item" title="">
+                    <div className="header-quick-menu-icon hr-three-dot">
 
-                            <i className="far fa-ellipsis-v"></i>
-                            <i className="far fa-ellipsis-v"></i>
-                            <i className="far fa-ellipsis-v"></i>
+                        <i className="far fa-ellipsis-v"></i>
+                        <i className="far fa-ellipsis-v"></i>
+                        <i className="far fa-ellipsis-v"></i>
 
-                        </div>
-                    </li>
+                    </div>
+                </li> */}
                     <li onClick={clickProfileBtn} className="header-quick-menu-item item-profile" title="">
                         <div className="profile-pic">
                             <img src={pp_url} alt="Author Name" />
 
                         </div>
-                        { isProfileMenu && (
+
+                    </li>
+                    { isProfileMenu && (
                         <MegaMC style={{ right: 0, top: '100%', width: '300px', backgroundColor: '#29B1A9', borderRadius: '5px',display: 'block' }} className="hr-mega-menu">
                             <div className="hr-mm-container">
                                 <Link to={profilePath}>
@@ -146,7 +153,6 @@ let HeaderRight = () => {
                             </div>
                         </MegaMC>
                         )}
-                    </li>
                 </ul>
             </div>
         </Fragment>

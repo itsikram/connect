@@ -75,7 +75,6 @@ let FGI = (props) => {
         try {
             let target = e.target
             let res = api.post('/friend/sendRequest', { profile })
-
             $(target).text('Request Sent')
             $(target).parents('.friend-grid-item').fadeOut()
 
