@@ -1274,7 +1274,7 @@ body {
 
             }
 
-            .story-list-item:hover {
+            .story-list-item:hover,.story-list-item.active {
                 background-color: $bbgc !important;
             }
         }
@@ -1309,6 +1309,7 @@ body {
                     background-repeat: no-repeat !important;
                     min-height: 80vh;
                     backdrop-filter: blur(10px);
+
 
                     img {
                         width: 80%;

@@ -10,7 +10,7 @@ let UserPP = (props) => {
     const params = useParams();
     const [imageExists, setImageExists] = useState(null);
     const [hasStory, setHasStory] = useState(props.hasStory || false);
-    const [checkIsActive, setCheckIsActive] = useState(props.hasStory || false);
+    const [checkIsActive, setCheckIsActive] = useState(false);
     const [isActive, setIsActive] = useState(false);
     const myProfileId = userInfo.profile
 
@@ -31,7 +31,7 @@ let UserPP = (props) => {
     }
 
     useEffect(() => {
-        socket.emit('is_active', { profileId: profileId, myId: myProfileId })
+        // socket.emit('is_active', { profileId: profileId, myId: myProfileId })
         setCheckIsActive(props.updateActive || 'no')
         if (props?.active == true) {
             return setIsActive(true)

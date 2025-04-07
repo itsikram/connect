@@ -33,12 +33,15 @@ let Story = () => {
 
     function handleNextClick(e) {
         const currentIndex = stories.findIndex( story => story._id === storyId)
-        const nextStoryId = stories[currentIndex + 1]._id
+        const nextStoryId = stories[currentIndex + 1]?._id || stories[currentIndex]._id;
         navigate(nextStoryId)
 
     }
 
     function handlePrevClick(e) {
+        const currentIndex = stories.findIndex( story => story._id === storyId)
+        const prevStoryId = stories[currentIndex - 1]?._id || stories[currentIndex]._id;
+        navigate(prevStoryId)
         storyContainer.current.scrollBy({ left: 300, behavior: 'smooth' })
     }
 

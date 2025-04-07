@@ -73,7 +73,7 @@ const Chat = ({ socket }) => {
             setIsActive(data)
 
             let lastSeenTime = moment(ls)
-            const formattedTime = lastSeenTime.format("DD/MM/YY hh:mm A")
+            const formattedTime = lastSeenTime.format("hh:mm A")
             setLastSeen(formattedTime)
         })
 

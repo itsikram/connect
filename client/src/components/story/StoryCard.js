@@ -21,7 +21,6 @@ let StoryCard = (props) => {
         //         }
         //     }
         // })
-
     },[])
     return (
         <div className={`nf-story`}>

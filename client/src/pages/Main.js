@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState,useRef } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import { BrowserRouter as BR, Routes, Route, Link, useParams,useLocation } from 'react-router-dom'
 import Header from '../partials/header/Header';
@@ -20,7 +20,6 @@ import FriendRequests from "../components/friend/FriendRequests";
 import FriendSuggest from "../components/friend/FriendSuggest"
 import FriendHome from "../components/friend/FriendHome";
 import { useDispatch, useSelector } from "react-redux";
-import { logOut } from "../store(unused)/authReducer.js";
 import api from "../api/api";
 import { getPorfileReq, getProfileFailed, getProfileSuccess } from '../services/actions/profileActions'
 import { setLogin } from "../services/actions/authActions";
@@ -41,15 +40,30 @@ function showNotification(msg, receiverId) {
     };
 }
 
+
 const Main = () => {
     var dispatch = useDispatch();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     let isLoading = useSelector(state => state.option.isLoading);
     let params = useParams();
+    let audioElement = useRef(null)
 
+    const [isTabActive, setIsTabActive] = useState(!document.hidden);
+
+    useEffect(() => {
+      const handleVisibilityChange = () => {
+        setIsTabActive(!document.hidden);
+      };
+  
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
+    }, []);
 
     const notify = (msg, senderName,senderPP) => {
-        console.log(msg)
+        audioElement?.current.play();
         toast(
             <Link className="text-decoration-none text-secondary" to={`/message/${msg.senderId}`}>
                 <div style={{ color: "blue", fontWeight: "bold" }}>
@@ -63,14 +77,16 @@ const Main = () => {
                             <p className="text-small text-secondary text-muted mb-0">{msg.message}</p>
                         </div>
                     </div>
-
-
                 </div>
             </Link>
 
         );
 
     }
+
+
+
+
     const speakText = (text) => {
         if (!text) return;
 
@@ -82,13 +98,14 @@ const Main = () => {
         window.speechSynthesis.speak(speech);
     };
     let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
-    console.log(userInfo)
     const profileId = userInfo.profile
     useEffect(() => {
         socket.on('notification', (msg, senderName,senderPP) => {
-            notify(msg, senderName,senderPP)
-            if (!isMobile) {
-                if (Notification.permission === "granted") {
+            if(isTabActive == true) {
+                notify(msg, senderName,senderPP)
+
+            }else {
+                if (Notification && Notification.permission === "granted") {
                     showNotification(msg);
                 } else if (Notification.permission !== "denied") {
                     Notification.requestPermission().then(permission => {
@@ -98,6 +115,7 @@ const Main = () => {
                     });
                 }
             }
+            
 
         })
 
@@ -109,7 +127,7 @@ const Main = () => {
             socket.off('notification');
             socket.off('speak_message');
         };
-    }, [socket])
+    }, [socket,isTabActive])
 
 
     useEffect(() => {
@@ -142,6 +160,7 @@ const Main = () => {
 
     return (
         <Fragment>
+            <audio ref={audioElement} src="https://programmerikram.com/wp-content/uploads/2025/02/fiverr_old_client_sound.mp3"></audio>
 
             <BR>
 

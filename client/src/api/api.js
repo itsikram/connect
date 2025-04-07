@@ -8,7 +8,6 @@ const api = axios.create({
     baseURL: process.env.REACT_APP_SERVER_ADDR+'/api/',
     headers: {
         'Authorization' : `${token}`,
-        'ngrok-skip-browser-warning' : true,
         "User-Agent": "MyCustomUserAgent",
         "Access-Control-Allow-Origin": "*",
         

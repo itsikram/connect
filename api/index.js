@@ -142,7 +142,8 @@ io.on('connection', (socket) => {
     } else {
       isActive = true;
     }
-    return io.to(myId).emit('is_active',isActive,userLastLogin);
+    // console.log(profileId,isActive);
+    return io.to(myId).emit('is_active',isActive,userLastLogin,profileId);
   })
 
   socket.on('disconnect', () => {

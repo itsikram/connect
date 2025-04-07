@@ -13,21 +13,18 @@ const StoryLists = (props) => {
         let getMessageTime = (timestamp) => {
             const inputDate = moment(timestamp);
             const now = moment();
-        
-        
             // Format based on condition
             const formattedTime = inputDate.format("dddd, hh:mm A")
-        
             return formattedTime;
         }
 
     return (
         <>
             <div className="story-list-container">
-
+                
                 {stories.map((singleStory, key) => {
                     return <Link to={'/story/'+singleStory._id} className='text-decoration-none story-link' key={key}>
-                        <div className='story-list-item mb-2'>
+                        <div className={`story-list-item mb-2 ${storyId == singleStory._id ? 'active': ''}`}>
                             <div className='d-flex justify-content-center align-items-center'>
                                 <div className='story-pp-container text-end'>
                                     <UserPP profilePic={singleStory?.author?.profilePic} hasStory={true} profile={singleStory?.author._id}></UserPP>

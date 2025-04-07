@@ -58,7 +58,7 @@ const SingleStory = (props) => {
         if (story.image) {
           getAverageColor(story.image);
         }
-      }, [storyId]);
+      }, [storyId,setTimeout(() => {},[2000])]);
       console.log(storyBg)
 
     return (
