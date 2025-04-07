@@ -8,6 +8,19 @@ import moment from "moment";
 import $ from 'jquery'
 import * as faceapi from "face-api.js";
 
+const useMediaQuery = (query) => {
+    const [matches, setMatches] = useState(window.matchMedia(query).matches);
+
+    useEffect(() => {
+        const media = window.matchMedia(query);
+        const listener = (e) => setMatches(e.matches);
+        media.addEventListener("change", listener);
+        return () => media.removeEventListener("change", listener);
+    }, [query]);
+
+    return matches;
+};
+
 
 const Chat = ({ socket }) => {
     let dispatch = useDispatch();
@@ -22,28 +35,52 @@ const Chat = ({ socket }) => {
     const [typeMessage, setTypeMessage] = useState('');
     const [mInputWith, setmInputWith] = useState(true);
     const [inputValue, setInputValue] = useState('');
+    const [isActive, setIsActive] = useState(false);
+    const [lastSeen, setLastSeen] = useState(false);
     const bottomRef = useRef(null);
     let messageInput = useRef(null);
     const chatHeader = useRef(null);
     const chatFooter = useRef(null);
     const chatNewAttachment = useRef(null);
     const messageActionButtonContainer = useRef(null);
+    const isMobile = useMediaQuery("(max-width: 768px)");
 
     const chatHeaderHeight = chatHeader.current?.offsetHeight;
     const chatFooterHeight = chatFooter.current?.offsetHeight;
-    // const chatFooterWidth = chatFooter.current?.offsetWidth;
-    // const newAttachmentWidth = chatNewAttachment.current?.offsetWidth;
-    // const messageActionButtonContainerWidth = messageActionButtonContainer.current?.offsetWidth;
-    // let isLoading = useSelector(state => state.option.isLoading);
+    const chatFooterWidth = chatFooter.current?.offsetWidth;
+    const newAttachmentWidth = chatNewAttachment.current?.offsetWidth;
+    const messageActionButtonContainerWidth = messageActionButtonContainer.current?.offsetWidth;
+    const messageInputWidth = chatFooterWidth - newAttachmentWidth - messageActionButtonContainerWidth
+    let isLoading = useSelector(state => state.option.isLoading);
 
-    // messageInput.current.style.width = messageInputWidth;
+    if (messageInput.current !== null) {
+        messageInput.current.style.width = messageInputWidth + 'px'
+    }
+
+
     const listContainerHeight = bodyHeight - headerHeight - chatHeaderHeight - chatFooterHeight
+    const chatBoxHeight = bodyHeight - headerHeight
     let params = useParams()
     let friendId = params.profile;
 
     const emotionVideoRef = useRef(null);
     const [emotion, setEmotion] = useState(false);
     const [myEmotion, setMyEmotion] = useState(false)
+
+    useEffect(() => {
+        socket.emit('is_active', { profileId: friendId, myId: userId });
+        socket.on('is_active', (data,ls) => {
+            setIsActive(data)
+
+            let lastSeenTime = moment(ls)
+            const formattedTime = lastSeenTime.format("DD/MM/YY hh:mm A")
+            setLastSeen(formattedTime)
+        })
+
+        return () => {
+            socket.off('is_active')
+        }
+    }, [params])
 
     useEffect(() => {
 
@@ -182,10 +219,10 @@ const Chat = ({ socket }) => {
     }, [emotion])
 
     const startVideo = () => {
-        if(!navigator.mediaDevices) return;
+        if (!navigator.mediaDevices) return;
         navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-                emotionVideoRef.current.srcObject = stream;
-            }).catch((err) => console.error("Error accessing webcam: ", err));
+            emotionVideoRef.current.srcObject = stream;
+        }).catch((err) => console.error("Error accessing webcam: ", err));
     };
     const stopVideo = () => {
         if (!navigator.mediaDevices) return;
@@ -194,7 +231,7 @@ const Chat = ({ socket }) => {
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
                     document.getElementById('video').srcObject = null;
-                  }
+                }
             })
             .catch((err) => console.error("Error accessing webcam: ", err));
     };
@@ -288,21 +325,19 @@ const Chat = ({ socket }) => {
         }, 200)
     }
 
-
     let handleInputChange = (e) => {
         setInputValue(e.target.value)
     }
 
     const cmlStyles = {
-        height: `${listContainerHeight}px`,
-        maxHeight: `${listContainerHeight}px`,
+        height: `${isMobile ? bodyHeight - headerHeight - chatFooterHeight - chatHeaderHeight : listContainerHeight}px`,
+        maxHeight: `${isMobile ? listContainerHeight + headerHeight : listContainerHeight}px`,
         overflowY: 'scroll'
     }
 
     let getMessageTime = (timestamp) => {
         const inputDate = moment(timestamp);
         const now = moment();
-
 
         // Format based on condition
         const formattedTime = inputDate.format("DD/MM/YY hh:mm A")
@@ -312,22 +347,21 @@ const Chat = ({ socket }) => {
 
     return (
         <div>
-            <video style={{ display: 'block' }} ref={emotionVideoRef} autoPlay muted width="600" height="400" />
+            <video style={{ display: 'none' }} ref={emotionVideoRef} autoPlay muted width="600" height="400" />
 
-            <div id="chatBox" style={{ height: `${bodyHeight - headerHeight}px` }}>
+            <div id="chatBox" style={{ minHeight: `${chatBoxHeight}px` }}>
                 <div ref={chatHeader} className='chat-header'>
                     <div className='chat-header-user'>
                         <div className='chat-header-profilePic'>
-                            <UserPP profilePic={`${friendProfile.profilePic}`} hasStory={false} profile={friendProfile._id} active></UserPP>
+                            <UserPP profilePic={`${friendProfile.profilePic}`} hasStory={false} profile={friendProfile._id} active={ isActive ? true : false}></UserPP>
                         </div>
                         <div className='chat-header-user-info'>
-                            <h4 className='chat-header-username'> {`${friendProfile?.user?.firstName ? friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname : friendProfile.fullName}`}</h4>
-                            <span className='chat-header-active-status'>Active Now</span>
+                            <h4 className='chat-header-username'> {`${friendProfile == true && friendProfile.fullName ? friendProfile.fullName : friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname}`}</h4>
+                            {isActive ? (<span className='chat-header-active-status'>Active Now</span>) : (lastSeen &&<span className='chat-header-active-status'>Last Seen: {lastSeen}</span>)}
 
                             {
                                 emotion && (<span className='chat-header-active-status'> Emotion {emotion}</span>)
                             }
-
 
                         </div>
                     </div>
@@ -347,95 +381,92 @@ const Chat = ({ socket }) => {
                     </div>
 
                 </div>
-                <div>
-                    <div className='chat-body'>
-                        <div className='chat-message-list' style={cmlStyles} id='chatMessageList' ref={bottomRef} >
+                <div className='chat-body'>
+                    <div className='chat-message-list' style={cmlStyles} id='chatMessageList' ref={bottomRef} >
 
-                            {
-                                messages.map((msg, index) => {
-                                    return (
-
-
-                                        msg.senderId !== userId ?
+                        {
+                            messages.map((msg, index) => {
+                                return (
 
 
-                                            <div key={index} className={`chat-message-container message-receive message-id-${msg._id}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
-                                                <div className='chat-message-profilePic'>
-                                                    <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
-                                                </div>
-                                                <div className='chat-message'>
-                                                    <div className='chat-message-options'>
-                                                        <button type='button' dataid={msg._id} className='chat-message-option like' onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
-                                                        <button type='button' dataid={msg._id} className='chat-message-option share' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
-
-                                                        <button type='button' dataid={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(msg)}><i className="fa fa-trash"></i></button>
-                                                    </div>
+                                    msg.senderId !== userId ?
 
 
-                                                    <p className='message-container mb-0'>
-                                                        {msg.message}
-                                                    </p>
-                                                </div>
-                                                <div className='chat-message-seen-status d-none'>
-                                                    Seen
-                                                </div>
+                                        <div key={index} className={`chat-message-container message-receive message-id-${msg._id}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
+                                            <div className='chat-message-profilePic'>
+                                                <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active={isActive? true: false} ></UserPP>
                                             </div>
-                                            :
+                                            <div className='chat-message'>
+                                                <div className='chat-message-options'>
+                                                    <button type='button' dataid={msg._id} className='chat-message-option like' onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
+                                                    <button type='button' dataid={msg._id} className='chat-message-option share' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
 
-                                            <div key={index} className={`chat-message-container message-sent message-id-${msg._id}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
-
-
-                                                <div className='chat-message'>
-                                                    <div className='chat-message-options'>
-                                                        <button type='button' dataid={msg._id} className='chat-message-option like' onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
-                                                        <button type='button' dataid={msg._id} className='chat-message-option share speaker' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
-
-                                                        <button type='button' dataid={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(this)}><i className="fa fa-trash"></i></button>
-                                                    </div>
-
-                                                    <p className='message-container mb-0' >
-                                                        {msg.message}
-                                                    </p>
-
-
+                                                    <button type='button' dataid={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(msg)}><i className="fa fa-trash"></i></button>
                                                 </div>
 
-                                                {
 
-                                                    <div className='chat-message-seen-status' style={{ 'visibility': (messages[messages.length - 1]._id === msg._id && msg.isSeen == true) ? 'visible' : 'hidden' }}>
-                                                        <img src={friendProfile.profilePic} alt='Seen' />
-                                                    </div>
-                                                }
+                                                <p className='message-container mb-0'>
+                                                    {msg.message}
+                                                </p>
+                                            </div>
+                                            <div className='chat-message-seen-status d-none'>
+                                                Seen
+                                            </div>
+                                        </div>
+                                        :
+
+                                        <div key={index} className={`chat-message-container message-sent message-id-${msg._id}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
+
+
+                                            <div className='chat-message'>
+                                                <div className='chat-message-options'>
+                                                    <button type='button' dataid={msg._id} className='chat-message-option like' onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
+                                                    <button type='button' dataid={msg._id} className='chat-message-option share speaker' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
+
+                                                    <button type='button' dataid={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(this)}><i className="fa fa-trash"></i></button>
+                                                </div>
+
+                                                <p className='message-container mb-0' >
+                                                    {msg.message}
+                                                </p>
+
+
                                             </div>
 
+                                            {
 
-                                    )
-                                })
-
-                            }
-
-                            {
-                                isTyping && (
-                                    <div className={`chat-message-container message-receive message-typing`}>
-                                        <div className='chat-message-profilePic'>
-                                            <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
-                                        </div>
-                                        <div className='chat-message'>
-
-                                            <p className='message-container mb-0'>
-                                                {typeMessage || '...'}
-                                            </p>
+                                                <div className='chat-message-seen-status' style={{ 'visibility': (messages[messages.length - 1]._id === msg._id && msg.isSeen == true) ? 'visible' : 'hidden' }}>
+                                                    <img src={friendProfile.profilePic} alt='Seen' />
+                                                </div>
+                                            }
                                         </div>
 
-                                    </div>
+
                                 )
-                            }
+                            })
+
+                        }
+
+                        {
+                            isTyping && (
+                                <div className={`chat-message-container message-receive message-typing`}>
+                                    <div className='chat-message-profilePic'>
+                                        <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active></UserPP>
+                                    </div>
+                                    <div className='chat-message'>
+
+                                        <p className='message-container mb-0'>
+                                            {typeMessage || '...'}
+                                        </p>
+                                    </div>
+
+                                </div>
+                            )
+                        }
 
 
 
-                        </div>
                     </div>
-
                 </div>
 
                 <div ref={chatFooter} className="chat-footer">

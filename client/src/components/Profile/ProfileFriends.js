@@ -13,7 +13,12 @@ const ProfileFriends = () => {
     let params = useParams()
 
     useEffect(()=> {
-        setIsAuth(params.profile === myProfile._id ? true : false)
+        let isAuth = params.profile === myProfile._id ? true : false
+        setIsAuth(isAuth)
+        if(isAuth) {
+            return setFriendsData(myProfile.friends)
+
+        }
 
         api.get('/friend/getFriends',{
             params: {
@@ -24,7 +29,7 @@ const ProfileFriends = () => {
             setFriendsData(res.data)
         }).catch(e => console.log(e))
 
-    },[params])
+    },[params,myProfile])
 
 
     return (

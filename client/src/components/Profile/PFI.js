@@ -27,7 +27,7 @@ const PFI = (props) => {
     // let isFriend = myProfile.friends && myProfile.friends.includes(friend._id)
     let isMe = myProfile._id === friend._id
 
-    let friendFullName = friend.user && friend.user.firstName + " " + friend.user.surname
+    let friendFullName = friend.fullName? friend.fullName : friend.user && friend.user.firstName + " " + friend.user.surname
 
     const [imageExists, setImageExists] = useState(null);
 

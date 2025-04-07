@@ -12,17 +12,10 @@ const profileId = userInfo.profile
 const MessageList = ()=> {
 
     let myProfile = useSelector(state => state.profile)
-    const [messageList,setMessageList] = useState([])
 
     useEffect(()=> {
 
-        api.get('/friend/getFriends',{
-            params: {
-                profile:  profileId
-            }
-        }).then(res => {
-            setMessageList(res.data)
-        }).catch(e => console.log(e))
+
 
     },[])
 
@@ -44,11 +37,10 @@ const MessageList = ()=> {
                         {
                            myProfile.friends && myProfile.friends.length > 0 ? myProfile.friends&& myProfile.friends.map((messageItem,key) => {
                                 let authorFullName = messageItem.fullName
-                                
                                 return <Link key={key} style={{textDecoration: 'none'}} to={`/message/${messageItem._id}`}>
                                 <li className={"message-list-item"}>
                                     <div className={"user-profilePic"}>
-                                        <UserPP profilePic={messageItem.profilePic} profile={messageItem.user.profile}></UserPP>
+                                        <UserPP profilePic={messageItem.profilePic} profile={messageItem._id} updateActive='no'></UserPP>
                                     </div>
                                     <div className={'user-data'}>
                                         <h4 className={"message-author-name"}>{authorFullName}</h4>

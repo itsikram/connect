@@ -15,11 +15,32 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-#root {
-    height: 100vh;
+
+
+/* Width of the scrollbar */
+#chatMessageList::-webkit-scrollbar {
+    width: 3px !important;
+    /* or height: 8px; for horizontal scroll */
 }
 
+/* Track (the background) */
+::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 10px;
+}
 
+/* Handle (the draggable part) */
+::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    /* padding */
+}
+
+/* On hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
 
 
 #site-loader {
@@ -299,6 +320,7 @@ body {
 
 
             }
+
             .hr-mm-container {
                 padding: 10px;
                 display: flex;
@@ -1406,6 +1428,7 @@ body {
     #nf-story-container {
         position: relative;
         min-height: 160px;
+
         .nf-story-overflow-container {
             overflow-x: auto;
             white-space: nowrap;
@@ -2479,7 +2502,6 @@ body {
 
 #message {
     background: $profilebg;
-    margin-bottom: 5px;
     overflow: hidden;
 
     .left-sidebar-container {
@@ -2642,13 +2664,17 @@ body {
 
     /* Hide scrollbar track */
     ::-webkit-scrollbar {
-        width: 2px !important;
+        width: 5px !important;
+        /* Adjust the width */
+    }
+    ::-moz-scrollbar {
+        width: 5px !important;
         /* Adjust the width */
     }
 
     /* Scrollbar thumb (draggable part) */
     ::-webkit-scrollbar-thumb {
-        background-color: red;
+        background-color: gray;
         border-radius: 10px;
     }
 
@@ -2656,7 +2682,7 @@ body {
     ::-webkit-scrollbar-track {
         background: transparent;
     }
-
+    scrollbar-width: thin !important;
     .chat-header {
 
         display: flex;
@@ -2722,7 +2748,7 @@ body {
 
     .chat-body {
         .chat-message-list {
-
+            
             .chat-message-container:hover .chat-message-options {
                 display: flex;
             }
@@ -2733,8 +2759,6 @@ body {
                 margin-bottom: 5px;
                 position: relative;
                 min-width: 120px;
-
-
 
                 .chat-message-options {
                     position: absolute;
@@ -3295,9 +3319,10 @@ body {
         transform: translateY(-80%);
         height: fit-content;
     }
+
     #chatBox .chat-body .chat-message-list .chat-message-container .chat-message-options {
         flex-direction: column;
-        
+
         .chat-message-option {
             margin: 3px 0;
         }

@@ -117,55 +117,33 @@ io.on('connection', (socket) => {
 
   socket.on('update_last_login', async function(userId) {
     if(!userId) return;
-    let user =  await User.findOneAndUpdate({_id:userId},{lastLogin: new Date(Date.now()).getTime() },{new: true});
+    await User.findOneAndUpdate({_id:userId},{lastLogin: new Date(Date.now()).getTime() },{new: true});
   })
-
-
-  socket.on('is_active',async(profileId,userId = null) => {
+  socket.on('is_active',async(data) => {
     let isActive = false
     let userLastLogin = false;
-
-
-    // if(!userId) return;
-
+    let profileId = data.profileId
+    if(profileId && profileId.length < 5) return;
+    let myId = data.myId
 
     if(profileId) {
       let profile = await Profile.findById(profileId).populate('user');
-      
-      if(profile.user.lastLogin > 100) {
+
+      if(profile.user.lastLogin) {
         userLastLogin = new Date(profile.user.lastLogin).getTime();
       }
-      ;
     }
-
-    if(!userLastLogin)  {
-      let user = await User.findById(userId);
-      if(!user) return;
-      userLastLogin =  new Date(user.lastLogin).getTime();
-    }
-
     let currentTime = Date.now()
 
-    // if ((currentTime.getTime() - 5 * 60 * 1000) - userLastLogin) {
-    //   console.log("The difference is 5 minutes or more.");
-    // } else {
-    //   console.log("The difference is less than 5 minutes.");
-    //   isActive = true;
-    // }
-
-    if(currentTime -5 * 60 * 1000 > userLastLogin ) {
-      isActive = true
-    }else {
-      isActive = false;
+    const diff = Math.abs(userLastLogin -currentTime);
+    const fiveMinutes = 5 * 60 * 1000;
+    if (diff > fiveMinutes) {
+      isActive = false
+    } else {
+      isActive = true;
     }
-
-    console.log(currentTime,userLastLogin,isActive);
-
-
-
-    io.to(profileId).emit('is_active',isActive);
+    return io.to(myId).emit('is_active',isActive,userLastLogin);
   })
-
 
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);
