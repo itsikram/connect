@@ -47,9 +47,9 @@ let HeaderNav = () => {
 
                                     </div>
                                 </NavLink>
-                                <NavLink to="/groups" onClick={addActiveClass}  className="header-nav-menu-item" title="Groups"> 
+                                <NavLink to="/story" onClick={addActiveClass}  className="header-nav-menu-item" title="Story"> 
                                     <div className="header-nav-menu-icon">
-                                    <i className="fal fa-users-crown"></i>
+                                    <i className="fal fa-images"></i>
 
                                     </div>
                                 </NavLink>

@@ -1,20 +1,41 @@
-import React, {Fragment, useEffect, useState} from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate,useParams } from 'react-router-dom';
-
-import api from '../../api/api';
+import { useNavigate, useParams } from 'react-router-dom';
 import UserPP from '../../components/UserPP';
-
+import socket from '../../common/socket';
 
 let RightSidebar = () => {
     let params = useParams();
     let navigate = useNavigate()
-    let userJson = localStorage.getItem('user') ?localStorage.getItem('user') : '{}'
-    let {profile} = JSON.parse(userJson)
+    let userJson = localStorage.getItem('user') ? localStorage.getItem('user') : '{}'
+    let { profile } = JSON.parse(userJson)
     let myProfile = useSelector(state => state.profile)
     let [friendsData, setFriendsData] = useState([])
+    const [activeFriends, setActiveFriends] = useState([]);
 
-    useEffect(()=> {
+
+    useEffect(() => {
+
+        myProfile.friends && myProfile.friends.map((profile, key) => {
+
+            socket.emit('is_active', { profileId: profile._id, myId: myProfile._id })
+            socket.on('is_active', (isUserActive, lastLogin, activeProfileId) => {
+                if (isUserActive == true) {
+                    if (!activeFriends.includes(activeProfileId)) {
+                        return setActiveFriends([...activeFriends, activeProfileId])
+                    }
+                }
+            })
+            return () => socket.off('is_active');
+
+        })
+
+        return () => socket.off('is_active');
+
+    }, [myProfile, setTimeout(() => { return true }), [2000]])
+
+
+    useEffect(() => {
 
         setFriendsData(myProfile.friends)
 
@@ -22,17 +43,17 @@ let RightSidebar = () => {
         //     params: {
         //         profile: profile
         //     }
-            
+
         // }).then(res => {
         //     setFriendsData(res.data)
         // }).catch(e => {
         //     console.log(e)
         // })
-    },[params])
+    }, [params])
 
     let redirectToMessage = (e) => {
         let profileId = e.currentTarget.dataset.profile
-        navigate('/message/'+profileId)
+        navigate('/message/' + profileId)
     }
 
     return (
@@ -41,21 +62,23 @@ let RightSidebar = () => {
                 <h3 className="rs-nav-title">Contacts</h3>
                 <ul className="rs-nav-menu">
                     {
-                        friendsData && friendsData.length > 1 && friendsData.map((data,key) => {
-                             
-                            return <li key={key}>
-                            <div className='rs-nav-menu-item' data-profile={data._id} onClick={redirectToMessage.bind(this)}>
-                                <div className='rs-profile-img-container'>
-                                    <div className='active-icon'></div>
-                                    <div className='rs-profile-img'>
-                                        <UserPP profilePic={`${data.profilePic}`} profile={data._id}></UserPP>
+                        friendsData && friendsData.length > 1 && friendsData.map((data, key) => {
 
-                                    </div> 
+                            let isFrndActive = activeFriends.includes(data._id)
+
+                            return <li key={key}>
+                                <div className='rs-nav-menu-item' data-profile={data._id} onClick={redirectToMessage.bind(this)}>
+                                    <div className='rs-profile-img-container'>
+                                        <div className='active-icon'></div>
+                                        <div className='rs-profile-img'>
+                                            <UserPP profilePic={`${data.profilePic}`} profile={data._id} active={isFrndActive}></UserPP>
+
+                                        </div>
+                                    </div>
+
+                                    <div className='rs-text user-name'>{data.fullName ? data.fullName : data.user.firstName + ' ' + data.user.surname}</div>
                                 </div>
-                                
-                                <div className='rs-text user-name'>{data.fullName ? data.fullName : data.user.firstName + ' '+data.user.surname}</div>
-                            </div>
-                        </li>
+                            </li>
                         })
                     }
 

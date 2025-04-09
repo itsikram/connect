@@ -279,8 +279,8 @@ body {
                         }
                     }
 
-                    .header-quick-menu-item:last-child {
-                        padding: 0;
+                    .header-quick-menu-item.item-profile {
+                        padding: 0 !important;
                         clear: both;
                     }
 
@@ -632,6 +632,16 @@ body {
 
 }
 
+
+#home {
+
+    .nf-create-post {
+        width: 90%;
+        margin: auto;
+        margin-top: 20px;
+    }
+
+}
 .nf-create-post {
     min-height: 100px;
     background-color: #242526;
@@ -2420,7 +2430,7 @@ body {
 
     .left-sidebar-container {
         padding: 10px;
-        border-right: 1px solid $bc;
+        border-right: 1px solid transparent;
         height: 100%;
 
         .message-leftside-header {
@@ -3300,20 +3310,65 @@ body {
 }
 
 
-
-
-
-
-
 .page-title {
     font-weight: 22px;
     font-weight: 600;
     color: $tc;
 }
 
+.hr-notificaiton-menu-container {
+    .hr-notificaiton-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        .hr-notificaiton-item {
+            margin-bottom: 10px;
+            transition: 0.3s;
+            padding: 8px;
+            border-radius: 5px;
+
+            .hr-notification-row {
+                display: flex;
+                align-items: center;
+                .hr-notification-col-2 {
+                    width: 17%;
+                    float: left;
+                    margin-right: 3%;
+                    .hr-notification-icon-continaer {
+                        border-radius: 50%;
+                        overflow: hidden;
+                        img {
+                            width: 100%;
+                        }
+        
+                    }
+
+                }
+                .hr-notification-col-10 {
+                    width: 80%;
+                    .hr-notification-text {
+                        text-align: left;
+                        margin-bottom: 0;
+                        color: $tc;
+                        text-decoration: none;
+                        line-height: 1.2;
+                    }
+                }
+            }
+
+        }
+
+        .hr-notificaiton-item.unseen, .hr-notificaiton-item:hover {
+            background-color: $bbgc;
+        }
+    }
+}
+
 @media only screen and (max-width: 768px) {
 
-
+    #home .nf-create-post {
+        width: 100%;
+    }
 
     #chatBox .chat-body .chat-message-list .chat-message-container:last-child .chat-message-options {
         bottom: 0;

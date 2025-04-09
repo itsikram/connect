@@ -1,8 +1,7 @@
 const Story = require('../models/Story')
 const Profile = require('../models/Profile')
 const Comment = require('../models/Comment')
-
-
+const mongoose = require('mongoose')
 
 exports.postStory = async(req,res,next) => {
     try {
@@ -52,30 +51,34 @@ exports.getMyStories = async(req,res,next) => {
     try {
         let profile_id = req.query.profile;
 
-
-        let stories = await Story.find({author: profile_id}).populate([
-            {
-                path: 'author',
-                model: Profile,
-                populate: {
-                    path: 'user'
-                }
-            },
-            {
-                path: 'comments',
-                model: Comment,
-                populate: {
+        if(mongoose.isValidObjectId(profile_id)) {
+            let stories = await Story.find({author: profile_id}).populate([
+                {
                     path: 'author',
-                    select: ['profilePic','user'],
+                    model: Profile,
                     populate: {
-                        path: 'user',
-                        select: ['firstName','surname']
+                        path: 'user'
+                    }
+                },
+                {
+                    path: 'comments',
+                    model: Comment,
+                    populate: {
+                        path: 'author',
+                        select: ['profilePic','user'],
+                        populate: {
+                            path: 'user',
+                            select: ['firstName','surname']
+                        }
                     }
                 }
-            }
-        ]).sort({'createdAt': -1})
+            ]).sort({'createdAt': -1})
+    
+            return res.json(stories).status(200)
+        }
 
-        res.json(stories).status(200)
+        return res.json({message: 'Invalid Profile Id'}).status(403)
+
         
     } catch (error) {
         next(error)
@@ -87,30 +90,37 @@ exports.getSingleStory = async(req,res,next) => {
 
         let storyId = req.query.storyId;
 
-        let story = await Story.findById(storyId).populate([
-            {
-                path: 'author',
-                model: Profile,
-                populate: {
-                    path: 'user'
-                }
-            },
-            {
-                path: 'comments',
-                model: Comment,
-                populate: {
+
+        if(mongoose.isValidObjectId(storyId)) {
+            let story = await Story.findById(storyId).populate([
+                {
                     path: 'author',
-                    select: ['profilePic','user'],
+                    model: Profile,
                     populate: {
-                        path: 'user',
-                        select: ['firstName','surname']
+                        path: 'user'
+                    }
+                },
+                {
+                    path: 'comments',
+                    model: Comment,
+                    populate: {
+                        path: 'author',
+                        select: ['profilePic','user'],
+                        populate: {
+                            path: 'user',
+                            select: ['firstName','surname']
+                        }
                     }
                 }
-            }
-        ]).limit(10).sort({'createdAt': -1})
-        console.log('s id',storyId,story)
+            ]).limit(10).sort({'createdAt': -1})
+            console.log('s id',storyId,story)
+    
+            return res.json(story).status(200)
+        }
 
-        return res.json(story).status(200)
+        return res.json({message: 'Invalid story id passed'}).status(404)
+
+
 
         
     } catch (error) {

@@ -7,6 +7,7 @@ const reactRoutes = require('./reactRoutes')
 const commentRoutes = require('./commentRoutes')
 const uploadRoute = require('./uploadRoute')
 const storyRoutes = require('./storyRoutes')
+const notificationRoutes = require('./notificationRoutes')
 const path = require('path')
 
 let rootRoute = async (req,res) => {
@@ -44,6 +45,10 @@ const routes = [
     }, {
         path: '/api/upload',
         handler: uploadRoute
+    },
+    {
+        path: '/notificaition',
+        handler: notificationRoutes
     }
 ]
 

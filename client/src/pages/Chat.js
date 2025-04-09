@@ -357,10 +357,10 @@ const Chat = ({ socket }) => {
                         </div>
                         <div className='chat-header-user-info'>
                             <h4 className='chat-header-username'> {`${friendProfile == true && friendProfile.fullName ? friendProfile.fullName : friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname}`}</h4>
-                            {isActive ? (<span className='chat-header-active-status'>Active Now</span>) : (lastSeen &&<span className='chat-header-active-status'>Last Seen: {lastSeen}</span>)}
+                            {isActive ? (<span className='chat-header-active-status'>Online </span>) : (lastSeen && <span className='chat-header-active-status'>Last Seen: {lastSeen} </span>)}
 
                             {
-                                emotion && (<span className='chat-header-active-status'> Emotion {emotion}</span>)
+                                emotion && (<span className='chat-header-active-status text-capitalized'> | Mode {emotion}</span>)
                             }
 
                         </div>

@@ -44,19 +44,25 @@ let HeaderRight = () => {
 
     let showMsgList = (e) => {
         setIsMsgMenu(!isMsgMenu)
+        setIsProfileMenu(false)
+        setIsNotificationMenu(false)
 
     }
 
     let clickProfileBtn = () => {
         setIsProfileMenu(!isProfileMenu)
+        setIsMsgMenu(false)
+        setIsNotificationMenu(false)
     }
 
     let showNotificationList = () => {
         setIsNotificationMenu(!isNotificationMenu)
+        setIsProfileMenu(false)
+        setIsMsgMenu(false)
     }
 
     let quickMenuBtnClick = (e) => {
-        
+
 
         // let target = e.currentTarget;
 
@@ -86,13 +92,13 @@ let HeaderRight = () => {
         <Fragment>
             <div className="header-quick-menu-container">
                 <ul className="header-quick-menu">
-                    <li onClick={showMsgList} className={`header-quick-menu-item ${isMsgMenu ? 'active': ''}`} title="Groups">
+                    <li onClick={showMsgList} className={`header-quick-menu-item ${isMsgMenu ? 'active' : ''}`} title="Groups">
                         <div className="header-quick-menu-icon">
                             <i className="far fa-comment-alt-lines"></i>
                         </div>
                         {
                             isMsgMenu && (
-                                <MegaMC style={{ right: '0px !important', top: '100%', width: '300px', backgroundColor: '#29B1A9', borderRadius: '5px', display: 'block' }} className="hr-mega-menu">
+                                <MegaMC style={{ right: '0px !important', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
                                     <MessageList />
                                 </MegaMC>
                             )
@@ -106,15 +112,30 @@ let HeaderRight = () => {
 
                         </div>
                     </li>
-                {/* <li onClick={quickMenuBtnClick} className="header-quick-menu-item" title="">
-                    <div className="header-quick-menu-icon hr-three-dot">
+                    {isNotificationMenu && (
+                        <MegaMC style={{ right: 0, top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
+                            <div className="hr-mm-container">
 
-                        <i className="far fa-ellipsis-v"></i>
-                        <i className="far fa-ellipsis-v"></i>
-                        <i className="far fa-ellipsis-v"></i>
+                                <div className="hr-notificaiton-menu-container">
+                                    <ul className="hr-notificaiton-menu">
+                                        <li className="hr-notificaiton-item">
+                                            <Link to={'/home'}>
+                                                <div className="hr-notification-row align-items-center">
+                                                    <div className="hr-notification-col-2">
+                                                        <div className="hr-notification-icon-continaer">
+                                                            <img className="hr-notification-icon" src="https://programmerikram.com/wp-content/uploads/2025/03/ics_logo.png" alt="Notification Icon"/>
+                                                        </div>
+                                                    </div>
+                                                    <div className="hr-notification-col-10"> <p className="hr-notification-text">Lorem Ipsum Dolor Sit amet</p></div>
+                                                </div>
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </div>
 
-                    </div>
-                </li> */}
+                            </div>
+                        </MegaMC>
+                    )}
                     <li onClick={clickProfileBtn} className="header-quick-menu-item item-profile" title="">
                         <div className="profile-pic">
                             <img src={pp_url} alt="Author Name" />
@@ -122,8 +143,8 @@ let HeaderRight = () => {
                         </div>
 
                     </li>
-                    { isProfileMenu && (
-                        <MegaMC style={{ right: 0, top: '100%', width: '300px', backgroundColor: '#29B1A9', borderRadius: '5px',display: 'block' }} className="hr-mega-menu">
+                    {isProfileMenu && (
+                        <MegaMC style={{ right: 0, top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
                             <div className="hr-mm-container">
                                 <Link to={profilePath}>
 
@@ -132,7 +153,7 @@ let HeaderRight = () => {
                                             profileData && <UserPP profilePic={profileData.profilePic} />
 
                                         }
-                                        <span className="text-capitalize"> {profileData.user && profileData.user.firstName + ' ' + profileData.user.surname} </span>
+                                        <span className="text-capitalize"> {profileData.fullName ? profileData.fullName : profileData.user && profileData.user.firstName + ' ' + profileData.user.surname} </span>
                                     </div>
                                 </Link>
                                 <div className="profile-menus">
@@ -152,7 +173,7 @@ let HeaderRight = () => {
 
                             </div>
                         </MegaMC>
-                        )}
+                    )}
                 </ul>
             </div>
         </Fragment>

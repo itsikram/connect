@@ -5,11 +5,11 @@ import StoryLists from "../components/story/StoryLists";
 import SingleStory from "../components/story/SingleStory";
 import api from "../api/api";
 import $ from 'jquery'
-import { useParams , useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 let Story = () => {
 
-    let {storyId} = useParams();
+    let { storyId } = useParams();
     // setting state to store posts data
     let [stories, setStories] = useState([])
     let storyContainer = useRef()
@@ -32,14 +32,14 @@ let Story = () => {
     }, [storyId])
 
     function handleNextClick(e) {
-        const currentIndex = stories.findIndex( story => story._id === storyId)
+        const currentIndex = stories.findIndex(story => story?._id === storyId)
         const nextStoryId = stories[currentIndex + 1]?._id || stories[currentIndex]._id;
         navigate(nextStoryId)
 
     }
 
     function handlePrevClick(e) {
-        const currentIndex = stories.findIndex( story => story._id === storyId)
+        const currentIndex = stories.findIndex(story => story?._id === storyId)
         const prevStoryId = stories[currentIndex - 1]?._id || stories[currentIndex]._id;
         navigate(prevStoryId)
         storyContainer.current.scrollBy({ left: 300, behavior: 'smooth' })
@@ -48,33 +48,41 @@ let Story = () => {
     console.log(stories)
     return (
         <Fragment>
-                <Container fluid className="story-container py-3">
-                    <Row>
-                        <Col md="3">
-                            {!match && <StoryLists stories={stories}></StoryLists>}
-                        </Col>
+            <Container fluid className="story-container py-3">
+                <Row>
+                    <Col md="3">
+                        {!match && <StoryLists stories={stories}></StoryLists>}
+                    </Col>
 
-                        <Col md="6">
+                    <Col md="6">
 
-                                <div ref={storyContainer} className="story-content-container">
+                        <div ref={storyContainer} className="story-content-container">
 
-                                <SingleStory></SingleStory>
-
-                                    <div className="nf-story-arrow-left" onClick={handlePrevClick.bind(this)} >
-                                        <i className="fa fa-chevron-left"></i>
-                                    </div>
-                                    <div className="nf-story-arrow-right" onClick={handleNextClick.bind(this)} >
-                                        <i className="fa fa-chevron-right"></i>
-                                    </div>
-
-                                </div>
+                            <SingleStory></SingleStory>
 
 
-                        </Col>
+                            {storyId ?
+                                (
+                                    <>
+                                        <div className="nf-story-arrow-left" onClick={handlePrevClick.bind(this)} >
+                                            <i className="fa fa-chevron-left"></i>
+                                        </div>
+                                        <div className="nf-story-arrow-right" onClick={handleNextClick.bind(this)} >
+                                            <i className="fa fa-chevron-right"></i>
+                                        </div>
+                                    </>
 
-                    </Row>
+                                )
+                                : (<p className="text-center fs-4">Select a story from left</p>)}
 
-                </Container>
+                        </div>
+
+
+                    </Col>
+
+                </Row>
+
+            </Container>
 
         </Fragment>
     )
