@@ -10,8 +10,9 @@ const notificaitonReducer = (state = initialState, action) => {
 
         case ADD_NOTIFICATION:
             let newNotification = action.payload
+            let isNotiExits = state.filter(noti => noti._id === action.payload._id )
+            if(isNotiExits.length > 0) return state;
             return [
-
                 ...state,
                 newNotification
             ];
@@ -19,11 +20,21 @@ const notificaitonReducer = (state = initialState, action) => {
 
         case ADD_NOTIFICATIONS:
             let newNotifications = action.payload
-            return [
+            let isReset = action.reset || false
 
-                ...state,
-                ...newNotifications
-            ];
+
+            if(isReset) {
+                return [
+                    ...newNotifications
+                ];
+            }else {
+                return [
+
+                    ...state,
+                    ...newNotifications
+                ];
+            }
+
             break;
 
         case VIEW_NOTIFICATION:

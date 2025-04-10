@@ -24,8 +24,15 @@ const PostComment = (props) => {
 
     // handle all comment state 
 
-    let [allComments, setAllComments] = useState(post.comments.slice(-3))
+    let [allComments, setAllComments] = useState(post.comments)
     let [uploadedImageUrl, setUploadedImageUrl] = useState(null);
+
+    
+    let [commentData, setCommentData] = useState({
+        body: null,
+        attachment: null
+    })
+
 
     // // handle add attachmenent to comment on click
     // let clickCommentOption = (e) => {
@@ -118,13 +125,6 @@ const PostComment = (props) => {
         let target = e.currentTarget
         $(target).children('input').trigger('click')
     }
-
-
-    let [commentData, setCommentData] = useState({
-        body: null,
-        attachment: null
-    })
-
 
 
     return (

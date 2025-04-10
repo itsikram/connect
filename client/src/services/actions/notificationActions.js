@@ -6,10 +6,11 @@ export const addNotification = (notification) => {
         payload: notification
     }
 } 
-export const addNotifications = (notifications) => {
+export const addNotifications = (notifications,reset=false) => {
     return {
         type: ADD_NOTIFICATIONS,
-        payload: notifications
+        payload: notifications,
+        reset
     }
 } 
 export const viewNotification = (notifications) => {

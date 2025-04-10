@@ -4,11 +4,12 @@ import Moment from 'react-moment';
 import { Link } from 'react-router-dom';
 import api from "../../api/api";
 import $ from 'jquery'
-const SingleReply = ({item,myProfile,setReplies,comment}) => {
+const SingleReply = ({item,myProfile,setReplies,comment,replies}) => {
     let myId = myProfile._id
     let [isReplyOption, setIsReplyOption] = useState(false)
-    let [totalReplies, setTotalReplies] = useState(item.reacts.length)
+    let [totalReacts, setTotalReacts] = useState(item.reacts.length)
     let [isReply, setIsReply] = useState(false)
+    // let [replyList, setReplyList] = 
     let handleReplyOptionClick = e => {
         setIsReplyOption(!isReplyOption)
     }
@@ -22,22 +23,19 @@ const SingleReply = ({item,myProfile,setReplies,comment}) => {
         if(deleteReply.status == 200) {
             $(e.target).parents('.reply-container').remove()
         }
-
-        alert(replyId)
     }
 
     let handleReplyBtnClick = (e) => {
         setIsReply(!isReply)
     }
 
-    
     let clickReplySendBtn = async (e) => {
         let commentId = comment._id // e.currentTarget.dataset.reply
         if (replyData) {
             let uploadReplyRes = await api.post('/comment/addReply', { replyMsg: replyData.body, authorId: myProfile._id, commentId })
             if(uploadReplyRes.status == 200) {
                 setIsReply(false)
-                let newReplyData = uploadReplyRes.data;
+                let newReplyData = uploadReplyRes.data._id;
                 setReplies(replies => [...replies,newReplyData])
             }
         }
@@ -58,7 +56,6 @@ const SingleReply = ({item,myProfile,setReplies,comment}) => {
                 if(uploadReplyRes.status == 200) {
                     setIsReply(false)
                     let newReplyData = uploadReplyRes.data;
-                    console.log('nrd',newReplyData)
                     setReplies(replies => [...replies,newReplyData])
                 }
                 
@@ -82,12 +79,14 @@ const SingleReply = ({item,myProfile,setReplies,comment}) => {
             let postReplyReact = await api.post('/comment/reply/removeReact',{replyId, myId})
 
             if(postReplyReact.status == 200) {
+                setTotalReacts( totalReacts - 1)
                 $(e.target).removeClass('reacted')
             }
         }else {
             let postReplyReact = await api.post('/comment/reply/addReact',{replyId, myId})
 
             if(postReplyReact.status == 200) {
+                setTotalReacts( totalReacts + 1)
                 $(e.target).addClass('reacted')
             }
         }
@@ -118,7 +117,7 @@ const SingleReply = ({item,myProfile,setReplies,comment}) => {
 
                 </div>
                 <div class="comment-react">
-                    <div class={`like button ${item.reacts.includes(myId) && 'reacted'}`} onClick={handleReplyLikeBtnClick.bind(this)} data-id={item._id}>Like {`${totalReplies > 0 ? `(${totalReplies})` : ''}`}</div>
+                    <div class={`like button ${item.reacts.includes(myId) && 'reacted'}`} onClick={handleReplyLikeBtnClick.bind(this)} data-id={item._id}>Like {`${totalReacts > 0 ? `(${totalReacts})` : ''}`}</div>
                     <div class="reply button" onClick={handleReplyBtnClick.bind(this)} data-id={item._id}>Reply</div>
                     <div class="comment-time"><Moment fromNow>{item.createdAt}</Moment></div>
                 </div>

@@ -9,6 +9,7 @@ const SingleStory = (props) => {
     let { storyId } = useParams();
     let [story, setStory] = useState({})
     let [storyBg, setStoryBg] = useState({})
+    let [commentText, setCommentText] = useState({})
 
     useEffect(() => {
         api.get('/story/single', { params: { storyId: storyId } }).then(res => {
@@ -59,7 +60,19 @@ const SingleStory = (props) => {
             getAverageColor(story.image);
         }
     }, [storyId, setTimeout(() => { }, [2000])]);
-    console.log(storyBg)
+    
+
+    useEffect(() => {
+
+    },[])
+
+    let handleStoryKeyUp = (e) => {
+        let value = e.target.value;
+        setCommentText(value)
+        if(e.keyCode === 13) {
+            alert('submit')
+        }
+    }
 
     return (
         <>
@@ -73,6 +86,16 @@ const SingleStory = (props) => {
                         </div>
                         <div className='single-story-image-container' style={{ background: `url(${story.image})` }} >
                             {/* <img src={story.image} alt='Story Image' className='single-story-image' />  */}
+                        </div>
+                    </div>
+                    <div className='single-story-meta-container'> 
+                        <div className={`single-story-reacts-buttons`}>
+                            <div className='single-story-react-button'>
+
+                            </div>
+                        </div>
+                        <div className={`single-story-comment-container`}>
+                            <input type='text' className={`single-story-comment-input`} placeholder='Post a comment to this story' onKeyUp={handleStoryKeyUp.bind(this)}/>
                         </div>
                     </div>
 

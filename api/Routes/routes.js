@@ -9,6 +9,7 @@ const uploadRoute = require('./uploadRoute')
 const storyRoutes = require('./storyRoutes')
 const settingRoutes = require('./settingRoutes')
 const notificationRoutes = require('./notificationRoutes')
+const messageRoutes = require('./messageRoutes')
 const path = require('path')
 
 let rootRoute = async (req,res) => {
@@ -50,6 +51,10 @@ const routes = [
     {
         path: '/api/notification',
         handler: notificationRoutes
+    },
+    {
+        path: '/api/message',
+        handler: messageRoutes
     },
     {
         path: '/api/setting',

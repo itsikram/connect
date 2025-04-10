@@ -3,6 +3,7 @@ const Comment = require('../models/Comment')
 const Post = require('../models/Post')
 const Profile = require('../models/Profile')
 const CmntReply = require('../models/CmntReply')
+const {saveNotification} = require('./notificationController')
 exports.postAddComment = async (req, res, next) => {
     try {
         let attachment = req.body.attachment ? req.body.attachment : ''
@@ -10,13 +11,14 @@ exports.postAddComment = async (req, res, next) => {
         let post = req.body.post
         let profile = req.profile._id
 
+        let io = req.app.get('io')
+        
         let commentData = new Comment({
             attachment,
             body,
             author: profile,
             post
         })
-
         let savedCommentData = await commentData.save()
 
         let updatePost = await Post.findOneAndUpdate({
@@ -25,9 +27,21 @@ exports.postAddComment = async (req, res, next) => {
             $push: {
                 comments: savedCommentData._id
             }
-        }, { new: true })
+        }, { new: true }).populate('author')
 
-        res.json(savedCommentData)
+        let friendProfile = await Post.findOne({_id: post}).populate('author')
+
+        let notification = {
+            receiverId: updatePost.author._id,
+            text: `${updatePost.author.fullName} Commented in you post`,
+            link: '/post/'+post,
+            type: 'postComment',
+            icon: updatePost.author.profilePic
+        }
+
+        saveNotification(io, notification)
+
+        return res.json(savedCommentData)
 
     } catch (error) {
         next(error)
@@ -83,12 +97,10 @@ exports.postCommentReply = async (req, res, next) => {
         let commentId = req.body.commentId
         let authorId = req.body.authorId
         let replyMsg = req.body.replyMsg
+        let io = req.app.get('io')
 
-        console.log('ok', commentId, authorId, replyMsg)
 
         if (!commentId || !authorId) return next();
-
-        let authorData = await Profile.findOne({ _id: authorId })
 
         let newReplyData = new CmntReply({
             body: replyMsg,
@@ -102,17 +114,37 @@ exports.postCommentReply = async (req, res, next) => {
                 $push: {
                     replies: newReply._id
                 }
-            })
+            },{new: true}).populate([{
+                path: 'post',
+                model: Post,
+                populate: {
+                    path: 'author',
+                    model: Profile
+                }
 
+            }])
             if (updateComment) {
+                console.log('updateComment',updateComment)
                 let newReplyWithAuthor = await CmntReply.findOne({ _id: newReply._id }).populate('author')
 
                 if (newReplyWithAuthor) {
+
+                    let notification = {
+                        receiverId: updateComment.post.author._id,
+                        text: `${updateComment.post.author.fullName} Replied to your comment`,
+                        link: '/post/'+(updateComment.post).toString(),
+                        type: 'postCommentReply',
+                        icon: updateComment.post.author.profilePic
+                    }
+            
+                    saveNotification(io, notification)
                     return res.json(newReplyWithAuthor).status(200)
 
                 }
             }
         }
+
+
 
         return res.json({ message: 'Something Went Wrong' }).status(400)
     } catch (e) { next(e) }
@@ -168,7 +200,7 @@ exports.addReplyReact = async (req, res, next) => {
 }
 exports.removeReplyReact = async (req, res, next) => {
     let replyId = req.body.replyId
-
+    let myId = req.body.myId
     try {
 
         let removedReact = await CmntReply.findOneAndUpdate({_id: replyId},{
@@ -213,10 +245,12 @@ exports.postDeleteComment = async (req, res, next) => {
 }
 exports.storyAddComment = async (req, res, next) => {
     try {
+
         let attachment = req.body.attachment ? req.body.attachment : ''
         let body = req.body.body
         let post = req.body.post
         let profile = req.profile._id
+        let io = req.app.get('io')
 
         let commentData = new Comment({
             attachment,
@@ -233,9 +267,20 @@ exports.storyAddComment = async (req, res, next) => {
             $push: {
                 comments: savedCommentData._id
             }
-        }, { new: true })
+        }, { new: true }).populate('author')
 
-        res.json(savedCommentData)
+        
+        let notification = {
+            receiverId: updatePost.author._id,
+            text: `${updatePost.author.fullName} Commented to your story`,
+            link: '/story/',
+            type: 'storyComment',
+            icon: updatePost.author.profilePic
+        }
+
+        saveNotification(io, notification)
+
+        return res.json(savedCommentData)
 
     } catch (error) {
         next(error)

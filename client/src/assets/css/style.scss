@@ -249,6 +249,65 @@ body {
 
             .header-quick-menu-container {
 
+
+                .hr-mm-container {
+                    display: flex;
+                    flex-direction: column;
+
+                    a {
+                        text-decoration: none;
+                    }
+
+
+                    .all-profiles {
+
+                        display: flex;
+                        align-items: center;
+                        padding: 10px;
+                        background-color: $bbgc;
+                        cursor: pointer;
+                        border-radius: 10px;
+
+                        span {
+                            margin-left: 10px;
+                            color: $tc;
+                            font-size: 18px;
+                        }
+                    }
+
+                    .profile-menus {
+                        background-color: $bbgc;
+                        border-radius: 10px;
+                        margin-top: 10px;
+                        padding: 10px;
+
+                        .profile-menu-item {
+                            display: flex;
+                            color: $tc;
+                            margin-top: 5px;
+                            align-items: center;
+                            border-radius: 5px;
+
+                            .menu-item-icon {
+                                font-size: 20px;
+                                margin-right: 5px;
+                                padding: 5px 10px;
+                                border-radius: 50%;
+                                background-color: $bc;
+                            }
+
+                            .menu-item-name {
+                                font-size: 18px;
+                            }
+                        }
+
+                        .profile-menu-item:hover {
+                            background-color: $bc;
+                        }
+                    }
+
+                }
+
                 .header-quick-menu {
                     padding: 0;
                     margin: 0;
@@ -345,66 +404,95 @@ body {
 
                 }
 
-
-            }
-
-            .hr-mm-container {
-                display: flex;
-                flex-direction: column;
-
-                a {
-                    text-decoration: none;
-                }
-
-
-                .all-profiles {
-
-                    display: flex;
-                    align-items: center;
+                .left-sidebar-container {
                     padding: 10px;
-                    background-color: $bbgc;
-                    cursor: pointer;
-                    border-radius: 10px;
+                    border-right: 1px solid $bc;
+                    height: 100%;
 
-                    span {
-                        margin-left: 10px;
-                        color: $tc;
-                        font-size: 18px;
-                    }
-                }
-
-                .profile-menus {
-                    background-color: $bbgc;
-                    border-radius: 10px;
-                    margin-top: 10px;
-                    padding: 10px;
-
-                    .profile-menu-item {
+                    .message-leftside-header {
                         display: flex;
-                        color: $tc;
-                        margin-top: 5px;
+                        justify-content: space-between;
                         align-items: center;
-                        border-radius: 5px;
 
-                        .menu-item-icon {
-                            font-size: 20px;
-                            margin-right: 5px;
-                            padding: 5px 10px;
-                            border-radius: 50%;
-                            background-color: $bc;
+                        .message-leftside-title {
+                            font-size: 24px;
                         }
 
-                        .menu-item-name {
-                            font-size: 18px;
+                        .message-sidebar-header-menu {
+
+                            .header-menu-icons {
+                                height: 30px;
+                                width: 30px;
+                                border-radius: 50%;
+                                background: $bc;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                cursor: pointer;
+                            }
                         }
                     }
 
-                    .profile-menu-item:hover {
-                        background-color: $bc;
+                    .message-list-container {
+
+                        .message-list {
+                            list-style: none;
+                            margin: 0;
+                            padding: 0;
+                            cursor: pointer;
+
+                            .message-list-item {
+                                display: flex;
+                                align-items: center;
+                                padding: 5px;
+                                border-radius: 5px;
+                                transition: 0.1s;
+                                margin-bottom: 5px;
+
+                                .user-profile-img {
+                                    margin-right: 10px;
+                                    scale: 1.1;
+                                }
+
+                                .user-data {
+
+                                    color: $tc;
+                                    text-decoration: none !important;
+                                    text-align: left;
+                                    .message-author-name {
+                                        margin: 0;
+                                        padding: 0;
+                                        font-size: 18px;
+                                        text-transform: capitalize;
+                                        margin-bottom: -2px;
+                                        text-align: left;
+                                    }
+
+                                    .last-message-data {
+                                        margin: 0;
+                                        font-size: 12px;
+                                        text-align: left;
+
+                                        .last-message {
+                                            line-height: 1;
+                                            margin: 5px 0
+                                        }
+
+                                        .last-msg-time {
+                                            line-height: 0;
+                                        }
+                                    }
+                                }
+                            }
+
+                            .message-list-item:hover,.message-list-item.message-unseen {
+                                background: $bc;
+                            }
+                        }
                     }
                 }
-
             }
+
         }
 
     }
@@ -1599,6 +1687,25 @@ body {
             }
         }
     }
+
+    .single-story-meta-container {
+        margin-top: 10px;
+
+        .single-story-reacts-buttons {
+            .single-story-react-button {}
+        }
+
+        .single-story-comment-container {
+            .single-story-comment-input {
+                background-color: #18191A;
+                color: #fff;
+                border: 0;
+                outline: 0;
+                padding: 10px 15px;
+                min-width: 320px;
+            }
+        }
+    }
 }
 
 .nf-post.profilePic {
@@ -2692,7 +2799,6 @@ body {
                 margin: 0;
                 padding: 0;
                 cursor: pointer;
-
                 .message-list-item {
                     display: flex;
                     align-items: center;
@@ -2729,8 +2835,7 @@ body {
                         }
                     }
                 }
-
-                .message-list-item:hover {
+                .message-list-item:hover,.message-list-item.message-unseen {
                     background: $bc;
                 }
             }
@@ -2807,16 +2912,21 @@ body {
 
                         .last-message-data {
                             margin: 0;
-                            font-size: 12px;
+                            font-size: 14px;
 
-                            .last-message {}
+                            .last-message {
+                                line-height: 1;
+                                margin: 2px 0;
+                            }
 
-                            .last-msg-time {}
+                            .last-msg-time {
+                                line-height: 1;
+                            }
                         }
                     }
                 }
 
-                .message-list-item:hover {
+                .message-list-item:hover,.message-list-item.message-unseen {
                     background: $bc;
                 }
             }
@@ -3001,6 +3111,20 @@ body {
                 position: relative;
                 min-width: 120px;
 
+                .message-container {
+                    font-size: 17px;
+                    font-weight: 500;
+                    text-indent: 5px;
+                    display: flex;
+                    align-items: center;
+
+                    span {
+                        margin-top: -5px;
+                        line-height: 1;
+                        padding: 5px 0;
+                    }
+                }
+
 
                 .chat-message-options {
                     position: absolute;
@@ -3011,6 +3135,7 @@ body {
                     padding: 10px;
                     top: 50%;
                     transform: translateY(-50%);
+                    z-index: 999999;
 
                     .reacted {
                         color: $pc !important;
@@ -3049,12 +3174,25 @@ body {
 
                 .chat-message {
                     padding: 5px 10px;
-                    border-radius: 20px;
+                    border-radius: 15px;
                     color: $tc;
                     position: relative;
                     max-width: 72%;
                     margin: 5px !important;
                     margin-right: 10px !important;
+
+                    .message-attachment-container {
+                        margin-top: 5px;
+                        text-align: center;
+                        max-width: 100%;
+                        overflow: hidden;
+                        .message-attachment {
+                            width: auto;
+                            max-width: 98%;
+                            border-radius: 15px;
+
+                        }
+                    }
 
                 }
 
@@ -3081,7 +3219,7 @@ body {
                 }
 
             }
-            
+
             .message-reacted {
                 .message-react {
                     display: flex !important;
@@ -3109,6 +3247,26 @@ body {
             }
 
             .chat-message-container.message-receive {
+
+                .parent-message-container {
+                    margin:  0;
+                    background:  #242526;
+                    padding: 10px 20px;
+                    line-height: 1;
+                    border-radius: 10px;
+                    text-align: left;
+                    text-indent: 5px;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                }
+
+                .parent-message-container.has-attachment {
+                    padding: 20px 10px;
+                    .message-attachment-container {
+                        margin-top: 10px;
+
+                    }
+                }
                 .chat-message-seen-status {
                     margin-left: auto;
                     display: none !important;
@@ -3124,9 +3282,9 @@ body {
                     background-color: $bc;
                     margin-right: 10px;
                     margin-left: 0 !important;
+                    visibility: visible !important;
 
 
-                    
                     .message-react {
                         top: -15px;
                         right: -20px;
@@ -3137,6 +3295,27 @@ body {
 
             .chat-message-container.message-sent {
                 justify-content: flex-end;
+
+                .parent-message-container {
+                    margin:  0;
+                    background:  #242526;
+                    padding: 10px 20px;
+                    line-height: 1;
+                    border-radius:  10px;
+                    text-align: left;
+                    cursor: pointer;
+                }
+
+                .parent-message-container.has-attachment {
+                    padding: 20px 10px;
+
+                    .message-attachment-container {
+                        margin-top: 10px;
+
+                    }
+
+
+                }
 
                 .chat-message-options {
                     right: 100% !important;
@@ -3167,7 +3346,7 @@ body {
                 }
 
                 .chat-message {
-                    background-color: $pc;
+                    background-color: rgba(41, 177, 169,0.25);
                     columns: $tc;
                     margin-right: 10px;
                     margin-top: 5px;
@@ -3182,6 +3361,12 @@ body {
 
             }
 
+            .chat-message-container.message-sent.message-seen:last-child {
+                .chat-message-seen-status {
+                    visibility: visible !important;
+                }
+            }
+
         }
     }
 
@@ -3191,6 +3376,48 @@ body {
         position: absolute;
         width: 100%;
         bottom: 0;
+        background-color: $profilebg;
+
+        .new-message-preview-container {
+            position: relative;
+            padding: 10px;
+            background-color: $profilebg;
+            padding-top: 0 !important;
+
+            .reply-message-preview-form {
+                text-align: center;
+
+                p {
+                    margin-bottom: 10px;
+                }
+            }
+
+            .attachment-preview-container {
+                overflow: hidden;
+                text-align: center;
+                .attachment-preview {
+                    border: 1px solid $pc;
+                    width: auto;
+                    max-height: 50px;
+                }
+
+            }
+
+            .preview-close-button {
+                position: absolute;
+                right: 40px;
+                bottom: 50%;
+                transform: translateY(25%);
+                background: #3A3B3C;
+                height: 30px;
+                width: 30px;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+            }
+        }
 
 
         .messageInput {
@@ -3280,8 +3507,8 @@ body {
                         background-color: $bc;
                     }
 
-                    .send-message {
-                        // display: none;
+                    .send-message.button-disabled{
+                        color: gray !important
                     }
 
                     .send-like {

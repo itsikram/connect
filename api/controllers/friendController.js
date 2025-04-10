@@ -45,7 +45,7 @@ exports.postFrndReq = async (req, res, next) => {
             type: 'friendReq'
         }
 
-        // saveNotification(io,notificationData)
+        saveNotification(io,notificationData)
         return res.json(frndReq)
 
 
@@ -145,7 +145,6 @@ exports.postFrndAccept = async (req, res, next) => {
                 friends: myProfile._id
             }
         })
-
         let updateMyProfile = await Profile.findByIdAndUpdate({
             _id: myProfile._id,
             friends: {

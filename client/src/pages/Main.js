@@ -23,6 +23,7 @@ import { useDispatch, useSelector } from "react-redux";
 import api from "../api/api";
 import { getPorfileReq, getProfileFailed, getProfileSuccess } from '../services/actions/profileActions'
 import { addNotification, addNotifications } from "../services/actions/notificationActions.js";
+import { addMessage, addMessages, newMessage } from "../services/actions/messageActions.js";
 import { setLogin } from "../services/actions/authActions";
 import { setBodyHeight, setHeaderHeight, setLoading } from "../services/actions/optionAction";
 import Settings from "./Settings";
@@ -84,21 +85,41 @@ const Main = () => {
     
         );
     }
+
     useEffect(() => {
         socket.emit('fetchNotifications',profileId)
+        
         socket.on('oldNotifications', data => {
-            dispatch(addNotifications(data))
+            dispatch(addNotifications(data.reverse(),true))
         })
-
         socket.on('newNotification', data => {
             dispatch(addNotification(data))
             notify(data.text,false,data.icon,data.link)
         })
+
+
+        socket.emit('fetchMessages',profileId)
+
+
+        socket.on('oldMessages', data => {
+            dispatch(addMessages(data.reverse(),true))
+        })
+
+        socket.on('newMessage', data => {
+            dispatch(addMessage(data))
+            notify(data.text,false,data.icon,data.link)
+        })
+
+
+
         return () => {
             socket.off('oldNotifications')
             socket.off('newNotification')
+            socket.off('oldMessages')
+            socket.off('newMessage')
         }
-    }, [])
+    }, [socket])
+    
 
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -115,8 +136,8 @@ const Main = () => {
     useEffect(() => {
         socket.on('notification', (msg, senderName, senderPP) => {
             if (isTabActive == true) {
-                notify(msg.message, senderName, senderPP,'/message' + msg.senderId)
-
+                notify(msg.message, senderName, senderPP,'/message/' + msg.senderId)
+                dispatch(newMessage(msg))
             } else {
                 if (Notification && Notification.permission === "granted") {
                     showNotification(msg);

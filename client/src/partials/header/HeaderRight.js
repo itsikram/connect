@@ -1,5 +1,6 @@
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { Link, useLocation } from 'react-router-dom';
+import Moment from "react-moment";
 import MegaMC from "../../components/MegaMC";
 import UserPP from "../../components/UserPP";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,14 +16,17 @@ let HeaderRight = () => {
     let profileData = useSelector(state => state.profile)
     let optionData = useSelector(state => state.option)
     let notificaitonData = useSelector(state => state.notification)
+    let messageData = useSelector(state => state.message)
     let dispatch = useDispatch()
     let [isMsgMenu, setIsMsgMenu] = useState(false);
     let [isProfileMenu, setIsProfileMenu] = useState(false);
     let [isNotificationMenu, setIsNotificationMenu] = useState(false);
     let [totalNotifications, setTotalNotifications] = useState(0)
+    let [totalMessages, setTotalMessages] = useState(0)
     let location = useLocation();
     const [imageExists, setImageExists] = useState(null);
     var pp_url = profileData.profilePic;
+
 
     let notificationMenuHeight = optionData.bodyHeight - optionData.headerHeight - 100
     let notificationMenuStyle = { maxHeight: notificationMenuHeight + 'px', overflowY: 'scroll' }
@@ -48,6 +52,10 @@ let HeaderRight = () => {
         let unseenNotifications = notificaitonData.filter(data => data.isSeen === false)
         setTotalNotifications(unseenNotifications.length)
     }, [notificaitonData])
+    useEffect(() => {
+        let unseenMessages = messageData.filter(data => data.messages[0].senderId !== profileData._id && data.messages[0]?.isSeen === false)
+        setTotalMessages(unseenMessages.length)
+    }, [messageData])
 
 
     let showMsgList = (e) => {
@@ -86,19 +94,19 @@ let HeaderRight = () => {
         <Fragment>
             <div className="header-quick-menu-container">
                 <ul className="header-quick-menu">
-                    <li onClick={showMsgList} className={`header-quick-menu-item ${isMsgMenu ? 'active' : ''}`} title="Groups">
+                    <li onClick={showMsgList} className={`header-quick-menu-item ${isMsgMenu ? 'active' : ''}`} title="Message">
                         <div className="header-quick-menu-icon">
                             <i className="far fa-comment-alt-lines"></i>
-                            <span className="hr-counter-badge"><span className="counter">5</span></span>
+                           {totalMessages > 0 && (<span className="hr-counter-badge"><span className="counter">{totalMessages}</span></span>)} 
                         </div>
-                        {
-                            isMsgMenu && (
-                                <MegaMC style={{ right: '0px !important', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
-                                    <MessageList />
-                                </MegaMC>
-                            )
-                        }
                     </li>
+                    {
+                        isMsgMenu && (
+                            <MegaMC style={{ right: 0, top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
+                                <MessageList />
+                            </MegaMC>
+                        )
+                    }
                     <li onClick={showNotificationList} className={`header-quick-menu-item ${isNotificationMenu ? 'active' : ''}`} title="">
                         <div className="header-quick-menu-icon">
                             <i className="far fa-bell"></i>
@@ -133,7 +141,7 @@ let HeaderRight = () => {
                                                                             <img className="hr-notification-icon" src={notification.icon} alt="Notification Icon" />
                                                                         </div>
                                                                     </div>
-                                                                    <div className="hr-notification-col-10"> <p className="hr-notification-text">{notification.text}</p></div>
+                                                                    <div className="hr-notification-col-10"> <p className="hr-notification-text">{notification.text} . <Moment fromNow>{notification.timestamp}</Moment></p></div>
                                                                 </div>
                                                             </Link>
                                                         </li>)

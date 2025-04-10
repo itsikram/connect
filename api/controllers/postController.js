@@ -120,6 +120,8 @@ exports.getSinglePost = async(req,res,next) => {
 
 exports.getNewsFeed = async(req,res,next) => {
     let profile = req.profile
+    let pageNumber = req.query.pageNumber
+    let limit = 3
     try {
 
         let newsFeedPosts = await Post.find().populate([
@@ -150,9 +152,12 @@ exports.getNewsFeed = async(req,res,next) => {
                 }]
             }
             
-        ]).limit(10).sort({'createdAt': -1})
+        ]).skip((pageNumber - 1) * limit).limit(limit).sort({'createdAt': -1})
 
-        res.json(newsFeedPosts)
+        let nextPosts = await Post.find().skip((pageNumber) * limit).limit(limit).sort({'createdAt': -1})
+
+        let hasNewPost = nextPosts.length == 0 ? false : true
+        res.json({posts: newsFeedPosts, hasNewPost}).status(200)
         
     } catch (error) {
         console.log(error)

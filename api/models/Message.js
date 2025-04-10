@@ -11,6 +11,7 @@ const messageSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Message',
     },
+    attachment: String,
     reacts: [{
         type: Schema.Types.ObjectId,
         ref: Profile

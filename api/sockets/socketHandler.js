@@ -1,4 +1,4 @@
-const messageController = require('../controllers/messageController')
+const messageSocket = require('./messageSocket')
 const {notificationSocket} = require('../controllers/notificationController')
 const Profile = require('../models/Profile')
 const User = require('../models/User')
@@ -14,7 +14,7 @@ module.exports = function socketHandler(io){
         })
 
 
-        messageController(io,socket)
+        messageSocket(io,socket)
         notificationSocket(io,socket,profileId = homeRoom)
 
         socket.on('update_last_login', async function (userId) {

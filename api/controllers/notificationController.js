@@ -14,7 +14,7 @@ exports.notificationSocket = async (io, socket) => {
 
 exports.saveNotification = async (io, data) => {
 
-    let receiverId = data.receiverId || ''
+    let receiverId = (data.receiverId).toString() || ''
     let notificationText = data.text || ''
     let notificationLink = data.link || '/';
     let notificationIcon = data.icon || null;

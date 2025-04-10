@@ -26,28 +26,66 @@ let Home = () => {
         storyContainer.current.scrollBy({ left: 300, behavior: 'smooth' })
     }
     let [match, setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)
+    const [loadNewPosts, setLoadNewPosts] = useState(false);
+    const [hasNewPosts, setHasNewPosts] = useState(true);
 
     // setting state to store posts data
 
     let [newsFeeds, setNewsFeed] = useState([])
     let [stories, setStories] = useState([])
+    let [pageNumber, setPageNumber] = useState(0)
 
     let loadData = async () => {
-
-        let nfRes = await api.get('/post/newsFeed/')
+        let nfRes = await api.get('/post/newsFeed/',{params: {
+            pageNumber: pageNumber + 1
+        }})
         if (nfRes.status === 200) {
-            setNewsFeed(nfRes.data)
+            setPageNumber(pageNumber + 1)
+            setNewsFeed(state => [...state,...nfRes.data.posts])
+            let hasPosts = nfRes.data.hasNewPost
+            setHasNewPosts(hasPosts)
+            setLoadNewPosts(false)
         }
-
         let strRes = await api.get('/story/')
         if (strRes.status === 200) {
-            console.log('stories', strRes.data)
             setStories(strRes.data)
         }
-
         dispatch(setLoading(false))
 
     }
+
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const fullHeight = document.body.scrollHeight;
+      
+            const scrolled = (scrollTop + windowHeight) / fullHeight;
+      
+            if (scrolled >= 0.8) {
+                
+                if(loadNewPosts == false) {
+                    setLoadNewPosts(true)
+                }
+            }
+          };
+          window.addEventListener("scroll", handleScroll);
+    //   return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+
+
+    useEffect(() => {
+
+        if(loadNewPosts) {
+
+            if(hasNewPosts) {
+                loadData()
+            }
+           
+        }
+    },[loadNewPosts])
 
     useEffect(() => {
         dispatch(setLoading(true))
@@ -56,10 +94,8 @@ let Home = () => {
         window.matchMedia("(max-width:768px)").addEventListener('change', (e) => {
             setMatch(e.matches)
         })
-
         loadData()
         // fetching newsfeed posts
-
     }, [])
 
     return (

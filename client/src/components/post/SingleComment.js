@@ -23,7 +23,7 @@ const SingleComment = (props) => {
         setComment(props.comment)
         setTotalComment(props.comment.reacts.length || 0)
         setIsReacted(props.comment.reacts.includes(myId))
-        setReplies(props.comment.replies)
+        // setReplies(props.comment.replies)
     },[props])
 
     let handleCommentReplyBtnClick = async (e) => {
@@ -51,33 +51,6 @@ const SingleComment = (props) => {
         }
     }
 
-    let handleReplyAttachChange = async (e) => {
-        // setCommentData(state => {
-        //     return {
-        //         ...state,
-        //         attachment: loadingUrl
-        //     }
-        // })
-        // let imageFormData = new FormData();
-        // imageFormData.append('image', e.target.files[0]);
-        // let uploadImageRes = await api.post('/upload/', imageFormData, {
-        //     headers: {
-        //         'content-type': 'multipart/form-data'
-        //     }
-        // })
-        // if (uploadImageRes) {
-        //     setTimeout(() => {
-        //         let uploadImgUrl = uploadImageRes.data.secure_url
-        //         setUploadedImageUrl(uploadImgUrl)
-        //         setCommentData(state => {
-        //             return {
-        //                 ...state,
-        //                 attachment: uploadImgUrl
-        //             }
-        //         })
-        //     }, 1000);
-        // }
-    }
     let handleReplyBodyChange = async (e) => {
         setReplyData(state => {
             return {
@@ -97,43 +70,12 @@ const SingleComment = (props) => {
                 if(uploadReplyRes.status == 200) {
                     setIsReply(false)
                     let newReplyData = uploadReplyRes.data;
-                    console.log('nrd',newReplyData)
                     setReplies(replies => [...replies,newReplyData])
                 }
                 
             }
         }
-        //     try {
-        //         e.target.value = ''
-        //         let commentFormData = new FormData()
-        //         commentFormData.append('body', commentData.body == null ? '' : commentData.body)
-        //         commentFormData.append('attachment', uploadedImageUrl == null ? '' : uploadedImageUrl)
-        //         commentFormData.append('post', post._id)
 
-        //         let res = await api.post('/comment/addComment', commentFormData)
-        //         if (res.status === 200) {
-        //             let data = res.data
-        //             data.author = myProfile
-        //             let newComment = data
-        //             setAllComments(state => {
-        //                 let oldComments = [...state].slice(-3)
-        //                 let cr = [
-        //                     ...state,
-        //                     ...[newComment]
-        //                 ]
-
-        //                 setCommentData([])
-        //                 props.commentState(state => state + 1);
-        //                 return cr;
-
-        //             })
-        //         }
-        //     } catch (error) {
-        //         console.log(error)
-        //     }
-
-
-        // }
 
     }
 
@@ -148,7 +90,6 @@ const SingleComment = (props) => {
             }
             
         }
-        // $(target).children('input').trigger('click')
     }
 
     // handle add attachmenent to comment on click
@@ -253,7 +194,7 @@ const SingleComment = (props) => {
                         replies.map((item, key) => {
 
                             return (
-                                <SingleReply setReplies={setReplies} comment={comment} item={item} key={key} myProfile={myProfile}></SingleReply>
+                                <SingleReply setReplies={setReplies} replies={replies} comment={comment} item={item} key={key} myProfile={myProfile}></SingleReply>
                             )
 
                         })

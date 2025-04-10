@@ -1,12 +1,15 @@
-import React, { useEffect, useState, useRef, useId } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { setLoading } from '../services/actions/optionAction';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import api from '../api/api';
 import UserPP from '../components/UserPP';
 import moment from "moment";
+import SingleMessage from '../components/Message/SingleMessage';
 import $ from 'jquery'
 import * as faceapi from "face-api.js";
+import { current } from '@reduxjs/toolkit';
+import { sendMessage } from "../services/actions/messageActions";
 
 const useMediaQuery = (query) => {
     const [matches, setMatches] = useState(window.matchMedia(query).matches);
@@ -24,6 +27,7 @@ const useMediaQuery = (query) => {
 
 const Chat = ({ socket, cameraVideoRef }) => {
     let dispatch = useDispatch();
+    
     let profile = useSelector(state => state.profile)
     let headerHeight = useSelector(state => state.option.headerHeight)
     let bodyHeight = useSelector(state => state.option.bodyHeight)
@@ -36,15 +40,19 @@ const Chat = ({ socket, cameraVideoRef }) => {
     const [mInputWith, setmInputWith] = useState(true);
     const [inputValue, setInputValue] = useState('');
     const [isActive, setIsActive] = useState(false);
+    const [isPreview, setIsPreview] = useState(false);
     const [lastSeen, setLastSeen] = useState(false);
-    const bottomRef = useRef(null);
+    const [isReplying, setIsReplying] = useState(false);
+    const [attachmentUrl, setAttachmentUrl] = useState(false)
+    const [replyData, setReplyData] = useState({ messageId: null, body: null });
+    const msgListRef = useRef(null);
     let messageInput = useRef(null);
     const chatHeader = useRef(null);
     const chatFooter = useRef(null);
     const chatNewAttachment = useRef(null);
     const messageActionButtonContainer = useRef(null);
+    const imageInput = useRef(null);
     const isMobile = useMediaQuery("(max-width: 768px)");
-
     const chatHeaderHeight = chatHeader.current?.offsetHeight;
     const chatFooterHeight = chatFooter.current?.offsetHeight;
     const chatFooterWidth = chatFooter.current?.offsetWidth;
@@ -57,17 +65,76 @@ const Chat = ({ socket, cameraVideoRef }) => {
         messageInput.current.style.width = messageInputWidth + 'px'
     }
 
-
-    let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
-    const profileId = userInfo.profile
-
-    const listContainerHeight = bodyHeight - headerHeight - chatHeaderHeight - chatFooterHeight
     const chatBoxHeight = bodyHeight - headerHeight
+
     let params = useParams()
     let friendId = params.profile;
 
     const [emotion, setEmotion] = useState(false);
+    const [loadNewMsgs, setLoadNewMsgs] = useState(true);
+    const [hasMoreMessages, setHasMoreMessages] = useState(true);
     const [myEmotion, setMyEmotion] = useState(false)
+    const [listContainerHeight, setListContainerHeight] = useState(chatBoxHeight - chatHeaderHeight - chatFooterHeight);
+    const [cmlStyles, setCmlStyles] = useState({
+        height: `${isMobile ? bodyHeight - headerHeight - chatFooterHeight - chatHeaderHeight : listContainerHeight}px`,
+        maxHeight: `${isMobile ? listContainerHeight + headerHeight : listContainerHeight}px`,
+        overflowY: 'scroll'
+    });
+
+    const [isLoaded, setIsLoaded] = useState(false)
+
+    useEffect(() => {
+        let newListHeaderHeight = bodyHeight - headerHeight - chatHeaderHeight - chatFooterHeight
+        setListContainerHeight(newListHeaderHeight)
+
+        if (isReplying == true) {
+            setIsPreview(true)
+        } else {
+            setIsPreview(false)
+        }
+
+        setCmlStyles({
+            height: `${isMobile ? bodyHeight - headerHeight - chatFooterHeight - chatHeaderHeight : listContainerHeight}px`,
+            maxHeight: `${isMobile ? listContainerHeight + headerHeight : listContainerHeight}px`,
+            overflowY: 'scroll'
+        })
+    }, [isReplying, isLoaded])
+
+    const [scrollPercent, setScrollPercent] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const el = msgListRef.current;
+            const scrollTop = el.scrollTop;
+            const scrollHeight = el.scrollHeight - el.clientHeight;
+            const percent = (scrollTop / scrollHeight) * 100;
+            setScrollPercent(percent);
+        };
+
+        const el = msgListRef.current;
+        if (el) {
+            el.addEventListener("scroll", handleScroll);
+        }
+
+        return () => {
+            if (el) {
+                el.removeEventListener("scroll", handleScroll);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+
+
+        if (hasMoreMessages) {
+            if (scrollPercent < 30) {
+                socket.emit('loadMessages', { myId: userId, friendId, skip: messages.length })
+                setHasMoreMessages(false)
+            }
+        }
+
+    }, [scrollPercent])
+
 
     useEffect(() => {
         socket.emit('is_active', { profileId: friendId, myId: userId });
@@ -81,15 +148,13 @@ const Chat = ({ socket, cameraVideoRef }) => {
 
         socket.on('messageReacted', (messageId) => {
             let msgSelector = '#chatMessageList .chat-message-container .message-id-' + messageId
-            // alert(msgSelector)
             $(msgSelector).addClass('message-reacted')
         })
 
         socket.on('messageReactRemoved', (messageId) => {
-            if(messageId) {
+            if (messageId) {
                 let msgSelector = '#chatMessageList .chat-message-container .message-id-' + messageId
                 $(msgSelector).removeClass('message-reacted')
-                // alert('react removed')
             }
 
         })
@@ -98,9 +163,13 @@ const Chat = ({ socket, cameraVideoRef }) => {
             socket.off('messageReacted')
             socket.off('messageReactRemoved')
             socket.off('is_active')
-
         }
     }, [params])
+
+
+    useEffect(() => {
+        setIsLoaded(!isLoaded)
+    }, [listContainerHeight])
 
     useEffect(() => {
 
@@ -134,20 +203,27 @@ const Chat = ({ socket, cameraVideoRef }) => {
         });
 
 
+        socket.on('loadMessages', ({ loadedMessages, hasNewMessage }) => {
+            setHasMoreMessages(hasNewMessage)
+            setMessages(messages => [...loadedMessages, ...messages])
+            // setPageNumber(currentPage + 1)
+        })
 
         socket.on('previousMessages', (msgs) => {
             setMessages(msgs);
-
+            setHasMoreMessages(true)
         });
         socket.on('newMessage', (msg) => {
             if (msg.receiverId == userId && msg.senderId == friendId) {
                 setMessages((prevMessages) => [...prevMessages, msg]);
+
                 setTimeout(() => {
                     document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
                 }, 500);
             }
             if (msg.senderId == userId && msg.receiverId == friendId) {
                 setMessages((prevMessages) => [...prevMessages, msg]);
+
                 setTimeout(() => {
                     document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
                 }, 500);
@@ -185,13 +261,11 @@ const Chat = ({ socket, cameraVideoRef }) => {
             socket.off('deleteMessage')
             socket.off('update_type')
             socket.off('typing')
-
-
+            socket.off('loadMessages')
         };
     }, [params, friendProfile]);
 
     useEffect(() => {
-
         if (messages.length > 0) {
             setTimeout(() => {
                 let lastMessage = messages[messages.length - 1];
@@ -273,16 +347,43 @@ const Chat = ({ socket, cameraVideoRef }) => {
         }, 500);
 
     }
+
     const handleSendMessage = (e) => {
         e.preventDefault();
-        if (inputValue.trim() && room) {
-            socket.emit('sendMessage', { room, senderId: userId, receiverId: friendId, message: inputValue });
-            setInputValue('')
-            setIsTyping(false)
-            setTimeout(() => {
-                document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
+        e.target.value = ''
 
-            }, 500);
+        let isDisabled = $(e.target).hasClass('button-disabled') || false
+        if(isDisabled) return;
+
+        if (inputValue.trim() && room) {
+
+            if (isReplying) {
+                let data = { room, senderId: userId, receiverId: friendId, message: inputValue,attachment: attachmentUrl, parent: replyData.messageId }
+                socket.emit('sendMessage', data);
+                setInputValue('')
+                setIsTyping(false)
+                dispatch(sendMessage(data))
+
+                setTimeout(() => {
+                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
+
+                }, 500);
+            } else {
+                let data = { room, senderId: userId, receiverId: friendId, message: inputValue,attachment: attachmentUrl, parent: false }
+                socket.emit('sendMessage', data);
+                setInputValue('')
+                setIsTyping(false)
+                dispatch(sendMessage(data))
+
+                setTimeout(() => {
+                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
+                }, 500);
+            }
+
+            setIsReplying(false)
+            setIsPreview(false)
+            setAttachmentUrl(false)
+
 
         }
     }
@@ -306,29 +407,7 @@ const Chat = ({ socket, cameraVideoRef }) => {
         which: 13,
         bubbles: true
     });
-    let handleDeleteMessage = async (e) => {
-        let messageId = $(e.currentTarget).data('id');
-        socket.emit('deleteMessage', messageId);
 
-    }
-
-    let handleLikeMessage = async (e) => {
-
-        let messageId = $(e.currentTarget).data('id');
-
-        if (!$(e.target).hasClass('reacted')) {
-            socket.emit('reactMessage', { messageId, profileId })
-            $(e.target).addClass('reacted')
-
-        } else {
-            socket.emit('removeReactMessage', { messageId, profileId })
-            $(e.target).removeClass('reacted')
-        }
-
-    }
-    let handleSpeakMessage = async (e) => {
-        socket.emit('speak_message', $(e.currentTarget).data('id'), friendId);
-    }
     const handleKeyPress = (event) => {
         if (event.key === "Enter") {
             handleSendMessage(event)
@@ -348,25 +427,55 @@ const Chat = ({ socket, cameraVideoRef }) => {
         setInputValue(e.target.value)
     }
 
-    const cmlStyles = {
-        height: `${isMobile ? bodyHeight - headerHeight - chatFooterHeight - chatHeaderHeight : listContainerHeight}px`,
-        maxHeight: `${isMobile ? listContainerHeight + headerHeight : listContainerHeight}px`,
-        overflowY: 'scroll'
+    let handlePreviewCloseBtn = (e) => {
+        setIsPreview(false)
+        setIsReplying(false)
     }
 
-    let getMessageTime = (timestamp) => {
-        const inputDate = moment(timestamp);
-        const now = moment();
 
-        // Format based on condition
-        const formattedTime = inputDate.format("DD/MM/YY hh:mm A")
+    let handleMessageImageButtonClick = async(e) => {
+        let clickEvent = new MouseEvent('click',{bubbles: true, cancelable: false})
+        let attachmentInput = document.createElement('input')
+        attachmentInput.type = 'file'
 
-        return formattedTime;
+        attachmentInput.addEventListener('change',(async(e) => {
+            let attachmentFile = e.target.files[0]
+            if(attachmentFile) {
+                let attachmentFormData = new FormData();
+                attachmentFormData.append('image', attachmentFile)
+                setAttachmentUrl('https://res.cloudinary.com/dz88yjerw/image/upload/v1743092084/i5lcu63atrbkpcy6oqam.gif')
+                setIsPreview(true)
+
+                let uploadAttachmentRes = await api.post('/upload',attachmentFormData, {
+                    headers: {
+                        'Content-Type':'multipart/form-data'
+                    }
+                })
+
+                if(uploadAttachmentRes.status === 200) {
+                    let attachmentUrl = uploadAttachmentRes.data.secure_url;
+                    if(attachmentUrl) {
+                        setAttachmentUrl(attachmentUrl)
+                    }
+                }
+
+            }
+        }))
+
+        if(attachmentInput) {
+            attachmentInput.dispatchEvent(clickEvent)
+        }
+
     }
+
+    let handleMessageImageChange = async(e) => {
+
+    }
+
+
 
     return (
         <div>
-
             <div id="chatBox" style={{ minHeight: `${chatBoxHeight}px` }}>
                 <div ref={chatHeader} className='chat-header'>
                     <div className='chat-header-user'>
@@ -400,70 +509,15 @@ const Chat = ({ socket, cameraVideoRef }) => {
 
                 </div>
                 <div className='chat-body'>
-                    <div className='chat-message-list' style={cmlStyles} id='chatMessageList' ref={bottomRef} >
+                    <div className='chat-message-list' style={cmlStyles} id='chatMessageList' ref={msgListRef} >
 
                         {
                             messages.map((msg, index) => {
 
-                                let isReacted = msg.reacts.includes(profileId) || msg.reacts.includes(friendId)
+
                                 return (
 
-
-                                    msg.senderId !== userId ?
-
-
-                                        <div key={index} className={`chat-message-container message-receive message-id-${msg._id} ${isReacted === true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
-                                            <div className='chat-message-profilePic'>
-                                                <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active={isActive ? true : false} ></UserPP>
-                                            </div>
-                                            <div className='chat-message'>
-                                                <div className='chat-message-options'>
-                                                    <button type='button' data-id={msg._id} className={`chat-message-option like ${msg.reacts.includes(profileId) == true ? 'reacted' : ''}`} onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
-                                                    <button type='button' data-id={msg._id} className='chat-message-option share' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
-                                                    <button type='button' data-id={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(msg)}><i className="fa fa-trash"></i></button>
-                                                </div>
-
-
-                                                <p className='message-container mb-0'>
-                                                    {msg.message}
-                                                </p>
-                                                <span className='message-react'><i>👍</i></span>
-                                            </div>
-                                            <div className='chat-message-seen-status d-none'>
-                                                Seen
-                                            </div>
-                                        </div>
-                                        :
-
-                                        <div key={index} className={`chat-message-container message-sent message-id-${msg._id} ${isReacted === true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
-
-
-                                            <div className='chat-message'>
-                                                <div className='chat-message-options'>
-                                                    <button type='button' data-id={msg._id} className={`chat-message-option like ${msg.reacts.includes(profileId) == true ? 'reacted' : ''}`} onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
-                                                    <button type='button' data-id={msg._id} className='chat-message-option share speaker' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
-
-                                                    <button type='button' data-id={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(this)}><i className="fa fa-trash"></i></button>
-                                                </div>
-
-                                                <p className='message-container mb-0' >
-                                                    {msg.message}
-                                                </p>
-                                                <span className='message-react'><i>👍</i></span>
-
-
-                                            </div>
-
-
-                                            {
-
-                                                <div className='chat-message-seen-status' style={{ 'visibility': (messages[messages.length - 1]._id === msg._id && msg.isSeen == true) ? 'visible' : 'hidden' }}>
-                                                    <img src={friendProfile.profilePic} alt='Seen' />
-                                                </div>
-                                            }
-                                        </div>
-
-
+                                    <SingleMessage key={index} msg={msg} friendProfile={friendProfile} messages={messages} isActive={isActive} setIsReplying={setIsReplying} setReplyData={setReplyData} />
                                 )
                             })
 
@@ -492,6 +546,33 @@ const Chat = ({ socket, cameraVideoRef }) => {
                 </div>
 
                 <div ref={chatFooter} className="chat-footer">
+
+                    {
+                        isPreview && (<div className='new-message-preview-container'>
+                            {
+                                isReplying && (
+                                    <div className='reply-message-preview-form'>
+                                        <p className='text-small'>
+                                            {replyData.body}
+                                        </p>
+                                    </div>
+                                )
+                            }
+                            {
+                                attachmentUrl && (
+                                    <div className='attachment-preview-container'>
+                                        <img className='attachment-preview' src={attachmentUrl} alt='Message Attachment'/>
+                                    </div>
+                                )
+                            }
+
+                            <span onClick={handlePreviewCloseBtn} className='preview-close-button bg-danger'>
+                                <i className='fa fa-times'></i>
+                            </span>
+                        </div>)
+                    }
+
+
                     <div className="new-message-container">
 
                         <div ref={chatNewAttachment} className='chat-new-attachment'>
@@ -501,8 +582,9 @@ const Chat = ({ socket, cameraVideoRef }) => {
                                     <i className="fas fa-plus-circle"></i>
                                 </div>
 
-                                <div className='chat-attachment-button'>
+                                <div className='chat-attachment-button' onClick={handleMessageImageButtonClick.bind(this)}>
                                     <i className="fas fa-images"></i>
+                                    <input type='file' style={{display: 'none'}} ref={imageInput} onChange={handleMessageImageChange.bind(this)} />
                                 </div>
 
                                 <div className='chat-attachment-button'>
@@ -513,13 +595,14 @@ const Chat = ({ socket, cameraVideoRef }) => {
 
                         </div>
                         <div className='new-message-form'>
+
                             <div className='new-message-input-container'>
-                                <input ref={messageInput} style={{ width: mInputWith + 'px' }} onChange={handleInputChange} onKeyDown={handleKeyPress} placeholder='Send Message....' value={inputValue} id='newMessageInput' className='new-message-input' onFocus={addTyping} onKeyUp={updateTyping.bind(this)} onBlur={removeTyping} />
+                                <input ref={messageInput} style={{ width: mInputWith + 'px' }} onChange={handleInputChange} onKeyDown={handleKeyPress} placeholder='Send Message....' id='newMessageInput' className='new-message-input' onFocus={addTyping} onKeyUp={updateTyping.bind(this)} onBlur={removeTyping} />
                             </div>
                             <div ref={messageActionButtonContainer} className='message-action-button-container'>
 
                                 {
-                                    inputValue.length > 0 ? <div onClick={handleSendMessage} className='message-action-button send-message'>
+                                    inputValue.length > 0 || attachmentUrl ? <div onClick={handleSendMessage} className={`message-action-button send-message ${attachmentUrl == 'https://res.cloudinary.com/dz88yjerw/image/upload/v1743092084/i5lcu63atrbkpcy6oqam.gif' && 'button-disabled'}`}>
                                         <i className="fas fa-paper-plane"></i>
                                     </div>
 
