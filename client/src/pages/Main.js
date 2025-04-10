@@ -1,6 +1,6 @@
-import React, { Fragment, useEffect, useState,useRef } from "react";
+import React, { Fragment, useEffect, useState, useRef } from "react";
 import { ToastContainer, toast } from 'react-toastify';
-import { BrowserRouter as BR, Routes, Route, Link, useParams,useLocation } from 'react-router-dom'
+import { BrowserRouter as BR, Routes, Route, Link, useParams, useLocation } from 'react-router-dom'
 import Header from '../partials/header/Header';
 import Home from "./Home";
 import Profile from "./Profile";
@@ -22,6 +22,7 @@ import FriendHome from "../components/friend/FriendHome";
 import { useDispatch, useSelector } from "react-redux";
 import api from "../api/api";
 import { getPorfileReq, getProfileFailed, getProfileSuccess } from '../services/actions/profileActions'
+import { addNotification, addNotifications } from "../services/actions/notificationActions.js";
 import { setLogin } from "../services/actions/authActions";
 import { setBodyHeight, setHeaderHeight, setLoading } from "../services/actions/optionAction";
 import Settings from "./Settings";
@@ -40,6 +41,16 @@ function showNotification(msg, receiverId) {
     };
 }
 
+const speakText = (text) => {
+    if (!text) return;
+
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "en-US"; // Change language if needed
+    speech.rate = 1; // Speed (0.5 - 2)
+    speech.pitch = 1; // Pitch (0 - 2)
+
+    window.speechSynthesis.speak(speech);
+};
 
 const Main = () => {
     var dispatch = useDispatch();
@@ -47,64 +58,66 @@ const Main = () => {
     let isLoading = useSelector(state => state.option.isLoading);
     let params = useParams();
     let audioElement = useRef(null)
-
+    let cameraVideoRef = useRef(null)
     const [isTabActive, setIsTabActive] = useState(!document.hidden);
 
-    useEffect(() => {
-      const handleVisibilityChange = () => {
-        setIsTabActive(!document.hidden);
-      };
-  
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-  
-      return () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-      };
-    }, []);
+    let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
+    const profileId = userInfo.profile
 
-    const notify = (msg, senderName,senderPP) => {
+    const notify = (text, senderName, senderPP,link) => {
         audioElement?.current.play();
         toast(
-            <Link className="text-decoration-none text-secondary" to={`/message/${msg.senderId}`}>
+            <Link className="text-decoration-none text-secondary" to={`${link}`}>
                 <div style={{ color: "blue", fontWeight: "bold" }}>
                     <div className="row d-flex align-items-center">
                         <div className="col-3">
                             <img className="rounded-circle w-100" src={senderPP} alt="ICS" />
                         </div>
-
+    
                         <div className="col-9">
-                            <h3 className="text-success mb-0">{senderName}</h3>
-                            <p className="text-small text-secondary text-muted mb-0">{msg.message}</p>
+                            {senderName && (<h3 className="text-success mb-0">{senderName}</h3>)}
+                            <p className="text-small text-secondary text-muted mb-0">{text}</p>
                         </div>
                     </div>
                 </div>
             </Link>
-
+    
         );
-
     }
-
-
-
-
-    const speakText = (text) => {
-        if (!text) return;
-
-        const speech = new SpeechSynthesisUtterance(text);
-        speech.lang = "en-US"; // Change language if needed
-        speech.rate = 1; // Speed (0.5 - 2)
-        speech.pitch = 1; // Pitch (0 - 2)
-
-        window.speechSynthesis.speak(speech);
-    };
-    let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
-    const profileId = userInfo.profile
     useEffect(() => {
-        socket.on('notification', (msg, senderName,senderPP) => {
-            if(isTabActive == true) {
-                notify(msg, senderName,senderPP)
+        socket.emit('fetchNotifications',profileId)
+        socket.on('oldNotifications', data => {
+            dispatch(addNotifications(data))
+        })
 
-            }else {
+        socket.on('newNotification', data => {
+            dispatch(addNotification(data))
+            notify(data.text,false,data.icon,data.link)
+        })
+        return () => {
+            socket.off('oldNotifications')
+            socket.off('newNotification')
+        }
+    }, [])
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            setIsTabActive(!document.hidden);
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
+
+    useEffect(() => {
+        socket.on('notification', (msg, senderName, senderPP) => {
+            if (isTabActive == true) {
+                notify(msg.message, senderName, senderPP,'/message' + msg.senderId)
+
+            } else {
                 if (Notification && Notification.permission === "granted") {
                     showNotification(msg);
                 } else if (Notification.permission !== "denied") {
@@ -115,8 +128,6 @@ const Main = () => {
                     });
                 }
             }
-            
-
         })
 
         socket.on('speak_message', (msg) => {
@@ -127,7 +138,7 @@ const Main = () => {
             socket.off('notification');
             socket.off('speak_message');
         };
-    }, [socket,isTabActive])
+    }, [socket, isTabActive])
 
 
     useEffect(() => {
@@ -151,8 +162,8 @@ const Main = () => {
         }
 
         setTimeout(() => {
-            socket.emit('update_last_login',userInfo.user_id)
-        },5000)
+            socket.emit('update_last_login', userInfo.user_id)
+        }, 5000)
 
     }, [params])
 
@@ -171,7 +182,7 @@ const Main = () => {
                         </div>
                     </div>)}
 
-                <Header />
+                <Header cameraVideoRef={cameraVideoRef} />
 
                 <div id="main-container" className={isLoading ? 'loading' : ''}>
                     <Routes>
@@ -196,7 +207,7 @@ const Main = () => {
 
                             </Route>
                             <Route path="/watch" element={<Watch />}> </Route>
-                            <Route path="/message" element={<Message />}>
+                            <Route path="/message" element={<Message cameraVideoRef={cameraVideoRef} />}>
                                 <Route path=":profile/" element={<Profile />}></Route>
 
                             </Route>
@@ -211,11 +222,8 @@ const Main = () => {
 
                 </div>
                 <ToastContainer />
-
-
-
             </BR>
-
+            <video style={{ display: 'none' }} ref={cameraVideoRef} autoPlay muted width="600" height="400" />
         </Fragment>
 
     )

@@ -7,6 +7,7 @@ const reactRoutes = require('./reactRoutes')
 const commentRoutes = require('./commentRoutes')
 const uploadRoute = require('./uploadRoute')
 const storyRoutes = require('./storyRoutes')
+const settingRoutes = require('./settingRoutes')
 const notificationRoutes = require('./notificationRoutes')
 const path = require('path')
 
@@ -47,8 +48,12 @@ const routes = [
         handler: uploadRoute
     },
     {
-        path: '/notificaition',
+        path: '/api/notification',
         handler: notificationRoutes
+    },
+    {
+        path: '/api/setting',
+        handler: settingRoutes
     }
 ]
 

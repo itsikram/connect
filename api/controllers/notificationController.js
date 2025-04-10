@@ -1,8 +1,42 @@
+const { mongoose } = require('mongoose')
 const Notification = require('../models/Notification')
 
+exports.notificationSocket = async (io, socket) => {
+    socket.on('fetchNotifications',async(profileId) => {
+        let notificaitons = await Notification.find({ receiverId: profileId }).limit(10)
+        io.to(profileId).emit('oldNotifications', notificaitons)
+        
+    })
 
-exports.postNotification = async(req,res,next) => {
+    return () => {socket.off('fetchNotifications')}
+}
 
+
+exports.saveNotification = async (io, data) => {
+
+    let receiverId = data.receiverId || ''
+    let notificationText = data.text || ''
+    let notificationLink = data.link || '/';
+    let notificationIcon = data.icon || null;
+    let notificationType = data.type || null;
+    let notification = new Notification({
+        receiverId,
+        text: notificationText,
+        link: notificationLink,
+        icon: notificationIcon,
+        type: notificationType,
+
+    })
+    let newNotification = await notification.save()
+
+    if (newNotification) {
+        io.to(receiverId).emit('newNotification', newNotification)
+        // return res.json({message: 'New Notification Created'}).json(200)
+    }
+    // return res.json({message: 'Notification Creation Failed'}).json(400)
+}
+
+exports.postNotification = async (req, res, next) => {
     let receiverId = req.body.receiverId
     let notificationText = req.body.text;
     let notificationLink = req.body.link || '/';
@@ -18,19 +52,36 @@ exports.postNotification = async(req,res,next) => {
     })
 
     let newNotification = await notification.save()
-    if(newNotification) {
-        return res.json({message: 'New Notification Created'}).json(200)
+    if (newNotification) {
+        return res.json({ message: 'New Notification Created' }).json(200)
     }
-    return res.json({message: 'Notification Creation Failed'}).json(400)
+    return res.json({ message: 'Notification Creation Failed' }).json(400)
 
 }
 
-exports.getNotifications = async(req,res,next) => {
+exports.notificationView = async (req, res, next) => {
+    let notificationId = req.body.notificationId
+
+    if (!mongoose.isValidObjectId(notificationId)) return next()
+
+    let updatedNotification = await Notification.findOneAndUpdate({ _id: notificationId }, {
+        isSeen: true
+    }, { new: true })
+
+    if (updatedNotification) {
+
+        return res.json({ message: 'Notification status updated successfully' }).status(200)
+    }
+    res.json({ message: 'Something went wrong' }).status(400)
+}
+
+exports.getNotifications = async (req, res, next) => {
+    let io = req.app.get('io')
     let receverId = req.query.receverId;
-    let notifications = await Notification.find({receverId: receverId})
-    if(notifications) {
+    let notifications = await Notification.find({ receverId: receverId })
+    if (notifications) {
         return res.json(notifications).status(200)
     }
-    return res.json({message: 'Failed to get notificaiton'}).status(400)
+    return res.json({ message: 'Failed to get notificaiton' }).status(400)
 
 }

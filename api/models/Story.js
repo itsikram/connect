@@ -1,4 +1,4 @@
-const {Schema,model} = require('mongoose')
+const { Schema, model } = require('mongoose')
 const Profile = require('./Profile')
 const Comment = require('./Comment')
 
@@ -15,7 +15,10 @@ let storySchema = new Schema({
     reacts: [{
         type: Object,
         ref: Profile
-
+    }],
+    seenBy:[{
+        type: Schema.Types.ObjectId,
+        ref: Profile
     }],
     comments: [{
         type: Schema.Types.ObjectId,
@@ -30,12 +33,12 @@ let storySchema = new Schema({
         ref: Profile
     }
 
-},{
+}, {
     timestamps: true
 })
 
 
-let Story = model('Story',storySchema)
+let Story = model('Story', storySchema)
 
 
 module.exports = Story;

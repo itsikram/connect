@@ -3,6 +3,7 @@ const Profile = require('../models/Profile')
 const User = require('../models/User')
 const Comment = require('../models/Comment')
 const jwt = require('jsonwebtoken')
+const CmntReply = require('../models/CmntReply')
 
 
 exports.createPost = async(req,res,next) => {
@@ -72,16 +73,22 @@ exports.getMyPosts = async(req,res,next) => {
             {
                 path: 'comments',
                 model: Comment,
-                populate: {
+                populate:[ {
                     path: 'author',
                     select: ['profilePic','user'],
                     populate: {
                         path: 'user',
                         select: ['firstName','surname']
                     }
-                }
-            }
-        ]).sort({'createdAt': -1})
+                },{
+                    path: 'replies',
+                    Model: CmntReply,
+                    populate: {
+                        path: 'author',
+                        model: Profile
+                    }
+                }]
+            }]).sort({'createdAt': -1})
 
         res.json(posts).status(200)
         
@@ -113,7 +120,6 @@ exports.getSinglePost = async(req,res,next) => {
 
 exports.getNewsFeed = async(req,res,next) => {
     let profile = req.profile
-
     try {
 
         let newsFeedPosts = await Post.find().populate([
@@ -127,15 +133,23 @@ exports.getNewsFeed = async(req,res,next) => {
             {
                 path: 'comments',
                 model: Comment,
-                populate: {
+                populate: [{
                     path: 'author',
                     select: ['profilePic','user'],
                     populate: {
                         path: 'user',
                         select: ['firstName','surname']
                     }
-                }
+                },{
+                    path: 'replies',
+                    Model: CmntReply,
+                    populate: {
+                        path: 'author',
+                        model: Profile
+                    }
+                }]
             }
+            
         ]).limit(10).sort({'createdAt': -1})
 
         res.json(newsFeedPosts)

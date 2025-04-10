@@ -58,12 +58,13 @@ let Story = () => {
 
                         <div ref={storyContainer} className="story-content-container">
 
-                            <SingleStory></SingleStory>
+                            
 
 
                             {storyId ?
                                 (
                                     <>
+                                    <SingleStory></SingleStory>
                                         <div className="nf-story-arrow-left" onClick={handlePrevClick.bind(this)} >
                                             <i className="fa fa-chevron-left"></i>
                                         </div>
@@ -71,7 +72,6 @@ let Story = () => {
                                             <i className="fa fa-chevron-right"></i>
                                         </div>
                                     </>
-
                                 )
                                 : (<p className="text-center fs-4">Select a story from left</p>)}
 

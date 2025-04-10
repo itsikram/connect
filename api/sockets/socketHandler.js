@@ -1,4 +1,5 @@
 const messageController = require('../controllers/messageController')
+const {notificationSocket} = require('../controllers/notificationController')
 const Profile = require('../models/Profile')
 const User = require('../models/User')
 module.exports = function socketHandler(io){
@@ -6,13 +7,15 @@ module.exports = function socketHandler(io){
     io.on('connection', (socket) => {
         console.log(`User connected: ${socket.id}`);
         let rooms = [socket.handshake.query.profile]
-        let homeRoom = rooms[0]
 
+        let homeRoom = rooms[0]
         rooms.map(room => {
             socket.join(room);
         })
 
+
         messageController(io,socket)
+        notificationSocket(io,socket,profileId = homeRoom)
 
         socket.on('update_last_login', async function (userId) {
             if (!userId) return;
@@ -49,9 +52,6 @@ module.exports = function socketHandler(io){
             console.log(`User disconnected: ${socket.id}`);
         });
 
-
-
-        
     });
 }
 

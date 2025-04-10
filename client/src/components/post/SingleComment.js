@@ -1,0 +1,270 @@
+import React, { useState, useEffect } from "react";
+import Moment from 'react-moment';
+import { Link } from 'react-router-dom';
+import SingleReply from "./singleReply";
+import UserPP from "../UserPP";
+import $ from 'jquery'
+import api from '../../api/api';
+
+
+const SingleComment = (props) => {
+
+    let post = props.post || {}
+    let myProfile = props.myProfile ? props.myProfile : {}
+    let [comment, setComment] = useState(props.comment)
+    let myId = myProfile._id
+    let [totalComment, setTotalComment] = useState(0)
+    let [isReacted, setIsReacted] = useState(false);
+    let [isReply, setIsReply] = useState(false)
+    let [replies, setReplies] = useState(props.comment?.replies)
+
+
+    useEffect(() => {
+        setComment(props.comment)
+        setTotalComment(props.comment.reacts.length || 0)
+        setIsReacted(props.comment.reacts.includes(myId))
+        setReplies(props.comment.replies)
+    },[props])
+
+    let handleCommentReplyBtnClick = async (e) => {
+        setIsReply(!isReply)
+    }
+    
+    let [replyData, setReplyData] = useState({
+        body: null,
+        attachment: null
+    })
+
+    let deleteComment = async (e) => {
+        try {
+            let commentId = $(e.currentTarget).attr('dataid');
+            let postId = post._id;
+
+            $(e.currentTarget).parents('.comment-container').remove();
+            let dltRes = await api.post('/comment/deleteComment', { commentId, postId })
+            if (dltRes.status === 200) {
+                let data = dltRes.data
+                data.author = myProfile
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    let handleReplyAttachChange = async (e) => {
+        // setCommentData(state => {
+        //     return {
+        //         ...state,
+        //         attachment: loadingUrl
+        //     }
+        // })
+        // let imageFormData = new FormData();
+        // imageFormData.append('image', e.target.files[0]);
+        // let uploadImageRes = await api.post('/upload/', imageFormData, {
+        //     headers: {
+        //         'content-type': 'multipart/form-data'
+        //     }
+        // })
+        // if (uploadImageRes) {
+        //     setTimeout(() => {
+        //         let uploadImgUrl = uploadImageRes.data.secure_url
+        //         setUploadedImageUrl(uploadImgUrl)
+        //         setCommentData(state => {
+        //             return {
+        //                 ...state,
+        //                 attachment: uploadImgUrl
+        //             }
+        //         })
+        //     }, 1000);
+        // }
+    }
+    let handleReplyBodyChange = async (e) => {
+        setReplyData(state => {
+            return {
+                ...state,
+                body: e.target.value
+            }
+        })
+    }
+
+    let handleReplyKeyUp = async (e) => {
+        e.preventDefault()
+        if (e.keyCode === 13) {
+
+            let commentId = e.currentTarget.dataset.comment
+            if (replyData) {
+                let uploadReplyRes = await api.post('/comment/addReply', { replyMsg: replyData.body, authorId: myProfile._id, commentId })
+                if(uploadReplyRes.status == 200) {
+                    setIsReply(false)
+                    let newReplyData = uploadReplyRes.data;
+                    console.log('nrd',newReplyData)
+                    setReplies(replies => [...replies,newReplyData])
+                }
+                
+            }
+        }
+        //     try {
+        //         e.target.value = ''
+        //         let commentFormData = new FormData()
+        //         commentFormData.append('body', commentData.body == null ? '' : commentData.body)
+        //         commentFormData.append('attachment', uploadedImageUrl == null ? '' : uploadedImageUrl)
+        //         commentFormData.append('post', post._id)
+
+        //         let res = await api.post('/comment/addComment', commentFormData)
+        //         if (res.status === 200) {
+        //             let data = res.data
+        //             data.author = myProfile
+        //             let newComment = data
+        //             setAllComments(state => {
+        //                 let oldComments = [...state].slice(-3)
+        //                 let cr = [
+        //                     ...state,
+        //                     ...[newComment]
+        //                 ]
+
+        //                 setCommentData([])
+        //                 props.commentState(state => state + 1);
+        //                 return cr;
+
+        //             })
+        //         }
+        //     } catch (error) {
+        //         console.log(error)
+        //     }
+
+
+        // }
+
+    }
+
+    let clickReplySendBtn = async (e) => {
+        let commentId = e.currentTarget.dataset.comment
+        if (replyData) {
+            let uploadReplyRes = await api.post('/comment/addReply', { replyMsg: replyData.body, authorId: myProfile._id, commentId })
+            if(uploadReplyRes.status == 200) {
+                setIsReply(false)
+                let newReplyData = uploadReplyRes.data;
+                setReplies(replies => [...replies,newReplyData])
+            }
+            
+        }
+        // $(target).children('input').trigger('click')
+    }
+
+    // handle add attachmenent to comment on click
+    let clickCommentOption = (e) => {
+        if ($(e.currentTarget).children('.options-container').hasClass('open')) {
+            $(e.currentTarget).children('.options-container').removeClass('open');
+        } else {
+            $(e.currentTarget).children('.options-container').addClass('open');
+        }
+    }
+    // handle comment attachment change
+
+
+    let handleCommentLikeBtnClick = async (e) => {
+        let commentId = e.currentTarget.dataset.id
+        if ($(e.currentTarget).hasClass('reacted')) {
+            let updatedComment = await api.post('/comment/removeReact', { commentId, reactorId: myId })
+            if (updatedComment.status == 200) {
+                $(e.target).removeClass('reacted')
+                setTotalComment(comment => comment - 1)
+            }
+        } else {
+            let updatedComment = await api.post('/comment/addReact', { commentId, reactorId: myId })
+            if (updatedComment.status == 200) {
+                setTotalComment(comment => comment + 1)
+                $(e.target).addClass('reacted')
+            }
+        }
+
+    }
+
+
+    return (
+        <>
+            <div className={`comment-container comment-id-${comment._id}`}>
+                <div className="author-pp">
+                    <UserPP profilePic={comment.author.profilePic} profile={comment.author._id}></UserPP>
+                </div>
+                <div className="comment-info">
+                    <div className="comment-box">
+                        <div className="name-comment">
+                            <div className="author-name">
+                                <Link to={`/${comment.author._id}`}>
+                                    {comment.author.user.firstName + ' ' + comment.author.user.surname}
+                                </Link>
+                            </div>
+                            <p className="comment-text">{comment.body}</p>
+                            {
+                                comment.attachment &&
+                                <div className='comment-attachment-container'>
+                                    <img src={comment.attachment} alt='attachment' />
+                                </div>
+
+                            }
+
+                        </div>
+
+                        {
+
+                            comment.author._id == myProfile._id ?
+                                <div onClick={clickCommentOption} className="options-icon">
+                                    <i className="far fa-ellipsis-h"></i>
+                                    <div className='options-container'>
+                                        <button dataid={comment._id} onClick={deleteComment.bind(this)} className="comment-option text-danger">
+                                            Delete Comment
+                                        </button>
+                                    </div>
+                                </div>
+                                : ''
+                        }
+
+
+                    </div>
+
+                    
+
+                    <div className="comment-react">
+                        <div className={`like button ${isReacted ? 'reacted' : ''}`} onClick={handleCommentLikeBtnClick.bind(this)} data-id={comment._id}>Like {`${totalComment > 0 ? '(' + totalComment + ')' : ''}`}</div>
+                        <div className="reply button" data-id={comment._id} onClick={handleCommentReplyBtnClick.bind(this)}>Reply</div>
+
+
+                        <div className="comment-time"><Moment fromNow>{comment.createdAt}</Moment></div>
+                    </div>
+                    {isReply &&
+                        (
+                            <div className="new-reply">
+                                <div className="comment-field">
+                                    <input onKeyUp={handleReplyKeyUp} onChange={handleReplyBodyChange.bind(this)} className="field-comment-text" type="text" data-comment={comment._id} placeholder={`Reply to ${comment.author.fullName}`} />
+                                    <div onClick={clickReplySendBtn.bind(this)} data-comment={comment._id} className="comment-attachment">
+                                        {/* <input onChange={handleReplyAttachChange} className="attachment" type="file" /> */}
+                                        <span className="icon">
+                                            <i className="far fa-paper-plane"></i>
+                                        </span>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        )}
+
+                    {
+                        replies.map((item, key) => {
+
+                            return (
+                                <SingleReply setReplies={setReplies} comment={comment} item={item} key={key} myProfile={myProfile}></SingleReply>
+                            )
+
+                        })
+                    }
+
+
+                </div>
+            </div>
+        </>
+    )
+
+}
+
+export default SingleComment

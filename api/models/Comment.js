@@ -1,6 +1,6 @@
 const {Schema,model} = require('mongoose')
 const Profile = require('../models/Profile')
-
+const CmntReply = require('../models/CmntReply')
 const commentSchema = new Schema({
     body: {
         type: String,
@@ -20,7 +20,8 @@ const commentSchema = new Schema({
         required: true
     },
     replies: [{
-        type: Object
+        type:  Schema.Types.ObjectId,
+        ref: CmntReply
     }],
     reacts: [{
         type: Object

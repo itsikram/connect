@@ -4,7 +4,7 @@ import MessageList from "../components/Message/MessageList";
 import MessageBody from '../components/Message/MessageBody';
 import MessageOptions from '../components/Message/MessageOptions.';
 
-const Message = () => {
+const Message = (props) => {
 
     const useMediaQuery = (query) => {
         const [matches, setMatches] = useState(window.matchMedia(query).matches);
@@ -18,7 +18,6 @@ const Message = () => {
 
         return matches;
     };
-
     var isMobile = useMediaQuery("(max-width: 768px)");
 
     return (
@@ -31,7 +30,7 @@ const Message = () => {
                             <MessageList></MessageList>
                         </Col>}
                         <Col md="6">
-                            <MessageBody>
+                            <MessageBody cameraVideoRef={props.cameraVideoRef}>
 
                             </MessageBody>
                         </Col>

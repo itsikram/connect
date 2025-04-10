@@ -1,8 +1,9 @@
 const Profile = require('../models/Profile')
-
+const {saveNotification} = require('./notificationController')
 exports.postFrndReq = async (req, res, next) => {
     try {
         let profile = req.body.profile
+        let io = req.app.get('io')
 
         let myProfile = await Profile.findById(req.profile._id)
         if (myProfile.friends.includes(profile)) {
@@ -32,10 +33,19 @@ exports.postFrndReq = async (req, res, next) => {
             }
         }, {
             $push: {
-                friendReqs: myProfile._id
+                friendReqs: myProfile._id,
             }
         })
 
+        let notificationData = {
+            receiverId: profile,
+            text: myProfile.fullName + ' Sent you friend Request',
+            link: '/'+myProfile._id,
+            icon: myProfile.profilePic,
+            type: 'friendReq'
+        }
+
+        // saveNotification(io,notificationData)
         return res.json(frndReq)
 
 
@@ -57,20 +67,17 @@ exports.getFrndReq = async (req, res, next) => {
             path: 'user',
             select: ['firstName', 'surname']
         }).select('profilePic')
-
         return res.status(200).json(getFrndReqsInfo)
-
-
 
     } catch (error) {
         next(error)
     }
-
 }
 exports.getProfileFrnd = async (req, res, next) => {
 
     try {
         let profile = req.query.profile
+
         if(profile == false) return next();
         let isSingle = req.query.single && req.query.single
         if (isSingle) {
@@ -124,8 +131,10 @@ exports.getProfileSuggetions = async (req, res, next) => {
 exports.postFrndAccept = async (req, res, next) => {
     try {
         let profile = req.body.profile
+        
         let myProfile = req.profile
-
+        let io = req.app.get('io')
+        console.log('postFrndAccept',profile)
         let updateFrndProfile = await Profile.findOneAndUpdate({
             _id: profile,
             friends: {
@@ -148,7 +157,6 @@ exports.postFrndAccept = async (req, res, next) => {
             },
         })
 
-
         let updateFrnd = await Profile.findOneAndUpdate({
             _id: myProfile._id
         }, {
@@ -157,12 +165,19 @@ exports.postFrndAccept = async (req, res, next) => {
             }
         }, { new: true })
 
+        let notificationData = {
+            receiverId: profile,
+            text: myProfile.fullName + ' Accepted your friend Request',
+            link: '/'+myProfile._id,
+            icon: myProfile.profilePic,
+            type: 'friendReqAccept'
+        }
+
+        saveNotification(io,notificationData)
 
         return res.status(200).json({
             message: 'Friend Request Accepted'
         })
-
-
 
 
     } catch (error) {

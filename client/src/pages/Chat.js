@@ -22,7 +22,7 @@ const useMediaQuery = (query) => {
 };
 
 
-const Chat = ({ socket }) => {
+const Chat = ({ socket, cameraVideoRef }) => {
     let dispatch = useDispatch();
     let profile = useSelector(state => state.profile)
     let headerHeight = useSelector(state => state.option.headerHeight)
@@ -58,27 +58,47 @@ const Chat = ({ socket }) => {
     }
 
 
+    let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
+    const profileId = userInfo.profile
+
     const listContainerHeight = bodyHeight - headerHeight - chatHeaderHeight - chatFooterHeight
     const chatBoxHeight = bodyHeight - headerHeight
     let params = useParams()
     let friendId = params.profile;
 
-    const emotionVideoRef = useRef(null);
     const [emotion, setEmotion] = useState(false);
     const [myEmotion, setMyEmotion] = useState(false)
 
     useEffect(() => {
         socket.emit('is_active', { profileId: friendId, myId: userId });
-        socket.on('is_active', (data,ls) => {
+        socket.on('is_active', (data, ls) => {
             setIsActive(data)
-
+            // stopVideo();
             let lastSeenTime = moment(ls)
             const formattedTime = lastSeenTime.format("hh:mm A")
             setLastSeen(formattedTime)
         })
 
+        socket.on('messageReacted', (messageId) => {
+            let msgSelector = '#chatMessageList .chat-message-container .message-id-' + messageId
+            // alert(msgSelector)
+            $(msgSelector).addClass('message-reacted')
+        })
+
+        socket.on('messageReactRemoved', (messageId) => {
+            if(messageId) {
+                let msgSelector = '#chatMessageList .chat-message-container .message-id-' + messageId
+                $(msgSelector).removeClass('message-reacted')
+                // alert('react removed')
+            }
+
+        })
+
         return () => {
+            socket.off('messageReacted')
+            socket.off('messageReactRemoved')
             socket.off('is_active')
+
         }
     }, [params])
 
@@ -221,19 +241,8 @@ const Chat = ({ socket }) => {
     const startVideo = () => {
         if (!navigator.mediaDevices) return;
         navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-            emotionVideoRef.current.srcObject = stream;
+            cameraVideoRef.current.srcObject = stream;
         }).catch((err) => console.error("Error accessing webcam: ", err));
-    };
-    const stopVideo = () => {
-        if (!navigator.mediaDevices) return;
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then((stream) => {
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                    document.getElementById('video').srcObject = null;
-                }
-            })
-            .catch((err) => console.error("Error accessing webcam: ", err));
     };
 
     let handleVideoCallBtn = () => {
@@ -248,8 +257,8 @@ const Chat = ({ socket }) => {
 
     const detectEmotions = () => {
         setInterval(async () => {
-            if (emotionVideoRef.current) {
-                const detections = await faceapi.detectAllFaces(emotionVideoRef.current, new faceapi.TinyFaceDetectorOptions())
+            if (cameraVideoRef.current) {
+                const detections = await faceapi.detectAllFaces(cameraVideoRef.current, new faceapi.TinyFaceDetectorOptions())
                     .withFaceExpressions();
 
                 if (detections.length > 0) {
@@ -264,7 +273,6 @@ const Chat = ({ socket }) => {
         }, 500);
 
     }
-
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (inputValue.trim() && room) {
@@ -299,16 +307,27 @@ const Chat = ({ socket }) => {
         bubbles: true
     });
     let handleDeleteMessage = async (e) => {
-        let messageId = $(e.currentTarget).attr('dataid');
+        let messageId = $(e.currentTarget).data('id');
         socket.emit('deleteMessage', messageId);
 
     }
 
     let handleLikeMessage = async (e) => {
 
+        let messageId = $(e.currentTarget).data('id');
+
+        if (!$(e.target).hasClass('reacted')) {
+            socket.emit('reactMessage', { messageId, profileId })
+            $(e.target).addClass('reacted')
+
+        } else {
+            socket.emit('removeReactMessage', { messageId, profileId })
+            $(e.target).removeClass('reacted')
+        }
+
     }
     let handleSpeakMessage = async (e) => {
-        socket.emit('speak_message', $(e.currentTarget).attr('dataid'), friendId);
+        socket.emit('speak_message', $(e.currentTarget).data('id'), friendId);
     }
     const handleKeyPress = (event) => {
         if (event.key === "Enter") {
@@ -347,20 +366,19 @@ const Chat = ({ socket }) => {
 
     return (
         <div>
-            <video style={{ display: 'none' }} ref={emotionVideoRef} autoPlay muted width="600" height="400" />
 
             <div id="chatBox" style={{ minHeight: `${chatBoxHeight}px` }}>
                 <div ref={chatHeader} className='chat-header'>
                     <div className='chat-header-user'>
                         <div className='chat-header-profilePic'>
-                            <UserPP profilePic={`${friendProfile.profilePic}`} hasStory={false} profile={friendProfile._id} active={ isActive ? true : false}></UserPP>
+                            <UserPP profilePic={`${friendProfile.profilePic}`} hasStory={false} profile={friendProfile._id} active={isActive ? true : false}></UserPP>
                         </div>
                         <div className='chat-header-user-info'>
                             <h4 className='chat-header-username'> {`${friendProfile == true && friendProfile.fullName ? friendProfile.fullName : friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname}`}</h4>
                             {isActive ? (<span className='chat-header-active-status'>Online </span>) : (lastSeen && <span className='chat-header-active-status'>Last Seen: {lastSeen} </span>)}
 
                             {
-                                emotion && (<span className='chat-header-active-status text-capitalized'> | Mode {emotion}</span>)
+                                emotion && (<span className='chat-header-active-status text-capitalized'> | {emotion}</span>)
                             }
 
                         </div>
@@ -386,28 +404,30 @@ const Chat = ({ socket }) => {
 
                         {
                             messages.map((msg, index) => {
+
+                                let isReacted = msg.reacts.includes(profileId) || msg.reacts.includes(friendId)
                                 return (
 
 
                                     msg.senderId !== userId ?
 
 
-                                        <div key={index} className={`chat-message-container message-receive message-id-${msg._id}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
+                                        <div key={index} className={`chat-message-container message-receive message-id-${msg._id} ${isReacted === true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
                                             <div className='chat-message-profilePic'>
-                                                <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active={isActive? true: false} ></UserPP>
+                                                <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active={isActive ? true : false} ></UserPP>
                                             </div>
                                             <div className='chat-message'>
                                                 <div className='chat-message-options'>
-                                                    <button type='button' dataid={msg._id} className='chat-message-option like' onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
-                                                    <button type='button' dataid={msg._id} className='chat-message-option share' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
-
-                                                    <button type='button' dataid={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(msg)}><i className="fa fa-trash"></i></button>
+                                                    <button type='button' data-id={msg._id} className={`chat-message-option like ${msg.reacts.includes(profileId) == true ? 'reacted' : ''}`} onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
+                                                    <button type='button' data-id={msg._id} className='chat-message-option share' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
+                                                    <button type='button' data-id={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(msg)}><i className="fa fa-trash"></i></button>
                                                 </div>
 
 
                                                 <p className='message-container mb-0'>
                                                     {msg.message}
                                                 </p>
+                                                <span className='message-react'><i>👍</i></span>
                                             </div>
                                             <div className='chat-message-seen-status d-none'>
                                                 Seen
@@ -415,23 +435,25 @@ const Chat = ({ socket }) => {
                                         </div>
                                         :
 
-                                        <div key={index} className={`chat-message-container message-sent message-id-${msg._id}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
+                                        <div key={index} className={`chat-message-container message-sent message-id-${msg._id} ${isReacted === true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
 
 
                                             <div className='chat-message'>
                                                 <div className='chat-message-options'>
-                                                    <button type='button' dataid={msg._id} className='chat-message-option like' onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
-                                                    <button type='button' dataid={msg._id} className='chat-message-option share speaker' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
+                                                    <button type='button' data-id={msg._id} className={`chat-message-option like ${msg.reacts.includes(profileId) == true ? 'reacted' : ''}`} onClick={handleLikeMessage.bind(this)}><i className="fa fa-thumbs-up"></i></button>
+                                                    <button type='button' data-id={msg._id} className='chat-message-option share speaker' onClick={handleSpeakMessage.bind(this)}><i className="fa fa-speaker"></i></button>
 
-                                                    <button type='button' dataid={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(this)}><i className="fa fa-trash"></i></button>
+                                                    <button type='button' data-id={msg._id} className='chat-message-option delete' onClick={handleDeleteMessage.bind(this)}><i className="fa fa-trash"></i></button>
                                                 </div>
 
                                                 <p className='message-container mb-0' >
                                                     {msg.message}
                                                 </p>
+                                                <span className='message-react'><i>👍</i></span>
 
 
                                             </div>
+
 
                                             {
 

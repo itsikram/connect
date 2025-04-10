@@ -33,6 +33,8 @@ middilewares(app)
 routes(app)
 
 
+app.set('io',io)
+
 app.get('/', async (req, res) => {
   return res.json({ message: 'workign fine' });
 })

@@ -8,37 +8,63 @@ import HeaderRight from "./HeaderRight";
 import Ls from "../sidebar/Ls";
 import $ from 'jquery'
 import { setHeaderHeight } from "../../services/actions/optionAction.js";
+import api from "../../api/api.js";
+import { useDispatch,useSelector } from "react-redux";
 
-import { useDispatch } from "react-redux";
-
-const Header = () => {
+const Header = ({cameraVideoRef}) => {
     var dispatch = useDispatch();
     let [isMegaMenu, setIsMegaMenu] = useState(false);
     let localtion = useLocation();
+    let myProfile = useSelector(state => state.profile)
     let params = useParams();
     let headerRef = useRef(null);
     const [height, setHeight] = useState(null);
     dispatch(setHeaderHeight(height))
 
 
-    $(window).on('scroll', (e) => {
-        if (window.pageYOffset > 100) {
-            $('#header').addClass('sticky-header')
-            let headerHeight = $('#header').height()
-            $('#main-container').css('padding-top', headerHeight)
+    // let getNotifications = async(profileId) => {
+    //     let notificaiton_list = await api.get('/notification',{
+    //         params: {
+    //             receverId: profileId
+    //         }
+    //     })
+    //     setNotifications(notificaiton_list)
+    // }
+    // useEffect(() => {
+    // getNotifications(myProfile._id)
+    // console.log('notifcations',notificaitons)
+    
+    // },[])
 
-        } else {
-            $('#header').removeClass('sticky-header')
-            $('#main-container').css('padding-top', 0)
+
+    useEffect(() => {
+        stopCamera()
+    },[localtion])
+    
+    const stopCamera = () => {
+        const stream = cameraVideoRef.current?.srcObject;
+        if (stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+            cameraVideoRef.current.srcObject = null;
         }
-    })
+    };
 
 
 
     let [match, setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)
-
     useEffect(() => {
-
+        $(window).on('scroll', (e) => {
+            if (window.pageYOffset > 100) {
+                $('#header').addClass('sticky-header')
+                let headerHeight = $('#header').height()
+                $('#main-container').css('padding-top', headerHeight)
+    
+            } else {
+                $('#header').removeClass('sticky-header')
+                $('#main-container').css('padding-top', 0)
+            }
+        })
         if (headerRef.current) {
             setHeight(headerRef.current?.offsetHeight)
 
@@ -54,11 +80,7 @@ const Header = () => {
     },[localtion])
 
     let headerMMClick = (e) => {
-
         setIsMegaMenu(!isMegaMenu)
-
-
-
     }
 
 

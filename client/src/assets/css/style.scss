@@ -267,6 +267,8 @@ body {
                         border-radius: 50%;
 
 
+
+
                     }
 
                     .header-quick-menu-item.active .header-quick-menu-icon {
@@ -309,6 +311,31 @@ body {
                         align-items: center;
                         justify-content: center;
                         border-radius: 50%;
+                        position: relative;
+
+                        .hr-counter-badge {
+                            position: absolute;
+                            right: -4px;
+                            top: 0px;
+                            color: $tc;
+                            font-size: 14px;
+                            background-color: $pc;
+                            height: 17px;
+                            min-width: 17px;
+                            border-radius: 50%;
+                            overflow: hidden;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-weight: 600;
+                            line-height: 0;
+
+                            // border: 1px solid $bc;
+                            .counter {
+                                margin-top: -1px;
+                                padding: 4px
+                            }
+                        }
                     }
 
                     .header-quick-menu-icon.hr-three-dot i {
@@ -322,7 +349,6 @@ body {
             }
 
             .hr-mm-container {
-                padding: 10px;
                 display: flex;
                 flex-direction: column;
 
@@ -642,6 +668,7 @@ body {
     }
 
 }
+
 .nf-create-post {
     min-height: 100px;
     background-color: #242526;
@@ -1171,6 +1198,154 @@ body {
                             font-weight: 600;
                             cursor: pointer;
                         }
+
+                        .reacted {
+                            color: $pc;
+                        }
+                    }
+
+                }
+
+            }
+
+            .reply-container {
+                margin-top: 10px;
+                display: flex;
+                align-items: flex-start;
+                justify-content: flex-start;
+                margin-bottom: 10px;
+
+                .author-pp {
+                    border-radius: 50%;
+                    margin-right: 5px;
+
+                    img {
+                        height: 40px;
+                        width: 40px;
+                        border-radius: 50%;
+                    }
+                }
+
+                .comment-info {
+                    width: 85%;
+
+                    .comment-box {
+                        display: flex;
+                        align-items: center;
+                        width: 100%;
+
+                        .name-comment {
+                            background-color: $bc;
+                            padding: 3px 10px;
+                            border-radius: 10px;
+                            width: 85%;
+                            float: left;
+                            margin-right: 10px;
+
+
+                            .author-name {
+                                margin-bottom: -5px;
+                                font-weight: 600;
+                                text-transform: capitalize;
+
+                                a {
+                                    color: $tc;
+                                    text-decoration: none;
+                                }
+
+                                a:hover {
+                                    text-decoration: underline;
+                                }
+                            }
+
+                            .comment-text {
+                                margin: 5px 0;
+                                padding: 0;
+                                color: $tc;
+                                font-weight: 400;
+                                font-size: 16px;
+                            }
+
+                            .comment-attachment-container {
+                                padding: 20px;
+                                margin-top: 10px;
+                                border-top: 1px dotted $profilebg;
+                                text-align: center;
+
+                                img {
+                                    width: 80%;
+                                }
+                            }
+
+                        }
+
+                        .options-icon {
+                            float: left;
+                            padding: 5px 10px;
+                            border-radius: 50%;
+                            cursor: pointer;
+                            max-width: 15%;
+                            position: relative;
+
+                            .options-container {
+                                position: absolute;
+                                top: 100%;
+                                right: 0;
+                                background: $bbgc;
+                                padding: 10px;
+                                border-radius: 5px;
+                                display: none;
+
+                                .comment-option {
+                                    width: 150px;
+                                    display: block;
+                                    background-color: $bc;
+                                    border: 0;
+                                    outline: 0;
+                                    font-size: 18px;
+                                }
+
+                                .comment-option.delete {
+                                    font-weight: 700;
+                                }
+
+                            }
+
+                            .options-container.open {
+                                display: block;
+
+                            }
+                        }
+
+                    }
+
+
+                    .options-icon:hover {
+                        background-color: $bc;
+                    }
+
+                    .options-icon::after {
+                        clear: both;
+                    }
+
+                    .comment-react {
+                        display: flex;
+                        margin-left: 5px;
+                        width: 100%;
+
+                        div {
+                            margin-right: 10px;
+                            font-size: 13px;
+                        }
+
+                        .button {
+                            font-weight: 600;
+                            cursor: pointer;
+                        }
+
+                        .reacted {
+                            color: $pc;
+                        }
                     }
 
                 }
@@ -1202,6 +1377,51 @@ body {
                     border-radius: 50%;
                 }
             }
+
+            .comment-field {
+                overflow: hidden;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                background-color: $bc;
+                padding: 2px 5px;
+                border-radius: 10px;
+
+                .field-comment-text {
+                    display: block;
+                    width: 90%;
+                    float: left;
+                    background-color: transparent;
+                    color: $tc;
+                    border: 0;
+                    outline: 0;
+                }
+
+                .comment-attachment {
+                    float: left;
+                    border-radius: 50%;
+                    padding: 4px 10px;
+                    transition: 0.1s;
+                    cursor: pointer;
+
+                    input {
+                        display: none;
+                    }
+                }
+
+                .comment-attachment:hover {
+                    background-color: #67686B;
+                }
+
+                .comment-attachment::after {
+                    clear: both;
+                }
+
+            }
+        }
+
+        .new-reply {
+            margin-top: 10px;
 
             .comment-field {
                 overflow: hidden;
@@ -1284,7 +1504,8 @@ body {
 
             }
 
-            .story-list-item:hover,.story-list-item.active {
+            .story-list-item:hover,
+            .story-list-item.active {
                 background-color: $bbgc !important;
             }
         }
@@ -1298,9 +1519,10 @@ body {
         .single-story-container {
 
             .single-story {
-                width: 75%;
+                width: 65%;
                 margin: auto;
                 position: relative;
+                border-radius: 10px;
 
                 .single-story-pp-container {
                     position: absolute;
@@ -2428,6 +2650,8 @@ body {
     right: 50% !important;
     transform: translateX(50%);
 
+
+
     .left-sidebar-container {
         padding: 10px;
         border-right: 1px solid transparent;
@@ -2457,6 +2681,9 @@ body {
                 }
             }
         }
+
+
+
 
         .message-list-container {
 
@@ -2678,6 +2905,7 @@ body {
         width: 5px !important;
         /* Adjust the width */
     }
+
     ::-moz-scrollbar {
         width: 5px !important;
         /* Adjust the width */
@@ -2693,7 +2921,9 @@ body {
     ::-webkit-scrollbar-track {
         background: transparent;
     }
+
     scrollbar-width: thin !important;
+
     .chat-header {
 
         display: flex;
@@ -2759,7 +2989,7 @@ body {
 
     .chat-body {
         .chat-message-list {
-            
+
             .chat-message-container:hover .chat-message-options {
                 display: flex;
             }
@@ -2771,6 +3001,7 @@ body {
                 position: relative;
                 min-width: 120px;
 
+
                 .chat-message-options {
                     position: absolute;
                     width: fit-content;
@@ -2780,6 +3011,10 @@ body {
                     padding: 10px;
                     top: 50%;
                     transform: translateY(-50%);
+
+                    .reacted {
+                        color: $pc !important;
+                    }
 
                     .chat-message-option {
                         background: $bc;
@@ -2846,6 +3081,32 @@ body {
                 }
 
             }
+            
+            .message-reacted {
+                .message-react {
+                    display: flex !important;
+                }
+            }
+
+            .message-react {
+                position: absolute;
+                padding: 5px;
+                background: gray;
+                line-height: 1;
+                height: 30px;
+                width: 30px;
+                border-radius: 50%;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                user-select: none;
+                cursor: pointer;
+
+                i {
+                    margin-top: -5px;
+                }
+
+            }
 
             .chat-message-container.message-receive {
                 .chat-message-seen-status {
@@ -2863,6 +3124,13 @@ body {
                     background-color: $bc;
                     margin-right: 10px;
                     margin-left: 0 !important;
+
+
+                    
+                    .message-react {
+                        top: -15px;
+                        right: -20px;
+                    }
                 }
 
             }
@@ -2903,6 +3171,13 @@ body {
                     columns: $tc;
                     margin-right: 10px;
                     margin-top: 5px;
+
+                    .message-react {
+                        top: -15px;
+                        left: -20px;
+                    }
+
+
                 }
 
             }
@@ -3195,7 +3470,7 @@ body {
                             transform: translate(-50%, -50%);
 
                             .plus-icon {
-                                background-image: url(http://localhost:3000/assets/images/icon3.png);
+                                background-image: url(https://programmerikram.com/wp-content/uploads/2025/04/icon3.png);
                                 background-position: 0px -83px;
                                 background-size: auto;
                                 width: 20px;
@@ -3226,7 +3501,7 @@ body {
                     .post-meta-buttons {
 
                         .attachment-button-file {
-                            background-image: url(http://localhost:3000/assets/images/new-icons.png);
+                            background-image: url(https://programmerikram.com/wp-content/uploads/2025/04/new-icons.png);
                             margin-right: 5px;
                             background-position: 0px -181px;
                             background-size: 26px 302px;
@@ -3316,12 +3591,38 @@ body {
     color: $tc;
 }
 
-.hr-notificaiton-menu-container {
-    .hr-notificaiton-menu {
+.hr-notification-menu-container {
+    .notification-leftside-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .notification-leftside-title {
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .notification-sidebar-header-menu {
+
+            .header-menu-icons {
+                height: 30px;
+                width: 30px;
+                border-radius: 50%;
+                background: $bc;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .hr-notification-menu {
         list-style: none;
         padding: 0;
         margin: 0;
-        .hr-notificaiton-item {
+
+        .hr-notification-item {
             margin-bottom: 10px;
             transition: 0.3s;
             padding: 8px;
@@ -3330,22 +3631,27 @@ body {
             .hr-notification-row {
                 display: flex;
                 align-items: center;
+
                 .hr-notification-col-2 {
                     width: 17%;
                     float: left;
                     margin-right: 3%;
+
                     .hr-notification-icon-continaer {
                         border-radius: 50%;
                         overflow: hidden;
+
                         img {
                             width: 100%;
                         }
-        
+
                     }
 
                 }
+
                 .hr-notification-col-10 {
                     width: 80%;
+
                     .hr-notification-text {
                         text-align: left;
                         margin-bottom: 0;
@@ -3358,7 +3664,8 @@ body {
 
         }
 
-        .hr-notificaiton-item.unseen, .hr-notificaiton-item:hover {
+        .hr-notification-item.unseen,
+        .hr-notification-item:hover {
             background-color: $bbgc;
         }
     }

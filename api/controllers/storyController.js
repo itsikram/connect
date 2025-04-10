@@ -113,7 +113,6 @@ exports.getSingleStory = async(req,res,next) => {
                     }
                 }
             ]).limit(10).sort({'createdAt': -1})
-            console.log('s id',storyId,story)
     
             return res.json(story).status(200)
         }

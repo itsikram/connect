@@ -6,7 +6,10 @@ const NotificationSchema = new Schema({
         ref: Profile
     },
     text: String,
-    icons: {
+    title: {
+        type: String,
+    },
+    icon: {
         type: String,
         default: 'https://programmerikram.com/wp-content/uploads/2025/03/ics_logo.png'
     },
@@ -17,11 +20,13 @@ const NotificationSchema = new Schema({
         ref: Profile
 
     }],
-    isSeen: Boolean,
+    isSeen: {
+        type: Boolean,
+        default: false
+    },
     timestamp: { type: Date, default: Date.now }
 });
 
-const Notification = model('Message', NotificationSchema);
-
+const Notification = model('Notification', NotificationSchema);
 
 module.exports = Notification

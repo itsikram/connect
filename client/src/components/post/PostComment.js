@@ -2,21 +2,18 @@ import React, { useState, Fragment } from 'react';
 import $ from 'jquery'
 import UserPP from '../UserPP';
 import api from '../../api/api';
-import Moment from 'react-moment';
-import { Link } from 'react-router-dom';
-
+import SingleComment from './SingleComment';
 const loadingUrl = 'https://programmerikram.com/wp-content/uploads/2025/03/loading.gif'
-
 function isValidUrl(str) {
     return true;
-    var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-      '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-      '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-      '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+        '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
     return !!pattern.test(str);
-  }
+}
 
 const PostComment = (props) => {
     let post = props.post || {}
@@ -24,32 +21,26 @@ const PostComment = (props) => {
     let authProfileId = props.authProfile;
     let myProfile = props.myProfile ? props.myProfile : {}
     let isAuth = myProfile._id === authProfileId
+
     // handle all comment state 
 
     let [allComments, setAllComments] = useState(post.comments.slice(-3))
-
-    // handle add attachmenent to comment on click
-    let clickCommentOption = (e) => {
-        if($(e.currentTarget).children('.options-container').hasClass('open')) {
-            $(e.currentTarget).children('.options-container').removeClass('open');
-        }else {
-            $(e.currentTarget).children('.options-container').addClass('open');
-        }
-    }
-    let clickCommentAttachBtn = async (e) => {
-        let target = e.currentTarget
-        $(target).children('input').trigger('click')
-    }
-
-    // handle comment attachment change
-
-    let [commentData, setCommentData] = useState({
-        body: null,
-        attachment: null
-    })
-
     let [uploadedImageUrl, setUploadedImageUrl] = useState(null);
 
+    // // handle add attachmenent to comment on click
+    // let clickCommentOption = (e) => {
+    //     if($(e.currentTarget).children('.options-container').hasClass('open')) {
+    //         $(e.currentTarget).children('.options-container').removeClass('open');
+    //     }else {
+    //         $(e.currentTarget).children('.options-container').addClass('open');
+    //     }
+    // }
+    // let clickCommentAttachBtn = async (e) => {
+    //     let target = e.currentTarget
+    //     $(target).children('input').trigger('click')
+    // }
+
+    // handle comment attachment change
     let handleAttachChange = async (e) => {
         setCommentData(state => {
             return {
@@ -64,7 +55,7 @@ const PostComment = (props) => {
                 'content-type': 'multipart/form-data'
             }
         })
-        if(uploadImageRes) {
+        if (uploadImageRes) {
             setTimeout(() => {
                 let uploadImgUrl = uploadImageRes.data.secure_url
                 setUploadedImageUrl(uploadImgUrl)
@@ -123,21 +114,17 @@ const PostComment = (props) => {
 
     }
 
-    let deleteComment = async (e) => {
-        try {
-            let commentId = $(e.currentTarget).attr('dataid');
-            let postId = post._id;
-
-            $(e.currentTarget).parents('.comment-container').remove();
-            let dltRes = await api.post('/comment/deleteComment', {commentId,postId})
-            if (dltRes.status === 200) {
-                let data = dltRes.data
-                data.author = myProfile
-            }
-        } catch (error) {
-            console.log(error)
-        }
+    let clickCommentAttachBtn = async (e) => {
+        let target = e.currentTarget
+        $(target).children('input').trigger('click')
     }
+
+
+    let [commentData, setCommentData] = useState({
+        body: null,
+        attachment: null
+    })
+
 
 
     return (
@@ -145,55 +132,9 @@ const PostComment = (props) => {
             <div className="comments">
 
                 {
-                    allComments.map((comment, key) => {
-
-                        return <div key={key} className={`comment-container comment-id-${comment._id}`}>
-                            <div className="author-pp">
-                                <UserPP profilePic={comment.author.profilePic} profile={comment.author._id}></UserPP>
-                            </div>
-                            <div className="comment-info">
-                                <div className="comment-box">
-                                    <div className="name-comment">
-                                        <div className="author-name">
-                                            <Link to={`/${comment.author._id}`}>
-                                                {comment.author.user.firstName + ' ' + comment.author.user.surname}
-                                            </Link>
-                                        </div>
-                                        <p className="comment-text">{comment.body}</p>
-                                        {
-                                            comment.attachment &&
-                                            <div className='comment-attachment-container'>
-                                                <img src={comment.attachment} alt='attachment' />
-                                            </div>
-                                            
-                                        }
-
-                                    </div>
-
-                                    {
-
-                                        comment.author._id == myProfile._id ?
-                                            <div onClick={clickCommentOption} className="options-icon">
-                                                <i className="far fa-ellipsis-h"></i>
-                                                <div className='options-container'>
-                                                    <button dataid={comment._id} onClick={deleteComment.bind(this)} className="comment-option text-danger">
-                                                        Delete Comment
-                                                    </button>
-                                                    </div>
-                                            </div>
-                                            : ''
-                                    }
-
-
-                                </div>
-
-                                <div className="comment-react">
-                                    <div className="like button">Like</div>
-                                    <div className="reply button">Reply</div>
-                                    <div className="comment-time"><Moment fromNow>{comment.createdAt}</Moment></div>
-                                </div>
-                            </div>
-                        </div>
+                   allComments && allComments.map((comment, key) => {
+                        
+                        return comment && <SingleComment comment={comment} post={post} key={key} myProfile={myProfile}></SingleComment>
                     })
                 }
 

@@ -2,14 +2,12 @@ const Message = require('../models/Message')
 const Profile = require('../models/Profile')
 const User = require('../models/User')
 module.exports =function messageController(io,socket) {
-
         socket.on('startChat', async ({ user1, user2 }) => {
             const room = [user1, user2].sort().join('_'); // Ensures consistent room ID
             socket.join(room);
 
             const messages = await Message.find({ $or: [{ senderId: user1, receiverId: user2 }, { senderId: user2, receiverId: user1 }] }).sort({ timestamp: 1 }).limit(1000);
             socket.emit('previousMessages', messages);
-
             socket.emit('roomJoined', { room });
         });
 
@@ -18,6 +16,42 @@ module.exports =function messageController(io,socket) {
             if (deletedMessages) {
                 io.to(deletedMessages.room).emit('deleteMessage', messageId);
             }
+        })
+
+
+        socket.on('reactMessage', async({messageId,profileId}) => {
+
+            let reactedMessage = await Message.findOneAndUpdate({_id: messageId,reacts: {
+                $nin: profileId
+            }},{
+                $push: {
+                    reacts: profileId
+                }
+            },{new: true})
+
+            if(reactedMessage) {
+                console.log(reactedMessage)
+
+                io.to(profileId).emit('messageReacted',messageId)
+
+            }
+
+        })
+
+        socket.on('removeReactMessage', async({messageId,profileId}) => {
+
+            let removedReactedMessage = await Message.findOneAndUpdate({_id: messageId},{
+                $pull: {
+                    reacts: profileId
+                }
+            },{new: true})
+
+            if(removedReactedMessage) {
+                console.log(removedReactedMessage)
+                io.to(profileId).emit('messageReactRemoved',messageId)
+
+            }
+
         })
 
         socket.on('speak_message', async (msgId, friendId) => {
@@ -68,36 +102,36 @@ module.exports =function messageController(io,socket) {
 
         });
 
-        socket.on('update_last_login', async function (userId) {
-            if (!userId) return;
-            await User.findOneAndUpdate({ _id: userId }, { lastLogin: new Date(Date.now()).getTime() }, { new: true });
-        })
-        socket.on('is_active', async (data) => {
-            let isActive = false
-            let userLastLogin = false;
-            let profileId = data.profileId
-            if (profileId && profileId.length < 5) return;
-            let myId = data.myId
+        // socket.on('update_last_login', async function (userId) {
+        //     if (!userId) return;
+        //     await User.findOneAndUpdate({ _id: userId }, { lastLogin: new Date(Date.now()).getTime() }, { new: true });
+        // })
+        // socket.on('is_active', async (data) => {
+        //     let isActive = false
+        //     let userLastLogin = false;
+        //     let profileId = data.profileId
+        //     if (profileId && profileId.length < 5) return;
+        //     let myId = data.myId
 
-            if (profileId) {
-                let profile = await Profile.findById(profileId).populate('user');
+        //     if (profileId) {
+        //         let profile = await Profile.findById(profileId).populate('user');
 
-                if (profile.user.lastLogin) {
-                    userLastLogin = new Date(profile.user.lastLogin).getTime();
-                }
-            }
-            let currentTime = Date.now()
+        //         if (profile.user.lastLogin) {
+        //             userLastLogin = new Date(profile.user.lastLogin).getTime();
+        //         }
+        //     }
+        //     let currentTime = Date.now()
 
-            const diff = Math.abs(userLastLogin - currentTime);
-            const fiveMinutes = 5 * 60 * 1000;
-            if (diff > fiveMinutes) {
-                isActive = false
-            } else {
-                isActive = true;
-            }
-            // console.log(profileId,isActive);
-            return io.to(myId).emit('is_active', isActive, userLastLogin, profileId);
-        })
+        //     const diff = Math.abs(userLastLogin - currentTime);
+        //     const fiveMinutes = 5 * 60 * 1000;
+        //     if (diff > fiveMinutes) {
+        //         isActive = false
+        //     } else {
+        //         isActive = true;
+        //     }
+        //     // console.log(profileId,isActive);
+        //     return io.to(myId).emit('is_active', isActive, userLastLogin, profileId);
+        // })
 
     };
 

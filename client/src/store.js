@@ -2,7 +2,7 @@ import { createStore,compose,applyMiddleware,combineReducers } from "redux"
 import profileReducer from "./services/reducers/profileReducer"
 import thunk from 'redux-thunk'
 import authReducer from "./store(unused)/authReducer";
-
+import notificationReducer from './services/reducers/notificationReducer'
 import optionReducer from "./services/reducers/optionReducer";
 
 // redux windows extention
@@ -11,7 +11,8 @@ import optionReducer from "./services/reducers/optionReducer";
 const rootReducer = combineReducers({
     profile: profileReducer,
     auth: authReducer,
-    option: optionReducer
+    option: optionReducer,
+    notification: notificationReducer
 })
 const store = createStore(
     rootReducer,
