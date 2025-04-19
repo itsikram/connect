@@ -502,7 +502,7 @@ const Chat = ({ socket, cameraVideoRef }) => {
             setCallerSignal(data.signal);
         });
 
-        socket.on('leaveVideoCall', (leaveVideoCall) => {
+        socket.on('videoCallEnd', (friendId) => {
             setReceivingCall(false)
             setIsVideoCalling(false)
             setCallAccepted(false)
@@ -510,7 +510,7 @@ const Chat = ({ socket, cameraVideoRef }) => {
 
         return () => {
             socket.off('receive-call')
-            socket.off('leaveVideoCall')
+            socket.off('videoCallEnd')
         }
     }, [])
 

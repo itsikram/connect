@@ -54,7 +54,7 @@ const VideoCall = ({ myId }) => {
             setCallerSignal(data.signal);
         });
 
-        socket.on('leaveVideoCall',(leaveVideoCall) => {
+        socket.on('videoCallEnd',(leaveVideoCall) => {
             setReceivingCall(false)
             setIsVideoCall(false)
             setCallAccepted(false)
@@ -62,7 +62,7 @@ const VideoCall = ({ myId }) => {
 
         return () => {
             socket.off('receive-call')
-            socket.off('leaveVideoCall')
+            socket.off('videoCallEnd')
         }
 
     }, [params]);
@@ -111,7 +111,7 @@ const VideoCall = ({ myId }) => {
             navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
                 setStream(stream);
                 if (userVideo.current !== null) {
-                    userVideo.current.srcObject = stream
+                    userVideo.current.srcObject = currentStream
                 }
             });
         });

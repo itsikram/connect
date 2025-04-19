@@ -3,14 +3,13 @@ const Notification = require('../models/Notification')
 
 exports.notificationSocket = async (io, socket) => {
     socket.on('fetchNotifications',async(profileId) => {
-        let notificaitons = await Notification.find({ receiverId: profileId }).limit(10)
+        let notificaitons = await Notification.find({ receiverId: profileId }).limit(25).sort({timestamp: -1})
+        console.log(notificaitons)
         io.to(profileId).emit('oldNotifications', notificaitons)
-        
     })
 
     return () => {socket.off('fetchNotifications')}
 }
-
 
 exports.saveNotification = async (io, data) => {
 

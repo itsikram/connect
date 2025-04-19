@@ -12,6 +12,7 @@ const notificationRoutes = require('./notificationRoutes')
 const messageRoutes = require('./messageRoutes')
 const searchRoutes = require('./searchRoutes')
 const path = require('path')
+const watchRoutes = require('./watchRoutes')
 
 let rootRoute = async (req,res) => {
     return res.sendFile(path.join(__dirname, "build", "index.html"));
@@ -64,6 +65,10 @@ const routes = [
     {
         path: '/api/search',
         handler: searchRoutes
+    },
+    {
+        path: '/api/watch',
+        handler: watchRoutes
     }
 ]
 

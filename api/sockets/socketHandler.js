@@ -26,7 +26,7 @@ module.exports = function socketHandler(io){
 
           socket.on('leaveVideoCall', friendId => {
             console.log(friendId)
-            io.to(friendId).emit('leaveVideoCall',friendId)
+            io.to(friendId).emit('videoCallEnd',friendId)
           })
 
         let homeRoom = rooms[0]
