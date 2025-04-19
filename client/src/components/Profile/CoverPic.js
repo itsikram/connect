@@ -1,31 +1,40 @@
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect,useCallback } from "react";
 import ModalContainer from "../modal/ModalContainer";
 import { useSelector } from "react-redux";
 import api from "../../api/api";
-import AvatarEditor from "react-avatar-editor";
+import Cropper from 'react-easy-crop';
+import getCroppedImg from "../../inc/getCroppedImg";
 const default_cp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-cover.png';
 
 let CoverPic = ({ profileData }) => {
 
-    let myProfileData = useSelector(state => state.profile)
-
-        const useMediaQuery = (query) => {
-            const [matches, setMatches] = useState(window.matchMedia(query).matches);
-    
-            useEffect(() => {
-                const media = window.matchMedia(query);
-                const listener = (e) => setMatches(e.matches);
-                media.addEventListener("change", listener);
-                return () => media.removeEventListener("change", listener);
-            }, [query]);
-    
-            return matches;
-        };
-    
-        var isMobile = useMediaQuery("(max-width: 768px)");
     // Modal visibility functions
-    let [isCpModal, setCpModal] = useState(false)
-    let [isCPViewModal, setisCPViewModal] = useState(false)
+    const [isCpModal, setCpModal] = useState(false)
+    const [isCpUploading, setIsCpUploading] = useState(false)
+    const [isCropping, setIsCropping] = useState(false)
+    const [isCPViewModal, setisCPViewModal] = useState(false)
+    const [cPExists, setCPExists] = useState(null);
+    const [coverPicUrl, setCoverPicUrl] = useState(null)
+    const [coverImage, setCoverImage] = useState(null)
+    const [croppedImage, setCroppedImage] = useState(null)
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [zoom, setZoom] = useState(1);
+    let myProfileData = useSelector(state => state.profile)
+    const useMediaQuery = (query) => {
+        const [matches, setMatches] = useState(window.matchMedia(query).matches);
+
+        useEffect(() => {
+            const media = window.matchMedia(query);
+            const listener = (e) => setMatches(e.matches);
+            media.addEventListener("change", listener);
+            return () => media.removeEventListener("change", listener);
+        }, [query]);
+
+        return matches;
+    };
+    const isMobile = useMediaQuery("(max-width: 768px)");
+
     let closeCpModal = () => {
         setCpModal(false)
     }
@@ -50,7 +59,6 @@ let CoverPic = ({ profileData }) => {
         fontSize: isMobile ? '18px' : '30px',
     }
 
-    const [cPExists, setCPExists] = useState(null);
 
     var cp_url = profileData.coverPic;
     const checkImage = (url) => {
@@ -67,74 +75,99 @@ let CoverPic = ({ profileData }) => {
     if (!cPExists) {
         cp_url = default_cp_src
     }
+
+    let handleCpChange = async (e) => {
+        setCoverImage(e.target.files[0] || '')
+        setIsCropping(true)
+    }
+
+
+    let uploadCoverImage = async () => {
+        setIsCropping(false)
+        setIsCpUploading(true)
+        let coverPicFromData = new FormData();
+        coverPicFromData.append('image', coverImage)
+        let uploadCoverPicRes = await api.post('/upload', coverPicFromData, {
+            headers: {
+                'content-type': 'multipart/form-data'
+            }
+        })
+
+        if (uploadCoverPicRes.status === 200) {
+            let coverPicUrl = uploadCoverPicRes.data.secure_url;
+            setIsCpUploading(false)
+            setCoverPicUrl(coverPicUrl)
+            console.log(uploadCoverPicRes,coverPicUrl)
+            return true;
+        }
+    }
+
     // cover photo upload handler
     let cpUploadSubmit = async (e) => {
         e.preventDefault()
 
-
+        if(!croppedImage,!coverPicUrl) {
+            croppedImg() 
+            uploadCoverImage()
+            return true;
+        }
 
         try {
 
-            let coverPicFromData = new FormData();
-            coverPicFromData.append('image', coverImage)
-
-            let uploadCoverPicRes = await api.post('/upload',coverPicFromData,{
-                headers: {
-                    'content-type': 'multipart/form-data'
-                }
-            })
-
-            if(uploadCoverPicRes.status === 200) {
-                let coverPicUrl = uploadCoverPicRes.data.url;
-                if(coverPicUrl) {
-
-                    let cpFormData = new FormData()
-                    cpFormData.append('coverPicUrl', coverPicUrl)
-                    cpFormData.append('profile', profileData._id)
-
-                    let response = await api.post('/profile/update/coverPic', cpFormData, {
-                        headers: {
-                            'content-type': 'multipart/form-data'
-                        }
-                    })
-        
-                    if (response.status === 200) {
-                        setCpModal(false)
-                        window.location.reload()
-        
+            if (coverPicUrl) {
+                setIsCpUploading(true)
+                let cpFormData = new FormData()
+                cpFormData.append('coverPicUrl', coverPicUrl)
+                cpFormData.append('profile', profileData._id)
+                let response = await api.post('/profile/update/coverPic', cpFormData, {
+                    headers: {
+                        'content-type': 'multipart/form-data'
                     }
+                })
+                if (response.status === 200) {
+                    setCpModal(false)
+                    window.location.reload()
+
                 }
-
             }
-
-
 
         } catch (error) {
             console.log(error)
         }
 
-
-    }
-
-    //state editor ref
-
-    let coverPicEditor = ''
-    let setEditorRef = (ed) => {
-        coverPicEditor = ed
     }
 
 
+    const onCropComplete = useCallback((_, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+      }, []);
 
 
-    //state for cover photo
 
-    let [coverImage, setCoverImage] = useState(null)
+      const croppedImg= useCallback(async () => {
+        if(coverImage) {
+            try {
+                const croppedImage = await getCroppedImg(
+                  URL.createObjectURL(coverImage),
+                  croppedAreaPixels,
+                  1430,
+                  450
+                );
+                if(croppedImage) {
+                    setCroppedImage(croppedImage)
+                    return true;
+                }
+              } catch (e) {
+                console.error(e);
+              }
+        }
 
 
-    let onCpSelect = (e) => {
-        setCoverImage(e.target.files[0])
-    }
+      }, [coverImage && URL.createObjectURL(coverImage), croppedAreaPixels]);
+
+
     let isAuth = myProfileData._id === profileData._id
+
 
     return (
         <Fragment>
@@ -176,7 +209,7 @@ let CoverPic = ({ profileData }) => {
 
                 <ModalContainer
                     title={"Upload Cover Photo"}
-                    style={{ width: "500px", top: "20%" }}
+                    style={{ width: "500px", top: "20%", top: '50%' }}
                     isOpen={isCpModal}
                     onRequestClose={closeCpModal}
                     id='cp-upload-modal'
@@ -192,14 +225,22 @@ let CoverPic = ({ profileData }) => {
                     </div>
                     <div className="modal-body">
                         <div className="modal-upload-preview">
+                        {
+                                coverImage && <Cropper
+                                    image={URL.createObjectURL(coverImage)}
+                                    crop={crop}
+                                    zoom={zoom}
+                                    aspect={1430 / 450}
+                                    onCropChange={setCrop}
+                                    onZoomChange={setZoom}
+                                    onCropComplete={onCropComplete}
+                                />
+                            }
                         </div>
                         <form onSubmit={cpUploadSubmit}>
-                            {
-                                coverImage && <AvatarEditor ref={setEditorRef} image={URL.createObjectURL(coverImage)} scale={0.4} width="300px" style={{ width: '100%', height: 'auto' }} />
-                            }
 
-                            <input name="profilePic" className="cp-upload-input" onChange={onCpSelect} type="file"></input>
-                            <button type="submit" className="cp-upload-button">Upload</button>
+                            <input name="cover_pic" onChange={handleCpChange.bind(this)} className="cp-upload-input" type="file"></input>
+                            <button type="submit" className="cp-upload-button">{isCpUploading ? 'Uploading...' : isCropping ? 'Crop' : 'Update Cover Picture'}</button>
                         </form>
 
                     </div>

@@ -1,47 +1,106 @@
 const Post = require('../models/Post')
+const Story = require('../models/Story')
+const Profile = require('../models/Profile')
 const { saveNotification } = require('./notificationController')
 
 exports.postAddReact = async (req, res, next) => {
     try {
 
-        let profile = req.profile._id
-        let { type, post } = req.body
+        let profile = (req.profile._id).toString()
+        let { reactType, id, postType } = req.body
         let io = req.app.get('io')
 
-        await Post.findOneAndUpdate({
-            _id: post
-        }, {
-            $pull: {
-                reacts: {
-                    profile: profile,
+        let friendProfile = ''
+
+        switch (postType) {
+            case 'post':
+                friendProfile = (await Post.findOne({ _id: id }).populate('author')).author
+                await Post.findOneAndUpdate({
+                    _id: id
+                }, {
+                    $pull: {
+                        reacts: {
+                            profile: profile,
+                        }
+                    }
+                }, { new: true })
+
+                let addPostReact = await Post.findOneAndUpdate({
+                    _id: id
+                }, {
+                    $push: {
+                        reacts: {
+                            profile,
+                            type: reactType
+                        }
+                    }
+
+                }, { new: true })
+
+
+
+                if ((friendProfile._id).toString() !== profile) {
+                    console.log((friendProfile._id).toString() , profile)
+                    let postReactNotification = {
+                        receiverId: friendProfile._id,
+                        text: `${friendProfile.fullName} Reacted your post`,
+                        link: '/post/' + addPostReact._id,
+                        type: 'postCommentReply',
+                        icon: friendProfile.profilePic
+                    }
+                    saveNotification(io, postReactNotification)
                 }
-            }
-        }, { new: true })
 
-        let addReact = await Post.findOneAndUpdate({
-            _id: post
-        }, {
-            $push: {
-                reacts: {
-                    profile,
-                    type
+
+                return res.json(addPostReact).status(200)
+                break;
+            case 'story':
+
+            friendProfile = (await Story.findOne({ _id: id }).populate('author')).author
+
+                await Story.findOneAndUpdate({
+                    _id: id
+                }, {
+                    $pull: {
+                        reacts: {
+                            profile: profile,
+                        }
+                    }
+                }, { new: true })
+
+                let addStoryReact = await Story.findOneAndUpdate({
+                    _id: id
+                }, {
+                    $push: {
+                        reacts: {
+                            profile,
+                            type: reactType
+                        }
+                    }
+
+                }, { new: true })
+
+                if ((friendProfile._id).toString() !== profile) {
+                    let postStoryNotification = {
+                        receiverId: friendProfile._id,
+                        text: `${friendProfile.fullName} Reacted your Story`,
+                        link: '/story/' + addStoryReact._id,
+                        type: 'postCommentReply',
+                        icon: friendProfile.profilePic
+                    }
+                    saveNotification(io, postStoryNotification)
                 }
-            }
 
-        }, { new: true })
+                return res.json(addStoryReact).status(200)
+                break;
+            case 'watch':
 
+                break;
 
-        let notification = {
-            receiverId: profile,
-            text: `${friendProfile.fullName} Reacted your post`,
-            link: '/post/' + savedCommentData._id,
-            type: 'postCommentReply',
-            icon: friendProfile.profilePic
+            default:
+                break;
         }
 
-        saveNotification(io, notification)
-
-        return res.json(addReact).status(200)
 
     } catch (error) {
         console.log(error)
@@ -51,20 +110,43 @@ exports.postAddReact = async (req, res, next) => {
 exports.postRemoveReact = async (req, res, next) => {
     try {
         let profile = req.profile._id
-        let { post } = req.body
+        let { id, postType } = req.body
         let io = req.app.get('io')
 
-        let removeReact = await Post.findByIdAndUpdate({
-            _id: post
-        }, {
-            $pull: {
-                reacts: {
-                    profile: profile,
-                }
-            }
-        }, { new: true })
+        switch (postType) {
+            case 'post':
+                let removePostReact = await Post.findByIdAndUpdate({
+                    _id: id
+                }, {
+                    $pull: {
+                        reacts: {
+                            profile: profile,
+                        }
+                    }
+                }, { new: true })
 
-        return res.json(removeReact)
+                return res.json(removePostReact)
+                break;
+            case 'story':
+                let removeStoryReact = await Story.findByIdAndUpdate({
+                    _id: id
+                }, {
+                    $pull: {
+                        reacts: {
+                            profile: profile,
+                        }
+                    }
+                }, { new: true })
+
+                return res.json(removeStoryReact)
+                break;
+
+            default:
+
+                break;
+        }
+
+
 
     } catch (error) {
         next(error)

@@ -1,17 +1,24 @@
-const { response } = require('express')
 const Comment = require('../models/Comment')
 const Post = require('../models/Post')
 const Profile = require('../models/Profile')
 const CmntReply = require('../models/CmntReply')
 const {saveNotification} = require('./notificationController')
+const Story = require('../models/Story')
+const mongoose = require('mongoose')
 exports.postAddComment = async (req, res, next) => {
     try {
         let attachment = req.body.attachment ? req.body.attachment : ''
-        let body = req.body.body
-        let post = req.body.post
-        let profile = req.profile._id
+        let body = req.body.body|| ''
+        let post = req.body.post || ''
+        let profile = req.profile._id|| ''
 
         let io = req.app.get('io')
+
+
+        if(!mongoose.isValidObjectId(post) || !mongoose.isValidObjectId(profile)) {
+            console.log(post,profile)
+            return res.json({message: 'Post Comment Failed'}).status(400)
+        }
         
         let commentData = new Comment({
             attachment,
@@ -29,17 +36,61 @@ exports.postAddComment = async (req, res, next) => {
             }
         }, { new: true }).populate('author')
 
-        let friendProfile = await Post.findOne({_id: post}).populate('author')
 
-        let notification = {
-            receiverId: updatePost.author._id,
-            text: `${updatePost.author.fullName} Commented in you post`,
-            link: '/post/'+post,
-            type: 'postComment',
-            icon: updatePost.author.profilePic
+        if(updatePost.author._id !== profile) {
+            let notification = {
+                receiverId: updatePost.author._id,
+                text: `${updatePost.author.fullName} Commented in your post`,
+                link: '/post/'+post,
+                type: 'postComment',
+                icon: updatePost.author.profilePic
+            }
+
+            saveNotification(io, notification)
         }
 
-        saveNotification(io, notification)
+
+        return res.json(savedCommentData).status(200)
+
+    } catch (error) {
+        next(error)
+    }
+}
+exports.storyAddComment = async (req, res, next) => {
+    try {
+        let body = req.body.body
+        let storyId = req.body.storyId
+        let profile = req.profile._id
+
+        let io = req.app.get('io')
+        
+        let commentData = new Comment({
+            body,
+            author: profile,
+            post: storyId
+        })
+        let savedCommentData = await commentData.save()
+
+        let updateStory = await Story.findOneAndUpdate({
+            _id: storyId
+        }, {
+            $push: {
+                comments: savedCommentData._id
+            }
+        }, { new: true }).populate('author')
+        console.log(updateStory,profile)
+
+        if((updateStory.author._id).toString() !== (profile).toString()) {
+            let notification = {
+                receiverId: updateStory.author._id,
+                text: `${updateStory.author.fullName} Commented in your Story`,
+                link: '/story/'+storyId,
+                type: 'storyComment',
+                icon: updateStory.author.profilePic
+            }
+    
+            saveNotification(io, notification)
+        }
 
         return res.json(savedCommentData)
 
@@ -97,6 +148,7 @@ exports.postCommentReply = async (req, res, next) => {
         let commentId = req.body.commentId
         let authorId = req.body.authorId
         let replyMsg = req.body.replyMsg
+        let myProfileId = req.profile._id
         let io = req.app.get('io')
 
 
@@ -124,20 +176,22 @@ exports.postCommentReply = async (req, res, next) => {
 
             }])
             if (updateComment) {
-                console.log('updateComment',updateComment)
                 let newReplyWithAuthor = await CmntReply.findOne({ _id: newReply._id }).populate('author')
 
                 if (newReplyWithAuthor) {
 
-                    let notification = {
-                        receiverId: updateComment.post.author._id,
-                        text: `${updateComment.post.author.fullName} Replied to your comment`,
-                        link: '/post/'+(updateComment.post).toString(),
-                        type: 'postCommentReply',
-                        icon: updateComment.post.author.profilePic
+                    if(updateComment.post.author._id !== myProfileId) {
+                        let notification = {
+                            receiverId: updateComment.post.author._id,
+                            text: `${updateComment.post.author.fullName} Replied to your comment`,
+                            link: '/post/'+(updateComment.post).toString(),
+                            type: 'postCommentReply',
+                            icon: updateComment.post.author.profilePic
+                        }
+                
+                        saveNotification(io, notification)
                     }
-            
-                    saveNotification(io, notification)
+
                     return res.json(newReplyWithAuthor).status(200)
 
                 }
@@ -238,49 +292,6 @@ exports.postDeleteComment = async (req, res, next) => {
 
         }
 
-
-    } catch (error) {
-        next(error)
-    }
-}
-exports.storyAddComment = async (req, res, next) => {
-    try {
-
-        let attachment = req.body.attachment ? req.body.attachment : ''
-        let body = req.body.body
-        let post = req.body.post
-        let profile = req.profile._id
-        let io = req.app.get('io')
-
-        let commentData = new Comment({
-            attachment,
-            body,
-            author: profile,
-            post
-        })
-
-        let savedCommentData = await commentData.save()
-
-        let updatePost = await Post.findOneAndUpdate({
-            _id: post
-        }, {
-            $push: {
-                comments: savedCommentData._id
-            }
-        }, { new: true }).populate('author')
-
-        
-        let notification = {
-            receiverId: updatePost.author._id,
-            text: `${updatePost.author.fullName} Commented to your story`,
-            link: '/story/',
-            type: 'storyComment',
-            icon: updatePost.author.profilePic
-        }
-
-        saveNotification(io, notification)
-
-        return res.json(savedCommentData)
 
     } catch (error) {
         next(error)

@@ -26,7 +26,7 @@ let StoryCard = (props) => {
         <>
             {
                 story == null ? (<p>No Story Found</p>) : (
-                    <div className={`nf-story`}>
+                    <div className={`nf-story`} style={{backgroundImage: story.bgColor}}>
                         <Link to={`/story/${story._id}`}>
                             <div className="nf-story-pp-container">
                                 <UserPP profile={story.author._id} hasStory={hasStory} checkStory={'no'} profilePic={story.author.profilePic} />

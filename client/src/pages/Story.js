@@ -1,11 +1,11 @@
 import React, { Fragment, useState, useEffect, useRef } from "react";
 import { Container, Col, Row } from 'react-bootstrap';
-
+import StoryContainer from "../components/story/StoryContainer";
 import StoryLists from "../components/story/StoryLists";
 import SingleStory from "../components/story/SingleStory";
 import api from "../api/api";
 import $ from 'jquery'
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Outlet } from "react-router-dom";
 
 let Story = () => {
 
@@ -23,7 +23,6 @@ let Story = () => {
 
         api.get('/story/').then(res => {
             if (res.status === 200) {
-                console.log('stories', res.data)
                 setStories(res.data)
             }
         })
@@ -45,44 +44,9 @@ let Story = () => {
         storyContainer.current.scrollBy({ left: 300, behavior: 'smooth' })
     }
 
-    console.log(stories)
     return (
         <Fragment>
-            <Container fluid className="story-container py-3">
-                <Row>
-                    <Col md="3">
-                        {!match && <StoryLists stories={stories}></StoryLists>}
-                    </Col>
-
-                    <Col md="6">
-
-                        <div ref={storyContainer} className="story-content-container">
-
-                            
-
-
-                            {storyId ?
-                                (
-                                    <>
-                                    <SingleStory></SingleStory>
-                                        <div className="nf-story-arrow-left" onClick={handlePrevClick.bind(this)} >
-                                            <i className="fa fa-chevron-left"></i>
-                                        </div>
-                                        <div className="nf-story-arrow-right" onClick={handleNextClick.bind(this)} >
-                                            <i className="fa fa-chevron-right"></i>
-                                        </div>
-                                    </>
-                                )
-                                : (<p className="text-center fs-4">Select a story from left</p>)}
-
-                        </div>
-
-
-                    </Col>
-
-                </Row>
-
-            </Container>
+           <StoryContainer></StoryContainer>
 
         </Fragment>
     )
@@ -90,3 +54,4 @@ let Story = () => {
 }
 
 export default Story;
+

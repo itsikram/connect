@@ -4,6 +4,7 @@ const User = require('../models/User')
 const Comment = require('../models/Comment')
 const jwt = require('jsonwebtoken')
 const CmntReply = require('../models/CmntReply')
+const mongoose = require('mongoose')
 
 
 exports.createPost = async(req,res,next) => {
@@ -61,7 +62,7 @@ exports.getMyPosts = async(req,res,next) => {
     try {
         let profile_id = req.query.profile;
 
-
+        if(!mongoose.isValidObjectId(profile_id)) return res.json().status(400)
         let posts = await Post.find({author: profile_id}).populate([
             {
                 path: 'author',
@@ -98,19 +99,45 @@ exports.getMyPosts = async(req,res,next) => {
 }
 
 exports.getSinglePost = async(req,res,next) => {
+    console.log('postId')
+
     try {
 
-        let profile = req.profile;
-        let postId = ''
+        let {postId} = req.query
 
-        let post = await Post.findOne({_id: psotId}).populate({
-            path: 'author',
-            ref: 'profile',
-            populate: {
-                path: 'user',
-                ref: 'user'
+        let post = await Post.findOne({_id: postId}).populate([
+            {
+                path: 'author',
+                model: Profile,
+                populate: {
+                    path: 'user'
+                }
+            },
+            {
+                path: 'comments',
+                model: Comment,
+                populate: [{
+                    path: 'author',
+                    select: ['profilePic','user'],
+                    populate: {
+                        path: 'user',
+                        select: ['firstName','surname']
+                    }
+                },{
+                    path: 'replies',
+                    Model: CmntReply,
+                    populate: {
+                        path: 'author',
+                        model: Profile
+                    }
+                }]
             }
-        })
+            
+        ])
+
+        if(post) {
+            return res.json(post).status(200)
+        }
         
     } catch (error) {
         console.log(error)

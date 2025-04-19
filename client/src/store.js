@@ -5,6 +5,7 @@ import authReducer from "./store(unused)/authReducer";
 import notificationReducer from './services/reducers/notificationReducer'
 import optionReducer from "./services/reducers/optionReducer";
 import messageReducer from "./services/reducers/messageReducer";
+import settingReducer from "./services/reducers/setttingReducer";
 
 // redux windows extention
 // const ReactReduxDevTools = window.__REDUX_DEVTOOLS_EXTENSION__ ? window.__REDUX_DEVTOOLS_EXTENSION__(): false
@@ -14,7 +15,8 @@ const rootReducer = combineReducers({
     auth: authReducer,
     option: optionReducer,
     notification: notificationReducer,
-    message: messageReducer
+    message: messageReducer,
+    setting: settingReducer
 })
 const store = createStore(
     rootReducer,

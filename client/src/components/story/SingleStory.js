@@ -1,106 +1,235 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Outlet, useParams, Link,useNavigate} from 'react-router-dom';
 import UserPP from '../UserPP';
 import api from '../../api/api';
-
+import { useSelector } from 'react-redux';
+import StoryContainer from './StoryContainer';
+import { confirmAlert } from 'react-confirm-alert';
+import $ from 'jquery'
+const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
+const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
+const Rhaha = 'https://programmerikram.com/wp-content/uploads/2025/03/haha-icon.svg';
 
 
 const SingleStory = (props) => {
     let { storyId } = useParams();
-    let [story, setStory] = useState({})
-    let [storyBg, setStoryBg] = useState({})
-    let [commentText, setCommentText] = useState({})
-
+    let [story, setStory] = useState(false)
+    let [storyBg, setStoryBg] = useState('')
+    let [reactType, setReactType] = useState(false)
+    let [commentText, setCommentText] = useState('')
+    let myId = useSelector(state => state.profile._id)
+    let [isAuth,setIsAuth] = useState(false)
+    let navigate = useNavigate()
     useEffect(() => {
+        setReactType('')
         api.get('/story/single', { params: { storyId: storyId } }).then(res => {
             if (res.status == 200) {
                 setStory(res.data)
-                console.log(res.data)
+                setIsAuth(res.data.author._id == myId)
+                setStoryBg(res.data.bgColor)
             }
         }).catch(e => {
             console.log(e)
         })
     }, [storyId])
 
+
     useEffect(() => {
-        const getAverageColor = (imageUrl) => {
-            const img = new Image();
-            img.crossOrigin = "Anonymous"; // Allow cross-origin image processing
-            img.src = imageUrl;
-
-            img.onload = () => {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                let data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                let r = 0, g = 0, b = 0, count = 0;
-
-                for (let i = 0; i < data.length; i += 4) {
-                    r += data[i];     // Red
-                    g += data[i + 1]; // Green
-                    b += data[i + 2]; // Blue
-                    count++;
+        if (story) {
+            story.reacts.map(react => {
+                if (react.profile === myId) {
+                    setReactType((react.type).toLowerCase())
                 }
-
-                r = Math.floor(r / count);
-                g = Math.floor(g / count);
-                b = Math.floor(b / count);
-
-                // Generate linear gradient
-                const gradient = `linear-gradient(135deg, rgb(${r}, ${g}, ${b}) 0%, rgba(${r - 30}, ${g - 30}, ${b - 30}, 0.8) 100%)`;
-                setStoryBg(gradient);
-            };
-        };
-
-        if (story?.image) {
-            getAverageColor(story.image);
+            })
         }
-    }, [storyId, setTimeout(() => { }, [2000])]);
-    
 
-    useEffect(() => {
+        setIsAuth(story?.author && story.author._id == myId)
 
-    },[])
 
-    let handleStoryKeyUp = (e) => {
+    }, [story])
+
+
+    let removeReact = async (storyId, postType = 'story') => {
+        let placeRes = await api.post('/react/removeReact', { id: storyId, postType })
+        if (placeRes.status === 200) {
+            console.log(placeRes)
+            setReactType(false)
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    let placeReact = async (storyId, reactType, postType = 'story', target = null) => {
+
+        let placeRes = await api.post('/react/addReact', { id: storyId, reactType, postType })
+        if (placeRes.status === 200) {
+            console.log(placeRes)
+            // setTotalReacts(placeRes.data.reacts.length)
+            // setPlacedReacts([...placedReacts, type])
+            setReactType(reactType)
+
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    let handleStoryKeyUp = async (e) => {
+        if (e.keyCode === 13) {
+            let res = await api.post('/comment/story/addComment', { body: commentText, storyId })
+            if (res.status == 200) {
+                console.log(res)
+
+            }
+
+            setCommentText('')
+        }
+    }
+
+    let handleCommentChange = async (e) => {
         let value = e.target.value;
         setCommentText(value)
-        if(e.keyCode === 13) {
-            alert('submit')
+
+
+
+    }
+
+    let clickLikeBtn = async (e) => {
+        let currentTarget = e.currentTarget
+        if (!currentTarget.classList.contains('reacted')) {
+            if (placeReact(storyId, 'like', 'story')) {
+                currentTarget.classList.add('reacted')
+            }
+        } else {
+            if (removeReact(storyId)) {
+                currentTarget.classList.remove('reacted')
+            }
+
         }
+    }
+    let clickLoveBtn = async (e) => {
+        let currentTarget = e.currentTarget
+        if (!currentTarget.classList.contains('reacted')) {
+            if (placeReact(storyId, 'love', 'story')) {
+                currentTarget.classList.add('reacted')
+            }
+        } else {
+            if (removeReact(storyId)) {
+                currentTarget.classList.remove('reacted')
+            }
+        }
+
+    }
+    let clickHahaBtn = async (e) => {
+
+        let currentTarget = e.currentTarget
+        if (!currentTarget.classList.contains('reacted')) {
+            if (placeReact(storyId, 'haha', 'story')) {
+                currentTarget.classList.add('reacted')
+            }
+        } else {
+            if (removeReact(storyId)) {
+                currentTarget.classList.remove('reacted')
+            }
+        }
+
+    }
+
+    let handleDeletePost = async(e) => {
+
+        confirmAlert({
+            title: "Confirm Action",
+            message: "Are you sure you want to delete this post?",
+            buttons: [
+                {
+                    label: "Yes",
+                    onClick: async () => {
+
+                        $(e.currentTarget).parents('.single-story-container').remove();
+                        let res = await api.post('/story/delete',{storyId})
+                        if(res.status == 200) {
+                            navigate('/story')
+                        }
+                    },
+                },
+                {
+                    label: "No",
+                    onClick: () => { },
+                },
+            ],
+        });
+
     }
 
     return (
         <>
+            <StoryContainer>
+                {story == null ? (<p></p>) : (
+                    <div className='single-story-container'>
 
-            {story == null ? (<p></p>) : (
-                <div className='single-story-container'>
-                    <div className='single-story' style={{ background: storyBg }}>
-                        <div className='single-story-pp-container'>
-                            {story.author && (<UserPP profilePic={story.author.profilePic} profile={story.author} hasStory={false} ></UserPP>)
-                            }
-                        </div>
-                        <div className='single-story-image-container' style={{ background: `url(${story.image})` }} >
-                            {/* <img src={story.image} alt='Story Image' className='single-story-image' />  */}
-                        </div>
-                    </div>
-                    <div className='single-story-meta-container'> 
-                        <div className={`single-story-reacts-buttons`}>
-                            <div className='single-story-react-button'>
+                        <div className='single-story' style={{ background: storyBg }}>
+                            <div className='story-top'>
+                                <div className='story-author-details'>
+                                    <div className='author-pp-container'>
+                                        {story.author && (<UserPP profilePic={story.author.profilePic} profile={story.author._id} hasStory={false} ></UserPP>)
+                                        }
+                                    </div>
+                                    <div className='author-name'>
+                                        <h3>{story.author && story.author.fullName}</h3>
+                                    </div>
+                                </div>
+                                <div className='story-options'>
+
+                                    <span className='option-button reacts'>
+                                        <Link to='reacts'>
+                                        <i class="fa fa-heart"></i>
+
+                                        </Link>
+                                    </span>
+                                    <span className='option-button comments'>
+                                        <Link to='comments'>
+                                        <i class="fa fa-comments"></i>
+
+                                        </Link>
+                                    </span>
+                                    {
+                                        isAuth &&  (<span className='option-button delete text-danger' onClick={handleDeletePost.bind(this)}>
+                                        <i className="fa fa-trash"></i>
+                                    </span>)
+                                    }
+                                </div>
 
                             </div>
+                            <div className='single-story-image-container' style={{ background: `url(${story.image})` }} >
+                                {/* <img src={story.image} alt='Story Image' className='single-story-image' />  */}
+                            </div>
                         </div>
-                        <div className={`single-story-comment-container`}>
-                            <input type='text' className={`single-story-comment-input`} placeholder='Post a comment to this story' onKeyUp={handleStoryKeyUp.bind(this)}/>
+                        <div className='single-story-meta-container'>
+                            <div className={`single-story-reacts-buttons`}>
+                                <div className={`single-story-react-button ${reactType == 'like' ? 'reacted' : ''}`} onClick={clickLikeBtn.bind(this)}>
+                                    <img src={Rlike} alt="Like" />
+                                </div>
+                                <div className={`single-story-react-button ${reactType == 'love' ? 'reacted' : ''}`} onClick={clickLoveBtn.bind(this)}>
+                                    <img src={Rlove} alt="Love" />
+                                </div>
+                                <div className={`single-story-react-button ${reactType == 'haha' ? 'reacted' : ''}`} onClick={clickHahaBtn.bind(this)}>
+                                    <img src={Rhaha} alt="Haha" />
+                                </div>
+                            </div>
+                            <div className={`single-story-comment-container`}>
+                                <input type='text' className={`single-story-comment-input`} onChange={handleCommentChange.bind(this)} placeholder='Post a comment to this story' value={commentText} onKeyUp={handleStoryKeyUp.bind(this)} />
+                            </div>
                         </div>
-                    </div>
 
-                </div>
-            )}
+                        <Outlet></Outlet>
+
+                    </div>
+                )}
+            </StoryContainer>
+
 
         </>
     )

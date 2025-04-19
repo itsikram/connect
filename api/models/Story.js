@@ -16,6 +16,7 @@ let storySchema = new Schema({
         type: Object,
         ref: Profile
     }],
+    bgColor: String,
     seenBy:[{
         type: Schema.Types.ObjectId,
         ref: Profile

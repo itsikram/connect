@@ -7,7 +7,8 @@ import './assets/css/style.scss'
 import Login from './pages/Login';
 import { useSelector,useDispatch } from 'react-redux';
 import {useJwt} from 'react-jwt'
-
+import process from 'process';
+window.process = process;
 
 function App() {
 

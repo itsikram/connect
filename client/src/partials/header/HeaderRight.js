@@ -102,7 +102,7 @@ let HeaderRight = () => {
                     </li>
                     {
                         isMsgMenu && (
-                            <MegaMC style={{ right: 0, top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
+                            <MegaMC style={{ right: '50%', transform: 'translateX(50%)', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
                                 <MessageList />
                             </MegaMC>
                         )
@@ -114,14 +114,14 @@ let HeaderRight = () => {
                         </div>
                     </li>
                     {isNotificationMenu && (
-                        <MegaMC style={{ right: 0, top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
+                        <MegaMC style={{ right: '50%', transform: 'translateX(50%)', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
                             <div className="hr-mm-container">
                                 {
                                     notificaitonData.length > 0 ? (
                                         <div className="hr-notification-menu-container">
                                             <div className={"notification-leftside-header"}>
                                                 <h2 className={"notification-leftside-title"}>
-                                                    Chats
+                                                    Notifications
                                                 </h2>
                                                 <div className={"notification-sidebar-header-menu"}>
                                                     <div className={"header-menu-icons"}>
@@ -164,7 +164,7 @@ let HeaderRight = () => {
 
                     </li>
                     {isProfileMenu && (
-                        <MegaMC style={{ right: 0, top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
+                        <MegaMC style={{ right: '50%', transform: 'translateX(50%)', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
                             <div className="hr-mm-container">
                                 <Link to={profilePath}>
 

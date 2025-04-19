@@ -8,11 +8,31 @@ module.exports = function socketHandler(io){
         console.log(`User connected: ${socket.id}`);
         let rooms = [socket.handshake.query.profile]
 
+        socket.on('call-user', (data) => {
+            console.log('call user')
+
+            io.to(data.userToCall).emit('receive-call', {
+              signal: data.signalData,
+              from: data.from,
+              name: data.name,
+            });
+          });
+        
+          socket.on('answer-call', (data) => {
+            console.log('answer call')
+            io.to(data.to).emit('call-accepted', data.signal);
+          });
+
+
+          socket.on('leaveVideoCall', friendId => {
+            console.log(friendId)
+            io.to(friendId).emit('leaveVideoCall',friendId)
+          })
+
         let homeRoom = rooms[0]
         rooms.map(room => {
             socket.join(room);
         })
-
 
         messageSocket(io,socket)
         notificationSocket(io,socket,profileId = homeRoom)

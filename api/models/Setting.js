@@ -4,13 +4,12 @@ let settingSchema = new Schema({
     username: {
         type: String,
         trim: true,
-        required: true
     },
     nickanme: {
         type: String,
         trim: true,
-        required: true
     },
+    isShareEmotion: Boolean,
     profile: {
         ref : Profile,
         type: Schema.Types.ObjectId

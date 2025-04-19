@@ -12,9 +12,9 @@ const notificaitonReducer = (state = initialState, action) => {
             let newNotification = action.payload
             let isNotiExits = state.filter(noti => noti._id === action.payload._id )
             if(isNotiExits.length > 0) return state;
-            return [
+            return [newNotification,
                 ...state,
-                newNotification
+                
             ];
             break;
 

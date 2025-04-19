@@ -9,16 +9,21 @@ module.exports = function messageSocket(io, socket) {
         let profileContacts = []
         let myProfile = await Profile.findOne({_id: profileId}).populate('friends')
 
+        if(!myProfile) return;
 
-        for (const friendProfile of myProfile.friends) {
-            const messages = await Message.find({
-                senderId: profileId,
-                receiverId: friendProfile._id
-            }).limit(1).sort({ timestamp: -1 })
-        
-            profileContacts.push({ person: friendProfile, messages })
+
+        if(myProfile?.friends  !== null) {
+            for (const friendProfile of myProfile.friends) {
+                const messages = await Message.find({
+                    senderId: profileId,
+                    receiverId: friendProfile._id
+                }).limit(1).sort({ timestamp: -1 })
+            
+                profileContacts.push({ person: friendProfile, messages })
+            }
+            io.to(profileId).emit('oldMessages', profileContacts)
         }
-        io.to(profileId).emit('oldMessages', profileContacts)
+
     })
 
 

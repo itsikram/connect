@@ -9,6 +9,7 @@ import api from "../../api/api";
 import PostComment from "./PostComment";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS
+import socket from "../../common/socket";
 
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
 const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
@@ -20,14 +21,29 @@ let Post = (props) => {
     let post = props.data || {}
     let myProfile = useSelector(state => state.profile)
     let myProfileId = myProfile._id;
-    let postAuthorProfileId = post.author._id
+    let postAuthorProfileId = post?.author._id
     let [totalReacts, setTotalReacts] = useState(post.reacts.length)
     let [totalShares, setTotalShares] = useState(post.shares.length)
     let [totalComments, setTotalComments] = useState(post.comments.length)
+    let [isActive, setIsActive] = useState(false)
     let [reactType, setReactType] = useState(false);
     let [placedReacts, setPlacedReacts] = useState([]);
     const [imageExists, setImageExists] = useState(null);
     const [thumbExists, setThumbExists] = useState(null);
+
+    useEffect(() => {
+
+        socket.emit('is_active', { profileId: postAuthorProfileId, myId: myProfileId })
+        socket.on('is_active', (isUserActive,lastLogin, activeProfileId) => {
+            if (activeProfileId === myProfileId) {
+                setIsActive(isUserActive)
+            }
+
+        })
+
+        return () => socket.off('is_active');
+
+    }, [myProfile])
 
 
     var isAuth = myProfileId === postAuthorProfileId ? true : false;
@@ -130,10 +146,10 @@ let Post = (props) => {
         }
     }
 
-    let removeReact = async (target = null) => {
+    let removeReact = async (postType = 'post',target = null) => {
         setTotalReacts(state => state - 1)
 
-        let res = await api.post('/react/removeReact', { post: post._id })
+        let res = await api.post('/react/removeReact', { id: post._id, postType: 'post' })
         if (res.status === 200) {
             setTotalReacts(res.data.reacts.length)
             
@@ -143,14 +159,14 @@ let Post = (props) => {
             return false;
         }
     }
-    let placeReact = async (type, target = null) => {
+    let placeReact = async (reactType,postType = 'post', target = null) => {
         setTotalReacts(state => state + 1)
 
-        let placeRes = await api.post('/react/addReact', { type, post: post._id })
+        let placeRes = await api.post('/react/addReact', {  id: post._id,postType,reactType })
         if (placeRes.status === 200) {
             setTotalReacts(placeRes.data.reacts.length)
-            setPlacedReacts([...placedReacts,type])
-            setReactType(type)
+            setPlacedReacts([...placedReacts,reactType])
+            setReactType(reactType)
 
             return true;
         } else {
@@ -162,11 +178,11 @@ let Post = (props) => {
     let likeBtnOnClick = async (e) => {
         let target = e.currentTarget;
         if ($(target).parent().hasClass('reacted')) {
-            removeReact()
+            removeReact('post');
             $(target).parent().removeClass('reacted')
 
         } else {
-            placeReact('like', target)
+            placeReact('like', 'post', target)
             $(target).parent().addClass('reacted')
         }
 
@@ -176,12 +192,12 @@ let Post = (props) => {
         let target = e.currentTarget;
         $(target).parents('.post-react-container').css('visibility', 'hidden');
         if ($(target).hasClass('reacted')) {
-            removeReact()
+            removeReact('post');
             $(target).removeClass('reacted')
 
 
         } else {
-            placeReact('like', target)
+            placeReact('like', 'post', target)
             $(target).addClass('reacted')
             $(e.currentTarget).siblings().removeClass('reacted')
         }
@@ -197,11 +213,11 @@ let Post = (props) => {
         let target = e.currentTarget;
         $(target).parents('.post-react-container').css('visibility', 'hidden');
         if ($(e.currentTarget).hasClass('reacted')) {
-            removeReact();
+            removeReact('post');
             $(e.currentTarget).removeClass('reacted')
 
         } else {
-            placeReact('love')
+            placeReact('love' ,'post')
             $(e.currentTarget).siblings().removeClass('reacted')
             $(e.currentTarget).addClass('reacted')
         }
@@ -220,7 +236,7 @@ let Post = (props) => {
             removeReact();
             $(e.currentTarget).removeClass('reacted')
         } else {
-            placeReact('haha')
+            placeReact('haha','post', target)
             $(e.currentTarget).siblings().removeClass('reacted')
 
             $(e.currentTarget).addClass('reacted')
@@ -271,7 +287,7 @@ let Post = (props) => {
                 <div className="author-info">
                     <div className="left">
                         <div className="author-pp">
-                            <UserPP profilePic={postAuthorPP} profile={post.author._id} active={true}></UserPP>
+                            <UserPP profilePic={postAuthorPP} profile={post.author._id} active={isActive}></UserPP>
                         </div>
                         <div className="post-nd-container">
                             <Link to={'/' + post.author._id}>
@@ -302,7 +318,10 @@ let Post = (props) => {
                 {
                     (thumbExists &&
                         <div className="attachment">
+                            <Link to={`/post/${post._id}`}>
                             <img src={postPhoto} alt="post" />
+
+                            </Link>
                         </div>
 
                         ||

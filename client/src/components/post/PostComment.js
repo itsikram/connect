@@ -94,7 +94,11 @@ const PostComment = (props) => {
                 commentFormData.append('attachment', uploadedImageUrl == null ? '' : uploadedImageUrl)
                 commentFormData.append('post', post._id)
 
-                let res = await api.post('/comment/addComment', commentFormData)
+                let res = await api.post('/comment/addComment', {
+                    body: commentData.body,
+                    attachment: uploadedImageUrl,
+                    post: (post._id).toString()
+                })
                 if (res.status === 200) {
                     let data = res.data
                     data.author = myProfile

@@ -21,22 +21,6 @@ const Header = ({cameraVideoRef}) => {
     const [height, setHeight] = useState(null);
     dispatch(setHeaderHeight(height))
 
-
-    // let getNotifications = async(profileId) => {
-    //     let notificaiton_list = await api.get('/notification',{
-    //         params: {
-    //             receverId: profileId
-    //         }
-    //     })
-    //     setNotifications(notificaiton_list)
-    // }
-    // useEffect(() => {
-    // getNotifications(myProfile._id)
-    // console.log('notifcations',notificaitons)
-    
-    // },[])
-
-
     useEffect(() => {
         stopCamera()
     },[localtion])
@@ -49,7 +33,6 @@ const Header = ({cameraVideoRef}) => {
             cameraVideoRef.current.srcObject = null;
         }
     };
-
 
 
     let [match, setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)

@@ -7,24 +7,30 @@ const mongoose = require('mongoose')
 exports.prefileHasStory = async function (req, res, next) {
     const twentyFourHoursAgo = new Date();
     twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
-
     let profileId = req.query.profileId
-    let hasStory = await Story.exists({ author: profileId, createdAt: { $gte: twentyFourHoursAgo } })
-    if (hasStory == null) {
-        return res.json({ 'message': 'Story Not Available', 'hasStory': 'no' }).status(200)
-
-    } else {
-        return res.json({ 'message': 'Story Available', 'hasStory': 'yes' }).status(200)
+    if (mongoose.isValidObjectId(profileId)) {
+        let hasStory = await Story.exists({ author: profileId, createdAt: { $gte: twentyFourHoursAgo } })
+        if (hasStory == null) {
+            return res.json({ 'message': 'Story Not Available', 'hasStory': 'no' }).status(200)
+    
+        } else {
+            return res.json({ 'message': 'Story Available', 'hasStory': 'yes' }).status(200)
+    
+        }
+    }else {
+        return res.json({ 'message': 'Story Not Available', 'hasStory': 'no' }).status(400)
 
     }
-    return next()
 
+    return next()
 }
+
 exports.profileGet = async function (req, res, next) {
     let profileId = req.query.profileId
     if (profileId == false) return;
 
     if (mongoose.isValidObjectId(profileId)) {
+        console.log('valid')
         let hasProfile = await Profile.exists({ _id: profileId })
         if (!hasProfile) return res.json({ message: 'Profile Not Found' }).status(404)
         let profileData = await Profile.findOne({ _id: profileId }).populate('user')
@@ -44,6 +50,7 @@ exports.profilePost = async (req, res, next) => {
     try {
         let profileId = req.body.profile
         if (profileId == false) return;
+
         if (mongoose.isValidObjectId(profileId)) {
             let hasProfile = await Profile.exists({ _id: profileId })
             if (!hasProfile) return res.json({ message: 'Profile Not Found' }).status(404)
@@ -55,6 +62,7 @@ exports.profilePost = async (req, res, next) => {
 
 
     } catch (error) {
+        next(error)
         console.log(error)
     }
 

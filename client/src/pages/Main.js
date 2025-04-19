@@ -10,12 +10,18 @@ import Marketplace from './Marketplace'
 import Groups from './Groups'
 import Message from "./Message";
 import Story from "./Story";
+import StoryReacts from "../components/story/StoryReacts.js";
+import StoryComments from "../components/story/StoryComments.js";
 import SingleStory from "../components/story/SingleStory";
-
+import Call from './Call.js'
 import ProfileAbout from "../components/Profile/ProfileAbout";
 import PorfilePosts from "../components/Profile/PorfilePosts";
 import ProfileFriends from "../components/Profile/ProfileFriends";
-
+import VideoCall from "../components/VideoCall/VideoCall.js";
+import SinglePost from "../components/post/SinglePost.js";
+import PostComments from "../components/post/PostComments.js";
+import PostReacts from "../components/post/PostReacts.js";
+ 
 import FriendRequests from "../components/friend/FriendRequests";
 import FriendSuggest from "../components/friend/FriendSuggest"
 import FriendHome from "../components/friend/FriendHome";
@@ -29,6 +35,7 @@ import { setBodyHeight, setHeaderHeight, setLoading } from "../services/actions/
 import Settings from "./Settings";
 import ProfileIkramul from "./ProfileIkramul";
 import socket from '../common/socket.js'
+import AudioCall from "../components/AudioCall/AudioCall.js";
 
 function showNotification(msg, receiverId) {
     const notification = new Notification("New Message!", {
@@ -57,9 +64,12 @@ const Main = () => {
     var dispatch = useDispatch();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     let isLoading = useSelector(state => state.option.isLoading);
+    let settings = useSelector(state => state.setting)
     let params = useParams();
     let audioElement = useRef(null)
+
     let cameraVideoRef = useRef(null)
+
     const [isTabActive, setIsTabActive] = useState(!document.hidden);
 
     let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
@@ -193,9 +203,7 @@ const Main = () => {
     return (
         <Fragment>
             <audio ref={audioElement} src="https://programmerikram.com/wp-content/uploads/2025/02/fiverr_old_client_sound.mp3"></audio>
-
             <BR>
-
                 {
                     isLoading && (<div id="site-loader">
                         <div className="loader-logo-container">
@@ -217,10 +225,21 @@ const Main = () => {
                                 <Route path="about" element={<ProfileAbout />} />
                                 <Route path="friends" element={<ProfileFriends />}></Route>
                             </Route>
-                            <Route path="/story/" element={<Story />}>
-                                <Route index element={<Story />} />
-                                <Route path=":storyId" element={<SingleStory />} />
+                            <Route path="/story/" element={<Story />}> </Route>
+
+                            <Route path="/story/:storyId">
+                            <Route index element={<SingleStory/>}></Route>
+                            <Route path="comments/" element={<StoryComments/>}></Route>
+                            <Route path="reacts/" element={<StoryReacts/>}></Route>
                             </Route>
+
+
+                            <Route path="/post/" >
+                                <Route path=":postId" element={<SinglePost/>} />
+                                <Route path=":postId/comments" element={<PostComments />} />
+                                <Route path=":postId/reacts" element={<PostReacts />} />
+                            </Route>
+                            
                             <Route path="/friends/" element={<Friends />}>
                                 <Route index element={<FriendHome />}></Route>
                                 <Route path="requests" element={<FriendRequests />}></Route>
@@ -228,23 +247,33 @@ const Main = () => {
 
                             </Route>
                             <Route path="/watch" element={<Watch />}> </Route>
-                            <Route path="/message" element={<Message cameraVideoRef={cameraVideoRef} />}>
+                            <Route path="/message" element={<Message cameraVideoRef={cameraVideoRef || false} />}>
                                 <Route path=":profile/" element={<Profile />}></Route>
 
                             </Route>
+                            <Route path="/call" element={<Call />}> </Route>
                             <Route path="/marketplace" element={<Marketplace />}> </Route>
 
                             <Route path="/groups" element={<Groups />}> </Route>
-                            <Route path="/settings" element={Settings}></Route>
+                            <Route path="/settings" element={<Settings/>}></Route>
 
                         </Route>
 
                     </Routes>
-
+                    
                 </div>
+
+                {
+                <VideoCall myId={profileId}></VideoCall>
+                //<AudioCall></AudioCall> 
+                }
                 <ToastContainer />
             </BR>
-            <video style={{ display: 'none' }} ref={cameraVideoRef} autoPlay muted width="600" height="400" />
+
+            {
+                settings.isShareEmotion === true && <video style={{ display: 'none' }} ref={cameraVideoRef} autoPlay muted width="600" height="400" />
+
+            }
         </Fragment>
 
     )

@@ -29,11 +29,14 @@ const ProfileButtons = (props) => {
     let isReqRecived = myProfile.friendReqs && myProfile.friendReqs.includes(profileData._id)
     let isReq = isReqSent || isReqRecived
     let [isStoryModal, setIsStoryModal] = useState(false);
+    let [isStoryUploading, setIsStoryUploading] = useState(false);
+    let [storyBgColors, setStoryBgColors] = useState(false);
     let [isDisabled, setDisabled] = useState(true);
     let [storyData, setStoryData] = useState({
         photo: null,
         uploadedUrl: false,
     });
+    
     let isMobile = useMediaQuery("(max-width: 768px)");
     let profileName = profileData.user && profileData.user.firstName + ' ' + profileData.user.surname
     let textInputPlaceHoder = "What's On Your Mind " + profileName + " ?"
@@ -132,15 +135,13 @@ const ProfileButtons = (props) => {
     }
     let handleStorySubmit = async (e) => {
         e.preventDefault()
-        if(storyData.uploadedUrl != false) {
+        if(storyData.uploadedUrl != false && storyBgColors != false) {
             try {
 
-                let res = await api.post('/story/create/', {image: storyData.uploadedUrl})
-    
+                let res = await api.post('/story/create/', {image: storyData.uploadedUrl,storyBg: storyBgColors})
                 if (res.status === 200) {
                     setIsStoryModal(false)
                 }
-    
     
             } catch (error) {
                 console.log(error)
@@ -169,6 +170,7 @@ const ProfileButtons = (props) => {
         let uploadImageFormData = new FormData();
         uploadImageFormData.append('image', photos[0]);
 
+        setIsStoryUploading(true)
         let uploadImageRes = await api.post('/upload/', uploadImageFormData, {
             headers: {
                 'content-type': 'multipart/form-data'
@@ -177,13 +179,47 @@ const ProfileButtons = (props) => {
         if(uploadImageRes.status == 200) {
             let uploadedImageUrl = uploadImageRes.data.secure_url;
             if( uploadedImageUrl) {
+                const storyImg = new Image();
+                storyImg.crossOrigin = "Anonymous"; // Allow cross-origin image processing
+                storyImg.src = uploadedImageUrl;
+    
+                storyImg.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+    
+                    canvas.width = storyImg.width;
+                    canvas.height = storyImg.height;
+                    ctx.drawImage(storyImg, 0, 0, canvas.width, canvas.height);
+    
+                    let data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                    let r = 0, g = 0, b = 0, count = 0;
+    
+                    for (let i = 0; i < data.length; i += 4) {
+                        r += data[i];     // Red
+                        g += data[i + 1]; // Green
+                        b += data[i + 2]; // Blue
+                        count++;
+                    }
+    
+                    r = Math.floor(r / count);
+                    g = Math.floor(g / count);
+                    b = Math.floor(b / count);
+    
+                    // Generate linear gradient
+                    const gradient = `linear-gradient(135deg, rgb(${r}, ${g}, ${b}) 0%, rgba(${r - 30}, ${g - 30}, ${b - 30}, 0.8) 100%)`;
+                    setStoryBgColors(gradient);
+                };
+
+
+                setIsStoryUploading(false)
+                setDisabled(false);
                 setStoryData(state => {
                     return {
                        ...state,
-                        uploadedUrl: uploadedImageUrl
+                        uploadedUrl: uploadedImageUrl,
+                        bgColors: storyBgColors
                     }
                 })
-                setDisabled(false);
 
 
             }
@@ -213,7 +249,6 @@ const ProfileButtons = (props) => {
                             <span>
                                 Add to story
                             </span>
-
 
                         </div>
                         <ModalContainer
@@ -260,7 +295,7 @@ const ProfileButtons = (props) => {
                                                 </div>
                                             </div>
                                             <div className="cpm-attachment">
-                                                <span className="cpm-button-text">Add to your story</span>
+                                                <span className="cpm-button-text">Add Image to your story</span>
 
                                                 <div className="post-meta-buttons">
                                                     <div onClick={cpmAttachmentControllerToggle} className="attachment-button-file">
@@ -270,7 +305,7 @@ const ProfileButtons = (props) => {
 
                                             </div>
                                             <div className="cpm-submit-button">
-                                            <button className='button' onClick={handleStorySubmit.bind(this)} type="submit" > Add Story </button>
+                                            <button className='button' onClick={handleStorySubmit.bind(this)} type="submit" > { isStoryUploading ? "Uploading ... " : "Add to your story" }</button>
 
                                             </div>
                                         </form>

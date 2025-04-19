@@ -6,15 +6,18 @@ const mongoose = require('mongoose')
 exports.postStory = async(req,res,next) => {
     try {
         let profileId = req.profile._id
-        let image = req.body.image
+        let image = req.body.image || ''
+        let storyBg = req.body.storyBg || ''
         let story = new Story({
             image,
+            bgColor: storyBg,
             author: profileId
         })
 
         let savedData = await story.save()
         if(savedData) {
-            res.json({
+            console.log(savedData)
+            return res.json({
                 message: 'Story Created Successfully'
             }).status(200)
         }
@@ -29,15 +32,18 @@ exports.deleteStory = async (req,res,next) => {
     try {
         let profileId = req.profile._id
         let storyId = req.body.storyId
-        let authorId = req.body.authorId;
-         
-        if(profileId == authorId) {
-            let deleteStory = await Story.findOneAndDelete({_id: storyId})
+        let story = await Story.findOne({_id: storyId})
 
+        if(profileId == (story.author._id).toString()) {
+            let deleteStory = await Story.findOneAndDelete({_id: storyId})
             if(deleteStory) {
-                res.json({
+                return res.json({
                     message: 'Story Deleted Successfully'
                 }).status(200)
+            }else {
+                return res.json({
+                    message: 'Story Cannot Be Deleted'
+                }).status(400)
             }
         }
 
