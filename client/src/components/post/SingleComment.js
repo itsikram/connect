@@ -191,10 +191,10 @@ const SingleComment = (props) => {
                         )}
 
                     {
-                        replies.map((item, key) => {
+                        replies.map((item, index) => {
 
                             return (
-                                <SingleReply setReplies={setReplies} replies={replies} comment={comment} item={item} key={key} myProfile={myProfile}></SingleReply>
+                                <SingleReply setReplies={setReplies} replies={replies} comment={comment} item={item} key={index} myProfile={myProfile}></SingleReply>
                             )
 
                         })

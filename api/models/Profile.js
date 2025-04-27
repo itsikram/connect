@@ -6,6 +6,12 @@ let profileSchema = new Schema({
     username: {
         type: String,
         minLength: 5,
+        maxLength: 50,
+        trim: true
+    },
+    nickname: {
+        type: String,
+        minLength: 2,
         maxLength: 50
     },
     fullName: {
@@ -13,11 +19,11 @@ let profileSchema = new Schema({
     },
     coverPic: {
         type: String,
-        default: 'default-cover.jpg'
+        default: 'https://programmerikram.com/wp-content/uploads/2025/03/default-cover.png'
     },
     profilePic: {
         type: String,
-        default: 'default-profilePic.jpg'
+        default: 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png'
     },
     bio: {
         type: String,
@@ -28,6 +34,7 @@ let profileSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Profile'
     }],
+    lastEmotion: String,
     friendReqs: [{
         type: Schema.Types.ObjectId,
         ref: 'Profile'

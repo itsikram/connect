@@ -45,7 +45,6 @@ function App() {
         });
 
         peer.on('signal', (data) => {
-            console.log('singal', data)
             socket.emit('call-user', {
                 userToCall: id,
                 signalData: data,

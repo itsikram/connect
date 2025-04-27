@@ -10,6 +10,8 @@ import PostComment from "./PostComment";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS
 import socket from "../../common/socket";
+import PostSkeleton from "../../skletons/post/PostSkeleton";
+import ImageSkleton from "../../skletons/post/ImageSkleton";
 
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
 const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
@@ -28,7 +30,7 @@ let Post = (props) => {
     let [isActive, setIsActive] = useState(false)
     let [reactType, setReactType] = useState(false);
     let [placedReacts, setPlacedReacts] = useState([]);
-    const [imageExists, setImageExists] = useState(null);
+    const [imageExists, setImageExists] = useState(false);
     const [thumbExists, setThumbExists] = useState(null);
 
     useEffect(() => {
@@ -270,7 +272,8 @@ let Post = (props) => {
     let postAuthorPP = `${post.author.profilePic}`
 
     return (
-        <div className={`nf-post ${type}`}>
+        <>
+         <div className={`nf-post ${type}`}>
             <div className="header">
                 {
                     type === 'profilePic' &&
@@ -326,7 +329,12 @@ let Post = (props) => {
 
                         ||
 
-                        <p className="fs-5 text-center text-danger">Post image not available</p>)
+                        <>
+                        <ImageSkleton />
+                        {/* <p className="fs-5 text-center text-danger">Post image not available</p> */}
+                        </>
+                        
+                    )
                 }
 
             </div>
@@ -425,6 +433,8 @@ let Post = (props) => {
             </div>
 
         </div>
+        </>
+       
     )
 }
 

@@ -28,7 +28,6 @@ const SinglePost = () => {
 
         let res = await api.get('post/single', { params: { postId } })
         if (res.status == 200) {
-            console.log('pdata', res.data)
             setPostData(res.data)
         }
     }
@@ -460,11 +459,11 @@ const SinglePost = () => {
 
                             <ul className='sp-reacts'>
 
-                                {postData.reacts && postData.reacts.map((item, key) => {
+                                {postData.reacts && postData.reacts.map((item, index) => {
 
                                     return (
 
-                                        <SingleReactor reactor={item} key={key} />
+                                        <SingleReactor key={index} reactor={item}/>
 
                                     )
 

@@ -16,7 +16,7 @@ let RightSidebar = () => {
 
     useEffect(() => {
 
-        myProfile.friends && myProfile.friends.map((profile, key) => {
+        myProfile.friends && myProfile.friends.map((profile, index) => {
 
             socket.emit('is_active', { profileId: profile._id, myId: myProfile._id })
             socket.on('is_active', (isUserActive, lastLogin, activeProfileId) => {
@@ -62,11 +62,11 @@ let RightSidebar = () => {
                 <h3 className="rs-nav-title">Contacts</h3>
                 <ul className="rs-nav-menu">
                     {
-                        friendsData && friendsData.length > 1 && friendsData.map((data, key) => {
+                        friendsData && friendsData.length > 1 && friendsData.map((data, index) => {
 
                             let isFrndActive = activeFriends.includes(data._id)
 
-                            return <li key={key}>
+                            return <li key={index}>
                                 <div className='rs-nav-menu-item' data-profile={data._id} onClick={redirectToMessage.bind(this)}>
                                     <div className='rs-profile-img-container'>
                                         <div className='active-icon'></div>

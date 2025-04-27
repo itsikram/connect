@@ -2,6 +2,7 @@ const Profile = require('../models/Profile')
 const Post = require('../models/Post')
 const Story = require('../models/Story')
 const mongoose = require('mongoose')
+const User = require('../models/User')
 
 
 exports.prefileHasStory = async function (req, res, next) {
@@ -127,6 +128,39 @@ exports.updateBioPost = async (req, res, next) => {
         }, {
             bio
         }, { new: true })
+
+        if (updateProfile) {
+            res.json(updateProfile)
+        }
+
+    } catch (error) {
+        console.log(error)
+    }
+
+
+}
+exports.updateProfile = async (req, res, next) => {
+    try {
+        let reqData = {...req.body}
+
+        if(req.body.firstName && req.body.surname ) {
+
+            reqData.fullName = req.body.firstName+' '+ req.body.surname
+
+        let updatedUser = await User.findOneAndUpdate({_id: req.profile.user}, {
+            firstName: req.body.firstName,
+            surname: req.body.surname
+        },{new: true})
+
+    }
+
+        console.log(reqData)
+
+        let updateProfile = await Profile.findByIdAndUpdate({
+            _id: req.profile._id
+        }, {
+            ...reqData
+        }, { new: true }).populate('user')
 
         if (updateProfile) {
             res.json(updateProfile)

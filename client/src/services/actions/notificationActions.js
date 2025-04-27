@@ -1,4 +1,4 @@
-import {GET_NOTIFICATION,ADD_NOTIFICATION,ADD_NOTIFICATIONS,VIEW_NOTIFICATION} from '../constants/notificationConsts'
+import {GET_NOTIFICATION,ADD_NOTIFICATION,ADD_NOTIFICATIONS,VIEW_NOTIFICATION, VIEW_NOTIFICATIONS,DELETE_NOTIFICATIONS} from '../constants/notificationConsts'
 
 export const addNotification = (notification) => {
     return {
@@ -17,6 +17,16 @@ export const viewNotification = (notifications) => {
     return {
         type: VIEW_NOTIFICATION,
         payload: notifications
+    }
+} 
+export const viewNotifications = () => {
+    return {
+        type: VIEW_NOTIFICATIONS,
+    }
+} 
+export const deleteNotifications = () => {
+    return {
+        type: DELETE_NOTIFICATIONS,
     }
 } 
 // export const getUser = (userData) => {

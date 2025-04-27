@@ -127,7 +127,6 @@ const ProfileButtons = (props) => {
 
     let closeAddStoryModal = () => {
         setIsStoryModal(false)
-        console.log(isStoryModal)
     }
     let handleAddStory = async () => {
         setIsStoryModal(true)
@@ -312,7 +311,7 @@ const ProfileButtons = (props) => {
                                     </div>
                                 </div>
                             </ModalContainer>
-                        <div className="normal-btn button edit-profile">
+                        <div onClick={() => navigate('/settings')} className="normal-btn button edit-profile">
                             <i className="fas fa-pen"></i>
                             <span>
                                 Edit Profile

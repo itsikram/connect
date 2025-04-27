@@ -88,7 +88,6 @@ const StoryReacts = (props) => {
     let removeReact = async (storyId, postType = 'story') => {
         let placeRes = await api.post('/react/removeReact', { id: storyId, postType })
         if (placeRes.status === 200) {
-            console.log(placeRes)
             setReactType(false)
             return true;
         } else {
@@ -101,7 +100,6 @@ const StoryReacts = (props) => {
 
         let placeRes = await api.post('/react/addReact', { id: storyId, reactType, postType })
         if (placeRes.status === 200) {
-            console.log(placeRes)
             // setTotalReacts(placeRes.data.reacts.length)
             // setPlacedReacts([...placedReacts, type])
             setReactType(reactType)
@@ -202,105 +200,100 @@ const StoryReacts = (props) => {
 
     return (
         <>
+            <Container fluid className="story-container py-3">
+                <Row>
+                    <Col md="3">
+                        {!match && <StoryLists stories={stories}></StoryLists>}
+                    </Col>
 
-            <Fragment>
-                <Container fluid className="story-container py-3">
-                    <Row>
-                        <Col md="3">
-                            {!match && <StoryLists stories={stories}></StoryLists>}
-                        </Col>
+                    <Col md="6">
 
-                        <Col md="6">
-
-                            <div ref={storyContainer} className="story-content-container">
+                        <div ref={storyContainer} className="story-content-container">
 
 
-                                {storyId ?
-                                    (
-                                        <>
-                                            (
-                                            {story == null ? (<p></p>) : (
-                                                <div className='single-story-container'>
+                            {storyId ?
+                                (
+                                    <>
+                                        (
+                                        {story == null ? (<p></p>) : (
+                                            <div className='single-story-container'>
 
-                                                    <div className='single-story' style={{ background: storyBg }}>
-                                                        <div className='story-top'>
-                                                            <div className='story-author-details'>
-                                                                <div className='author-pp-container'>
-                                                                    {story.author && (<UserPP profilePic={story.author.profilePic} profile={story.author._id} hasStory={false} ></UserPP>)
-                                                                    }
-                                                                </div>
-                                                                <div className='author-name'>
-                                                                    <h3>{story.author && story.author.fullName}</h3>
-                                                                </div>
-                                                            </div>
-                                                            <div className='story-options'>
-
-                                                                <span className='option-button reacts'>
-                                                                    <Link to='reacts'>
-                                                                        <i class="fa fa-heart"></i>
-
-                                                                    </Link>
-                                                                </span>
-                                                                <span className='option-button comments'>
-                                                                    <Link to='comments'>
-                                                                        <i class="fa fa-comments"></i>
-
-                                                                    </Link>
-                                                                </span>
-                                                                {
-                                                                    isAuth && (<span className='option-button delete text-danger' onClick={handleDeletePost.bind(this)}>
-                                                                        <i className="fa fa-trash"></i>
-                                                                    </span>)
+                                                <div className='single-story' style={{ background: storyBg }}>
+                                                    <div className='story-top'>
+                                                        <div className='story-author-details'>
+                                                            <div className='author-pp-container'>
+                                                                {story.author && (<UserPP profilePic={story.author.profilePic} profile={story.author._id} hasStory={false} ></UserPP>)
                                                                 }
                                                             </div>
-
+                                                            <div className='author-name'>
+                                                                <h3>{story.author && story.author.fullName}</h3>
+                                                            </div>
                                                         </div>
-                                                        <div className='single-story-image-container' style={{ background: `url(${story.image})` }} >
-                                                            {/* <img src={story.image} alt='Story Image' className='single-story-image' />  */}
+                                                        <div className='story-options'>
+
+                                                            <span className='option-button reacts'>
+                                                                <Link to='reacts'>
+                                                                    <i class="fa fa-heart"></i>
+
+                                                                </Link>
+                                                            </span>
+                                                            <span className='option-button comments'>
+                                                                <Link to='comments'>
+                                                                    <i class="fa fa-comments"></i>
+
+                                                                </Link>
+                                                            </span>
+                                                            {
+                                                                isAuth && (<span className='option-button delete text-danger' onClick={handleDeletePost.bind(this)}>
+                                                                    <i className="fa fa-trash"></i>
+                                                                </span>)
+                                                            }
                                                         </div>
-                                                    </div>
-                                                    <div className='single-story-meta-container'>
-
 
                                                     </div>
+                                                    <div className='single-story-image-container' style={{ background: `url(${story.image})` }} >
+                                                        {/* <img src={story.image} alt='Story Image' className='single-story-image' />  */}
+                                                    </div>
+                                                </div>
+                                                <div className='single-story-meta-container'>
 
-                                                    <Outlet></Outlet>
 
                                                 </div>
-                                            )}
-                                            )
-                                            <div className="nf-story-arrow-left" onClick={handlePrevClick.bind(this)} >
-                                                <i className="fa fa-chevron-left"></i>
+
+                                                <Outlet></Outlet>
+
                                             </div>
-                                            <div className="nf-story-arrow-right" onClick={handleNextClick.bind(this)} >
-                                                <i className="fa fa-chevron-right"></i>
-                                            </div>
-                                        </>
-                                    )
-                                    : (<p className="text-center fs-4">Select a story owner from left</p>)}
+                                        )}
+                                        )
+                                        <div className="nf-story-arrow-left" onClick={handlePrevClick.bind(this)} >
+                                            <i className="fa fa-chevron-left"></i>
+                                        </div>
+                                        <div className="nf-story-arrow-right" onClick={handleNextClick.bind(this)} >
+                                            <i className="fa fa-chevron-right"></i>
+                                        </div>
+                                    </>
+                                )
+                                : (<p className="text-center fs-4">Select a story owner from left</p>)}
 
-                            </div>
+                        </div>
 
 
-                        </Col>
-                        <Col md="3">
-                            <div className='single-story-meta-container'>
-                                <ul className='story-reacts-list'>
-                                    {
-                                        story.reacts && story.reacts.map((item, key) => {
-                                            return (<SingleReactor reactor={item} key={key}></SingleReactor>)
-                                        })
-                                    }
-                                </ul>
-                            </div>
-                        </Col>
+                    </Col>
+                    <Col md="3">
+                        <div className='single-story-meta-container'>
+                            <ul className='story-reacts-list'>
+                                {
+                                    story.reacts && story.reacts.map((item, index) => {
+                                        return (<SingleReactor reactor={item} key={index}></SingleReactor>)
+                                    })
+                                }
+                            </ul>
+                        </div>
+                    </Col>
 
-                    </Row>
-                    {/* <Outlet></Outlet> */}
-                </Container>
-
-            </Fragment>
-
+                </Row>
+                {/* <Outlet></Outlet> */}
+            </Container>
 
 
         </>

@@ -11,7 +11,7 @@ exports.createPost = async(req,res,next) => {
     try {
         let profileId = req.profile._id
         let caption = req.body.caption
-        let thumbnail_url = req.body.photo_url
+        let thumbnail_url = req.body.urls
         let post = new Post({
             caption,
             photos: thumbnail_url,
@@ -20,8 +20,37 @@ exports.createPost = async(req,res,next) => {
         })
 
         let savedData = await post.save()
+
+        let getPost = await Post.findOne({_id: savedData._id}).populate([
+            {
+                path: 'author',
+                model: Profile,
+                populate: {
+                    path: 'user'
+                }
+            },
+            {
+                path: 'comments',
+                model: Comment,
+                populate:[ {
+                    path: 'author',
+                    select: ['profilePic','user'],
+                    populate: {
+                        path: 'user',
+                        select: ['firstName','surname']
+                    }
+                },{
+                    path: 'replies',
+                    Model: CmntReply,
+                    populate: {
+                        path: 'author',
+                        model: Profile
+                    }
+                }]
+            }]).sort({'createdAt': -1})
         res.json({
-            message: 'Post Created Successfully'
+            message: 'Post Created Successfully',
+            post: getPost
         }).status(200)
 
         

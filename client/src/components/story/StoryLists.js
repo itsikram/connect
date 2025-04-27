@@ -22,8 +22,8 @@ const StoryLists = (props) => {
         <>
             <div className="story-list-container">
                 
-                {stories.map((singleStory, key) => {
-                    return <Link to={'/story/'+singleStory._id} className='text-decoration-none story-link' key={key}>
+                {stories.map((singleStory, index) => {
+                    return <Link to={'/story/'+singleStory._id} key={index} className='text-decoration-none story-link'>
                         <div className={`story-list-item mb-2 ${storyId == singleStory._id ? 'active': ''}`}>
                             <div className='d-flex justify-content-center align-items-center'>
                                 <div className='story-pp-container text-end'>

@@ -5,7 +5,7 @@ import Header from '../partials/header/Header';
 import Home from "./Home";
 import Profile from "./Profile";
 import Friends from "./Friends";
-import Watch from "./Watch";
+import Video from "./Video.js";
 import Marketplace from './Marketplace'
 import Groups from './Groups'
 import Message from "./Message";
@@ -36,6 +36,14 @@ import Settings from "./Settings";
 import ProfileIkramul from "./ProfileIkramul";
 import socket from '../common/socket.js'
 import AudioCall from "../components/AudioCall/AudioCall.js";
+import { loadSettings } from "../services/actions/settingsActions.js";
+
+import ProfileSetting from "../components/setting/ProfileSetting.js";
+import AccountSetting from "../components/setting/AccountSetting.js";
+import PrivacySetting from "../components/setting/PrivacySetting.js";
+import NotificationSetting from "../components/setting/NotificationSetting.js";
+import MessageSetting from "../components/setting/MessageSetting.js";
+import PreferenceSetting from "../components/setting/PreferenceSetting.js";
 
 function showNotification(msg, receiverId) {
     const notification = new Notification("New Message!", {
@@ -61,22 +69,34 @@ const speakText = (text) => {
 };
 
 const Main = () => {
-    var dispatch = useDispatch();
+    const dispatch = useDispatch();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-    let isLoading = useSelector(state => state.option.isLoading);
-    let settings = useSelector(state => state.setting)
-    let params = useParams();
-    let audioElement = useRef(null)
+    const isLoading = useSelector(state => state.option.isLoading);
+    const settings = useSelector(state => state.setting)
+    const params = useParams();
+    const audioElement = useRef(null)
 
-    let cameraVideoRef = useRef(null)
 
     const [isTabActive, setIsTabActive] = useState(!document.hidden);
 
-    let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
+    const userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
     const profileId = userInfo.profile
 
-    const notify = (text, senderName, senderPP,link) => {
+    useEffect(() => {
+        api.get('setting',{params: {
+            profileId
+        }}).then(res => {
+            if(res.status == 200) {
+                dispatch(loadSettings(res.data))
+            }
+        })
+    },[])
+    const playSound = (data) => {
         audioElement?.current.play();
+
+    }
+    const notify = (text, senderName, senderPP,link) => {
+        playSound();
         toast(
             <Link className="text-decoration-none text-secondary" to={`${link}`}>
                 <div style={{ color: "blue", fontWeight: "bold" }}>
@@ -95,6 +115,8 @@ const Main = () => {
     
         );
     }
+
+
 
     useEffect(() => {
         socket.emit('fetchNotifications',profileId)
@@ -120,6 +142,12 @@ const Main = () => {
             notify(data.text,false,data.icon,data.link)
         })
 
+        socket.on('bumpUser',((friend, profile) => {
+
+            notify(`${friend.fullName} Bumped you`,friend.fullName, friend.profilePic,'/message/'+profile._id)
+
+        })) 
+
 
 
         return () => {
@@ -127,6 +155,7 @@ const Main = () => {
             socket.off('newNotification')
             socket.off('oldMessages')
             socket.off('newMessage')
+            socket.off('bumpUser')
         }
     }, [socket])
     
@@ -176,11 +205,9 @@ const Main = () => {
         dispatch(setBodyHeight(window.innerHeight));
         api.post(`/profile`, { profile: profileId }).then(res => {
             dispatch(getPorfileReq())
-
             if (res.status === 200) {
                 dispatch(setLogin({ isLoggedIn: true }))
                 dispatch(getProfileSuccess(res.data));
-
             }
 
         }).catch(e => {
@@ -211,7 +238,8 @@ const Main = () => {
                         </div>
                     </div>)}
 
-                <Header cameraVideoRef={cameraVideoRef} />
+
+                <Header />
 
                 <div id="main-container" className={isLoading ? 'loading' : ''}>
                     <Routes>
@@ -246,8 +274,8 @@ const Main = () => {
                                 <Route path="suggestions" element={<FriendSuggest />}></Route>
 
                             </Route>
-                            <Route path="/watch" element={<Watch />}> </Route>
-                            <Route path="/message" element={<Message cameraVideoRef={cameraVideoRef || false} />}>
+                            <Route path="/watch" element={<Video />}> </Route>
+                            <Route path="/message" element={<Message />}>
                                 <Route path=":profile/" element={<Profile />}></Route>
 
                             </Route>
@@ -256,6 +284,15 @@ const Main = () => {
 
                             <Route path="/groups" element={<Groups />}> </Route>
                             <Route path="/settings" element={<Settings/>}></Route>
+
+                            <Route path="/settings/" element={<Settings />}>
+                                <Route index element={<ProfileSetting/>} />
+                                <Route path="account/" element={<AccountSetting />} />
+                                <Route path="privacy" element={<PrivacySetting />} />
+                                <Route path="notification" element={<NotificationSetting />} />
+                                <Route path="message" element={<MessageSetting />} />
+                                <Route path="preference" element={<PreferenceSetting />} />
+                            </Route>
 
                         </Route>
 
@@ -270,10 +307,6 @@ const Main = () => {
                 <ToastContainer />
             </BR>
 
-            {
-                settings.isShareEmotion === true && <video style={{ display: 'none' }} ref={cameraVideoRef} autoPlay muted width="600" height="400" />
-
-            }
         </Fragment>
 
     )

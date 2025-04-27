@@ -63,19 +63,7 @@ const SingleReactor = ({ reactor }) => {
                 </li>
             )}
 
-            {/* <li className="sp-reacts-item">
-                <div className="reactor-pp">
-                    <div className="user-profile-img-container"><div className="user-profile-img "><a>
-                    <img src="http://res.cloudinary.com/dz88yjerw/image/upload/v1743050609/i6cnhplhlunwrzh8v916.png" alt="Profile Picture"/></a></div></div></div><div class="react-details"><a href="/67e431d61e4463f7adfa544e"><span className="reactor-name">Md Atik</span></a></div>
-                    <span className="reactor-react"><img src="https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg" alt="love"/></span>
-                </li>
 
-                <li className="sp-reacts-item">
-                <div className="reactor-pp">
-                    <div className="user-profile-img-container"><div className="user-profile-img "><a>
-                    <img src="http://res.cloudinary.com/dz88yjerw/image/upload/v1743050609/i6cnhplhlunwrzh8v916.png" alt="Profile Picture"/></a></div></div></div><div class="react-details"><a href="/67e431d61e4463f7adfa544e"><span className="reactor-name">Md Atik</span></a></div>
-                    <span className="reactor-react"><img src="https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg" alt="love"/></span>
-                </li> */}
 
         </div>
     );

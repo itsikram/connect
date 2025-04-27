@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useId } from 'react';
 import { setLoading } from '../services/actions/optionAction';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -6,66 +6,52 @@ import api from '../api/api';
 import UserPP from '../components/UserPP';
 import moment from "moment";
 import SingleMessage from '../components/Message/SingleMessage';
-import $, { param } from 'jquery'
-import * as faceapi from "face-api.js";
-import { current } from '@reduxjs/toolkit';
+import $ from 'jquery'
 import { sendMessage } from "../services/actions/messageActions";
-import Peer from 'simple-peer';
-import ModalContainer from '../components/modal/ModalContainer';
-const useMediaQuery = (query) => {
-    const [matches, setMatches] = useState(window.matchMedia(query).matches);
+import ChatHeader from '../components/Message/ChatHeader';
+import ChatFooter from '../components/Message/ChatFooter';
+import useIsMobile from '../utils/isMobile';
+// const useMediaQuery = (query) => {
+//     const [matches, setMatches] = useState(window.matchMedia(query).matches);
 
-    useEffect(() => {
-        const media = window.matchMedia(query);
-        const listener = (e) => setMatches(e.matches);
-        media.addEventListener("change", listener);
-        return () => media.removeEventListener("change", listener);
-    }, [query]);
+//     useEffect(() => {
+//         const media = window.matchMedia(query);
+//         const listener = (e) => setMatches(e.matches);
+//         media.addEventListener("change", listener);
+//         return () => media.removeEventListener("change", listener);
+//     }, [query]);
 
-    return matches;
-};
-
+//     return matches;
+// };
 
 const Chat = ({ socket, cameraVideoRef }) => {
     let dispatch = useDispatch();
     let profile = useSelector(state => state.profile)
     let headerHeight = useSelector(state => state.option.headerHeight)
     let bodyHeight = useSelector(state => state.option.bodyHeight)
-    let settings = useSelector(state => state.setting)
     let userId = profile._id
     let [friendProfile, setFriendProfile] = useState({})
+    const [lastSeen, setLastSeen] = useState(false);
+
+    let isMobile = useIsMobile()
+
     const [room, setRoom] = useState('');
+    const [isActive, setIsActive] = useState(false);
+    const [isReplying, setIsReplying] = useState(false);
+
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
     const [typeMessage, setTypeMessage] = useState('');
-    const [mInputWith, setmInputWith] = useState(true);
-    const [inputValue, setInputValue] = useState('');
-    const [isActive, setIsActive] = useState(false);
     const [isPreview, setIsPreview] = useState(false);
-    const [lastSeen, setLastSeen] = useState(false);
-    const [stream, setStream] = useState();
-    const [callAccepted, setCallAccepted] = useState(false);
-    const [me, setMe] = useState('');
-    const [receivingCall, setReceivingCall] = useState(false);
-    const [caller, setCaller] = useState('');
-    const [callerSignal, setCallerSignal] = useState();
-    const [isVideoCalling, setIsVideoCalling] = useState(false)
-
-    const [isReplying, setIsReplying] = useState(false);
-    const [attachmentUrl, setAttachmentUrl] = useState(false)
     const [replyData, setReplyData] = useState({ messageId: null, body: null });
     const msgListRef = useRef(null);
-    let messageInput = useRef(null);
+    const messageInput = useRef(null);
     const chatHeader = useRef(null);
     const chatFooter = useRef(null);
 
     const chatNewAttachment = useRef(null);
     const messageActionButtonContainer = useRef(null);
-    const imageInput = useRef(null);
-    const myVideo = useRef();
-    const userVideo = useRef();
-    const connectionRef = useRef();
-    const isMobile = useMediaQuery("(max-width: 768px)");
+
     const chatHeaderHeight = chatHeader.current?.offsetHeight;
     const chatFooterHeight = chatFooter.current?.offsetHeight;
     const chatFooterWidth = chatFooter.current?.offsetWidth;
@@ -74,10 +60,7 @@ const Chat = ({ socket, cameraVideoRef }) => {
     const messageInputWidth = chatFooterWidth - newAttachmentWidth - messageActionButtonContainerWidth
     let isLoading = useSelector(state => state.option.isLoading);
 
-    useEffect(() => {
-        setMe(profile._id)
 
-    }, [profile])
 
     if (messageInput.current !== null) {
         messageInput.current.style.width = messageInputWidth + 'px'
@@ -88,9 +71,7 @@ const Chat = ({ socket, cameraVideoRef }) => {
     let params = useParams()
     let friendId = params.profile;
 
-    const [emotion, setEmotion] = useState(false);
     const [hasMoreMessages, setHasMoreMessages] = useState(true);
-    const [myEmotion, setMyEmotion] = useState(false)
     const [listContainerHeight, setListContainerHeight] = useState(chatBoxHeight - chatHeaderHeight - chatFooterHeight);
     const [cmlStyles, setCmlStyles] = useState({
         height: `${isMobile ? bodyHeight - headerHeight - chatFooterHeight - chatHeaderHeight : listContainerHeight}px`,
@@ -141,8 +122,6 @@ const Chat = ({ socket, cameraVideoRef }) => {
     }, []);
 
     useEffect(() => {
-
-
         if (hasMoreMessages) {
             if (scrollPercent < 30) {
                 socket.emit('loadMessages', { myId: userId, friendId, skip: messages.length })
@@ -180,7 +159,7 @@ const Chat = ({ socket, cameraVideoRef }) => {
             socket.off('messageReactRemoved')
             socket.off('is_active')
         }
-    }, [params])
+    }, [friendProfile,params])
 
 
     useEffect(() => {
@@ -299,321 +278,15 @@ const Chat = ({ socket, cameraVideoRef }) => {
         }
     }, [params, messages])
 
-    useEffect(() => {
-        if (room) {
-            console.log(room, 'room')
-            startVideo();
-            loadModels();
-        }
 
-    }, [room, params]);
 
-    useEffect(() => {
-
-
-        if (myEmotion && friendId) {
-            socket.emit('emotion_change', { room: room, emotion: myEmotion, friendId })
-
-        }
-    }, [myEmotion, friendId])
-
-    useEffect(() => {
-
-
-        socket.on('emotion_change', (emotion) => {
-            setEmotion(emotion)
-        })
-
-        return () => {
-            socket.off('emotion_change')
-        }
-    }, [emotion])
-
-    const startVideo = () => {
-        if (settings.isShareEmotion === true) {
-            if (!navigator.mediaDevices) return;
-            navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-                cameraVideoRef.current.srcObject = stream;
-            }).catch((err) => console.error("Error accessing webcam: ", err));
-        }
-
-    };
-
-
-
-    const loadModels = async () => {
-        await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
-        await faceapi.nets.faceExpressionNet.loadFromUri("/models");
-        detectEmotions();
-    };
-
-    const detectEmotions = () => {
-        setInterval(async () => {
-            if (cameraVideoRef.current) {
-                const detections = await faceapi.detectAllFaces(cameraVideoRef.current, new faceapi.TinyFaceDetectorOptions())
-                    .withFaceExpressions();
-
-                if (detections.length > 0) {
-                    const emotions = detections[0].expressions;
-                    const maxEmotion = Object.keys(emotions).reduce((a, b) => emotions[a] > emotions[b] ? a : b);
-                    if (room && myEmotion !== maxEmotion) {
-                        setMyEmotion(maxEmotion)
-                    }
-                }
-
-            }
-        }, 500);
-
-    }
-
-    const handleSendMessage = (e) => {
-        e.preventDefault();
-        e.target.value = ''
-
-        let isDisabled = $(e.target).hasClass('button-disabled') || false
-        if (isDisabled) return;
-
-        if (inputValue.trim() && room) {
-
-            if (isReplying) {
-                let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: replyData.messageId }
-                socket.emit('sendMessage', data);
-                setInputValue('')
-                setIsTyping(false)
-                dispatch(sendMessage(data))
-
-                setTimeout(() => {
-                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
-
-                }, 500);
-            } else {
-                let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: false }
-                socket.emit('sendMessage', data);
-                setInputValue('')
-                setIsTyping(false)
-                dispatch(sendMessage(data))
-
-                setTimeout(() => {
-                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
-                }, 500);
-            }
-
-            setIsReplying(false)
-            setIsPreview(false)
-            setAttachmentUrl(false)
-
-
-        }
-    }
-
-    let addTyping = (e) => {
-        socket.emit('typing', { receiverId: userId, room, isTyping: true, type: inputValue })
-    }
-
-    let removeTyping = () => {
-        socket.emit('typing', { receiverId: userId, room, isTyping: false, type: inputValue })
-    }
-
-    let updateTyping = (e) => {
-        let value = e.target.value;
-        socket.emit('update_type', { room, type: value })
-    }
-    const enterEvent = new KeyboardEvent("keydown", {
-        key: "Enter",
-        keyCode: 13,
-        code: "Enter",
-        which: 13,
-        bubbles: true
-    });
-
-    const handleKeyPress = (event) => {
-        if (event.key === "Enter") {
-            handleSendMessage(event)
-            setInputValue(""); // Clear input after action
-        }
-    };
-
-    let likeButtonClick = (e) => {
-        setInputValue('👍')
-        setTimeout(() => {
-            messageInput.current.dispatchEvent(enterEvent);
-
-        }, 200)
-    }
-
-    let handleInputChange = (e) => {
-        setInputValue(e.target.value)
-    }
-
-    let handlePreviewCloseBtn = (e) => {
-        setIsPreview(false)
-        setIsReplying(false)
-    }
-
-
-    let handleMessageImageButtonClick = async (e) => {
-        let clickEvent = new MouseEvent('click', { bubbles: true, cancelable: false })
-        let attachmentInput = document.createElement('input')
-        attachmentInput.type = 'file'
-
-        attachmentInput.addEventListener('change', (async (e) => {
-            let attachmentFile = e.target.files[0]
-            if (attachmentFile) {
-                let attachmentFormData = new FormData();
-                attachmentFormData.append('image', attachmentFile)
-                setAttachmentUrl('https://res.cloudinary.com/dz88yjerw/image/upload/v1743092084/i5lcu63atrbkpcy6oqam.gif')
-                setIsPreview(true)
-
-                let uploadAttachmentRes = await api.post('/upload', attachmentFormData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                })
-
-                if (uploadAttachmentRes.status === 200) {
-                    let attachmentUrl = uploadAttachmentRes.data.secure_url;
-                    if (attachmentUrl) {
-                        setAttachmentUrl(attachmentUrl)
-                    }
-                }
-
-            }
-        }))
-
-        if (attachmentInput) {
-            attachmentInput.dispatchEvent(clickEvent)
-        }
-
-    }
-
-    let handleMessageImageChange = async (e) => {
-
-    }
-    useEffect(() => {
-
-    }, [isVideoCalling]);
-
-    useEffect(() => {
-
-
-        socket.on('receive-call', (data) => {
-            setReceivingCall(true);
-            setCaller(data.from);
-            setCallerSignal(data.signal);
-        });
-
-        socket.on('videoCallEnd', (friendId) => {
-            setReceivingCall(false)
-            setIsVideoCalling(false)
-            setCallAccepted(false)
-        })
-
-        return () => {
-            socket.off('receive-call')
-            socket.off('videoCallEnd')
-        }
-    }, [])
-
-    const callUser = (id) => {
-        const peer = new Peer({
-            initiator: true,
-            trickle: false,
-            stream: stream,
-        });
-
-        peer.on('signal', (data) => {
-            socket.emit('call-user', {
-                userToCall: id,
-                signalData: data,
-                from: me,
-                name: profile.fullName,
-            });
-        });
-
-        peer.on('stream', (currentStream) => {
-            userVideo.current.srcObject = currentStream;
-        });
-
-        socket.on('call-accepted', (signal) => {
-            setCallAccepted(true);
-            if (signal) {
-                console.log('Stream tracks:', stream?.getTracks().map(t => t.kind));
-                peer.signal(signal);
-
-            }
-        });
-
-        connectionRef.current = peer;
-    };
-
-    let handleVideoCallBtn = (e) => {
-        setIsVideoCalling(true)
-        let receiverId = e.currentTarget.dataset.id
-
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-            setStream(stream);
-
-            if (myVideo.current) {
-                myVideo.current.srcObject = stream;
-            }
-        });
-
-        callUser(receiverId)
-
-
-    }
-
-    let closeVideoCall = e => {
-        if (isVideoCalling || callAccepted) {
-            setIsVideoCalling(true)
-
-        } else {
-            setIsVideoCalling(false)
-
-        }
-    }
-
-    let handleLeaveCall = () => {
-        setCallAccepted(false);
-        setIsVideoCalling(false);
-        socket.emit('leaveVideoCall', friendId)
-        // leaveCall()
-        setIsVideoCalling(false)
-    }
-
+let footerProps = {chatFooter,room,friendId,setIsTyping,setIsReplying,isReplying,chatNewAttachment,messageActionButtonContainer,userId,messageInput}
 
     return (
         <div>
             <div id="chatBox" style={{ minHeight: `${chatBoxHeight}px` }}>
                 <div ref={chatHeader} className='chat-header'>
-                    <div className='chat-header-user'>
-                        <div className='chat-header-profilePic'>
-                            <UserPP profilePic={`${friendProfile.profilePic}`} hasStory={false} profile={friendProfile._id} active={isActive ? true : false}></UserPP>
-                        </div>
-                        <div className='chat-header-user-info'>
-                            <h4 className='chat-header-username'> {`${friendProfile == true && friendProfile.fullName ? friendProfile.fullName : friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname}`}</h4>
-                            {isActive ? (<span className='chat-header-active-status'>Online </span>) : (lastSeen && <span className='chat-header-active-status'>Last Seen: {lastSeen} </span>)}
-
-                            {
-                                emotion && (<span className='chat-header-active-status text-capitalized'> | {emotion}</span>)
-                            }
-
-                        </div>
-                    </div>
-
-                    <div className='chat-header-action'>
-                        <div className='chat-header-action-btn-container'>
-                            <div className='call-button action-button'>
-                                <i className="fas fa-phone-alt"></i>
-                            </div>
-                            <div onClick={handleVideoCallBtn} data-id={friendId} className='video-call-button action-button'>
-                                <i className="fas fa-video"></i>
-                            </div>
-                            <div className='info-button action-button'>
-                                <i className="fas fa-info-circle"></i>
-                            </div>
-                        </div>
-                    </div>
+                    <ChatHeader friendProfile={friendProfile} isActive={isActive} lastSeen={lastSeen} room={room} />
 
                 </div>
                 <div className='chat-body'>
@@ -653,111 +326,10 @@ const Chat = ({ socket, cameraVideoRef }) => {
                     </div>
                 </div>
 
-                <div ref={chatFooter} className="chat-footer">
-
-                    {
-                        isPreview && (<div className='new-message-preview-container'>
-                            {
-                                isReplying && (
-                                    <div className='reply-message-preview-form'>
-                                        <p className='text-small'>
-                                            {replyData.body}
-                                        </p>
-                                    </div>
-                                )
-                            }
-                            {
-                                attachmentUrl && (
-                                    <div className='attachment-preview-container'>
-                                        <img className='attachment-preview' src={attachmentUrl} alt='Message Attachment' />
-                                    </div>
-                                )
-                            }
-
-                            <span onClick={handlePreviewCloseBtn} className='preview-close-button bg-danger'>
-                                <i className='fa fa-times'></i>
-                            </span>
-                        </div>)
-                    }
-
-
-                    <div className="new-message-container">
-
-                        <div ref={chatNewAttachment} className='chat-new-attachment'>
-                            <div className='chat-atachment-button-container'>
-
-                                <div className='chat-attachment-button'>
-                                    <i className="fas fa-plus-circle"></i>
-                                </div>
-
-                                <div className='chat-attachment-button' onClick={handleMessageImageButtonClick.bind(this)}>
-                                    <i className="fas fa-images"></i>
-                                    <input type='file' style={{ display: 'none' }} ref={imageInput} onChange={handleMessageImageChange.bind(this)} />
-                                </div>
-
-                                <div className='chat-attachment-button'>
-                                    <i className="fas fa-microphone"></i>
-                                </div>
-                            </div>
-
-
-                        </div>
-                        <div className='new-message-form'>
-
-                            <div className='new-message-input-container'>
-                                <input ref={messageInput} style={{ width: mInputWith + 'px' }} onChange={handleInputChange} value={inputValue} onKeyDown={handleKeyPress} placeholder='Send Message....' id='newMessageInput' className='new-message-input' onFocus={addTyping} onKeyUp={updateTyping.bind(this)} onBlur={removeTyping} />
-                            </div>
-                            <div ref={messageActionButtonContainer} className='message-action-button-container'>
-
-                                {
-                                    inputValue.length > 0 || attachmentUrl ? <div onClick={handleSendMessage} className={`message-action-button send-message ${attachmentUrl == 'https://res.cloudinary.com/dz88yjerw/image/upload/v1743092084/i5lcu63atrbkpcy6oqam.gif' && 'button-disabled'}`}>
-                                        <i className="fas fa-paper-plane"></i>
-                                    </div>
-
-                                        : <div onClick={likeButtonClick} className='message-action-button send-like'>
-                                            <i className="fas fa-thumbs-up"></i>
-                                        </div>
-                                }
-
-
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
+                <ChatFooter  {...footerProps} />
             </div>
 
-            <ModalContainer
-                title="Video Call"
-                style={{ width: isMobile ? '95%' : "600px", top: "50%" }}
-                isOpen={isVideoCalling || callAccepted}
-                onRequestClose={closeVideoCall}
-                id="videoCallModal"
-            >
-                <div style={{ padding: 0 }}>
-                    {/* <h2 className='text-center text-primary'>Video Call</h2> */}
-                    <p className='fs-3 text-center'>
-                        Calling {friendProfile && friendProfile.fullName}
-                    </p>
-                    <div className='video-call-container'>
-                        <video playsInline muted ref={myVideo} autoPlay className='my-video' style={{ width: '150px' }} />
-                        {<video playsInline ref={userVideo} className='friends-video' autoPlay style={{ width: '100%' }} />}
-                    </div>
-                    <div className='call-buttons'>
-                        <button onClick={handleLeaveCall.bind(this)} className='call-button-ends call-button bg-danger'>
-                            <i class="fa fa-phone"></i>
-                        </button>
 
-                    </div>
-                    {/* {receivingCall && !callAccepted && (
-                                    <div>
-                                        <h3>Incoming Call...</h3>
-                                        <button onClick={answerCall}>Answer</button>
-                                    </div>
-                                )} */}
-                </div>
-            </ModalContainer>
 
         </div>
     );

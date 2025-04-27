@@ -11,31 +11,21 @@ import { setHeaderHeight } from "../../services/actions/optionAction.js";
 import api from "../../api/api.js";
 import { useDispatch,useSelector } from "react-redux";
 
-const Header = ({cameraVideoRef}) => {
-    var dispatch = useDispatch();
+const Header = () => {
+    const dispatch = useDispatch();
     let [isMegaMenu, setIsMegaMenu] = useState(false);
     let localtion = useLocation();
     let myProfile = useSelector(state => state.profile)
     let params = useParams();
     let headerRef = useRef(null);
     const [height, setHeight] = useState(null);
+
+    const hrProps = {dispatch, useSelector}
+
     dispatch(setHeaderHeight(height))
 
-    useEffect(() => {
-        stopCamera()
-    },[localtion])
-    
-    const stopCamera = () => {
-        const stream = cameraVideoRef.current?.srcObject;
-        if (stream) {
-            const tracks = stream.getTracks();
-            tracks.forEach(track => track.stop());
-            cameraVideoRef.current.srcObject = null;
-        }
-    };
-
-
     let [match, setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)
+
     useEffect(() => {
         $(window).on('scroll', (e) => {
             if (window.pageYOffset > 100) {
@@ -50,7 +40,6 @@ const Header = ({cameraVideoRef}) => {
         })
         if (headerRef.current) {
             setHeight(headerRef.current?.offsetHeight)
-
         }
         window.matchMedia("(max-width:768px)").addEventListener('change', (e) => {
             setMatch(e.matches)
@@ -65,8 +54,6 @@ const Header = ({cameraVideoRef}) => {
     let headerMMClick = (e) => {
         setIsMegaMenu(!isMegaMenu)
     }
-
-
     let MenuButton = () => {
         return (
             <Fragment>
@@ -76,7 +63,6 @@ const Header = ({cameraVideoRef}) => {
             </Fragment>
         )
     }
-
 
     return (
         <Fragment>
@@ -103,7 +89,7 @@ const Header = ({cameraVideoRef}) => {
                         </Col>
 
                         <Col className="header-right d-flex justify-content-end align-items-center" >
-                            <HeaderRight />
+                            <HeaderRight {...hrProps} />
                         </Col>
                     </Row>
                 </Container>

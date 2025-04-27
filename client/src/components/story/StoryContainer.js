@@ -56,7 +56,7 @@ let StoryContainer = ({children}) => {
 
 
                             {storyId ?
-                                (
+                                
                                     <>
                                         {children}
                                         <div className="nf-story-arrow-left" onClick={handlePrevClick.bind(this)} >
@@ -66,8 +66,8 @@ let StoryContainer = ({children}) => {
                                             <i className="fa fa-chevron-right"></i>
                                         </div>
                                     </>
-                                )
-                                : (<p className="text-center fs-4">Select a story owner from left</p>)}
+                                
+                                : <p className="text-center fs-4">Select a story owner from left</p>}
 
                         </div>
 

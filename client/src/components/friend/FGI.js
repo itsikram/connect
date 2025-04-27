@@ -108,7 +108,7 @@ let FGI = (props) => {
             <Fragment>
                 <div className="friend-grid-item request">
                     <Link to={`/${profile}/`}>
-                        <img className="profile-picture" alt="profile pic" src={pp_url}></img>
+                        <div className="profile-picture" alt="profile pic" style={{backgroundImage: `url(${pp_url})`}}></div>
                     </Link>
 
                     <div className="grid-body">
@@ -131,7 +131,7 @@ let FGI = (props) => {
         <Fragment>
             <div className="friend-grid-item suggest">
                 <Link to={`/${profile}/`}>
-                    <img className="profile-picture" alt="profile pic" src={pp_url}></img>
+                <div className="profile-picture" alt="profile pic" style={{backgroundImage: `url(${pp_url})`}}></div>
                 </Link>
 
                 <div className="grid-body">

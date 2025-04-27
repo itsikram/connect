@@ -2,12 +2,12 @@ import { SET_MODE_SHARE,SET_NOTIFICATION,UPDATE_OPTION,LOAD_SETTINGS } from "../
 let initialState = {
     isShareEmotion: false,
     notification: true,
+    showTyping: true,
 
 }
 const settingReducer = (state = initialState, action) => {
     switch (action.type) {
         case SET_MODE_SHARE:
-            console.log('payload',action.payload)
             return {
                 isShareEmotion: action.payload
             };

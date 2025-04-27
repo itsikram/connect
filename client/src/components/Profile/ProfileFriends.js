@@ -42,12 +42,12 @@ const ProfileFriends = () => {
                 <div className='friend-items-container'>
 
                     {
-                        friendsData.map((friend,key)=> {
+                        friendsData.map((friend,index)=> {
                             if (!isAuth) {
-                                return  <PFI key={key} friend={friend}></PFI>
+                                return  <PFI key={index} friend={friend}></PFI>
 
                             }else if(friend._id !== myProfile._id) {
-                                return  <PFI key={key} friend={friend}></PFI>
+                                return  <PFI key={index} friend={friend}></PFI>
 
                             }
                         })

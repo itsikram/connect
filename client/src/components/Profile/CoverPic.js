@@ -4,23 +4,27 @@ import { useSelector } from "react-redux";
 import api from "../../api/api";
 import Cropper from 'react-easy-crop';
 import getCroppedImg from "../../inc/getCroppedImg";
-const default_cp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-cover.png';
+import CpSkleton from "../../skletons/profile/CpSkleton";
+import { useParams } from "react-router-dom";
+import { param } from "jquery";
 
 let CoverPic = ({ profileData }) => {
 
     // Modal visibility functions
+    const params = useParams();
     const [isCpModal, setCpModal] = useState(false)
     const [isCpUploading, setIsCpUploading] = useState(false)
     const [isCropping, setIsCropping] = useState(false)
     const [isCPViewModal, setisCPViewModal] = useState(false)
-    const [cPExists, setCPExists] = useState(null);
-    const [coverPicUrl, setCoverPicUrl] = useState(null)
+    const [cpLoaded, setCpLoaded] = useState(false);
+    const [coverPicUrl, setCoverPicUrl] = useState(profileData.profilePic || '')
     const [coverImage, setCoverImage] = useState(null)
     const [croppedImage, setCroppedImage] = useState(null)
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
     const [zoom, setZoom] = useState(1);
     let myProfileData = useSelector(state => state.profile)
+
     const useMediaQuery = (query) => {
         const [matches, setMatches] = useState(window.matchMedia(query).matches);
 
@@ -33,6 +37,39 @@ let CoverPic = ({ profileData }) => {
 
         return matches;
     };
+
+    const checkImageStatus = (url) => {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => setCpLoaded(true);
+        img.onerror = () => setCpLoaded(false);
+    };
+    
+
+    useEffect(() => {
+        setCoverPicUrl('')
+        setCpLoaded(false)
+
+    },[param])
+
+    useEffect(() => {
+        if(profileData) {
+            setCpLoaded(false)
+            checkImageStatus(profileData.coverPic)
+            
+        }
+
+    }, [profileData, param])
+
+    useEffect(() => {
+
+        if(cpLoaded == true) {
+            setCoverPicUrl(profileData.coverPic)
+
+        } 
+
+    }, [cpLoaded])
+
     const isMobile = useMediaQuery("(max-width: 768px)");
 
     let closeCpModal = () => {
@@ -59,23 +96,6 @@ let CoverPic = ({ profileData }) => {
         fontSize: isMobile ? '18px' : '30px',
     }
 
-
-    var cp_url = profileData.coverPic;
-    const checkImage = (url) => {
-        const img = new Image();
-        img.src = url;
-
-        img.onload = () => setCPExists(true);
-        img.onerror = () => setCPExists(false);
-    };
-
-    checkImage(cp_url)
-
-
-    if (!cPExists) {
-        cp_url = default_cp_src
-    }
-
     let handleCpChange = async (e) => {
         setCoverImage(e.target.files[0] || '')
         setIsCropping(true)
@@ -97,7 +117,6 @@ let CoverPic = ({ profileData }) => {
             let coverPicUrl = uploadCoverPicRes.data.secure_url;
             setIsCpUploading(false)
             setCoverPicUrl(coverPicUrl)
-            console.log(uploadCoverPicRes,coverPicUrl)
             return true;
         }
     }
@@ -172,7 +191,13 @@ let CoverPic = ({ profileData }) => {
     return (
         <Fragment>
             <div className="cover-photo-container">
-                <img onClick={openCPViewModal} className="cover-photo" src={cp_url} alt="cover" />
+            {/* <CpSkleton count={1} /> */}
+
+            {cpLoaded ? (
+                <img onClick={openCPViewModal} className="cover-photo" src={coverPicUrl} alt="cover" />
+            ) : (<CpSkleton count={1} />)}
+
+                
 
                 {
                     isAuth &&
@@ -202,7 +227,7 @@ let CoverPic = ({ profileData }) => {
 
                     </div>
                     <div className="modal-body text-center">
-                        <img src={cp_url} className="w-100" alt="Ikram" />
+                        <img src={coverPicUrl} className="w-100" alt="Cover Pic View" />
 
                     </div>
                 </ModalContainer>

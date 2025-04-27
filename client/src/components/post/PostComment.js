@@ -136,9 +136,9 @@ const PostComment = (props) => {
             <div className="comments">
 
                 {
-                   allComments && allComments.map((comment, key) => {
+                   allComments && allComments.map((comment, index) => {
                         
-                        return comment && <SingleComment comment={comment} post={post} key={key} myProfile={myProfile}></SingleComment>
+                        return comment && <SingleComment comment={comment} post={post} key={index} myProfile={myProfile}></SingleComment>
                     })
                 }
 

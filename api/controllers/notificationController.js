@@ -4,8 +4,8 @@ const Notification = require('../models/Notification')
 exports.notificationSocket = async (io, socket) => {
     socket.on('fetchNotifications',async(profileId) => {
         let notificaitons = await Notification.find({ receiverId: profileId }).limit(25).sort({timestamp: -1})
-        console.log(notificaitons)
-        io.to(profileId).emit('oldNotifications', notificaitons)
+        // console.log(notificaitons)
+        io.to(profileId).emit('oldNotifications', notificaitons.reverse())
     })
 
     return () => {socket.off('fetchNotifications')}
@@ -73,6 +73,20 @@ exports.notificationView = async (req, res, next) => {
     }
     res.json({ message: 'Something went wrong' }).status(400)
 }
+exports.notificationViewAll = async (req, res, next) => {
+    let profile = req.profile
+
+
+    let updatedNotification = await Notification.updateMany({ receiverId: profile._id  }, {
+        isSeen: true
+    }, { new: true })
+
+    if (updatedNotification) {
+
+        return res.json({ message: 'Notification status updated successfully' }).status(200)
+    }
+    res.json({ message: 'Something went wrong' }).status(400)
+}
 
 exports.getNotifications = async (req, res, next) => {
     let io = req.app.get('io')
@@ -80,6 +94,17 @@ exports.getNotifications = async (req, res, next) => {
     let notifications = await Notification.find({ receverId: receverId })
     if (notifications) {
         return res.json(notifications).status(200)
+    }
+    return res.json({ message: 'Failed to get notificaiton' }).status(400)
+
+}
+exports.deleteAllNotifications = async (req, res, next) => {
+let profileId = req.body.profile
+    let deletedNotification = await Notification.deleteMany({ receiverId: profileId})
+    if (deletedNotification) {
+        return res.json({
+            message: 'All Notifications Are deleted'
+        }).status(200)
     }
     return res.json({ message: 'Failed to get notificaiton' }).status(400)
 

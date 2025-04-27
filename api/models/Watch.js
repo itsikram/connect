@@ -9,10 +9,7 @@ let watchSchema = new Schema({
         type: String,
         maxLength: 500,
     },
-    videoUrl: {
-        type: String,
-        maxLength: 250,
-    },
+    videoUrl: String,
     reacts: [{
         type: Object,
         ref: Profile
@@ -39,7 +36,7 @@ let watchSchema = new Schema({
     },
     type: {
         type: String,
-        default: 'post'
+        default: 'watch'
     }
 
 },{

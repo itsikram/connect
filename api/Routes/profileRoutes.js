@@ -1,5 +1,5 @@
 const Router = require('express').Router()
-const {prefileHasStory,profileGet,profilePost,updateBioPost,updateCoverPost,updateProfilePic} = require('../controllers/profileController')
+const {prefileHasStory,profileGet,profilePost,updateBioPost,updateCoverPost,updateProfilePic,updateProfile} = require('../controllers/profileController')
 const coverPicUpload = require('../middlewares/UploadCover')
 const photosUpload = require('../middlewares/photosUpload')
 const isAuth = require('../middlewares/isAuth')
@@ -14,5 +14,6 @@ Router.post('/',profilePost)
 Router.post('/update/coverPic',upload.single('image'),isAuth,updateCoverPost)
 Router.post('/update/profilePic',upload.single('image'),isAuth,updateProfilePic)
 Router.post('/update/bio',isAuth,updateBioPost)
+Router.post('/update',isAuth,updateProfile)
 
 module.exports = Router;

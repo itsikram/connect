@@ -12,18 +12,18 @@ window.process = process;
 
 function App() {
 
-  let dispatch = useDispatch()
+  const dispatch = useDispatch()
   // let myProfile = useSelector(state => state.profile)
   
-  let user = localStorage.getItem("user") || '{}'
-  let userJson = JSON.parse(user)
-  let {isExpired} = useJwt(userJson.accessToken)
+  const user = localStorage.getItem("user") || '{}'
+  const userJson = JSON.parse(user)
+  const {isExpired} = useJwt(userJson.accessToken)
 
 
   return (
       <Fragment>
-        {!isExpired && <Main/>}
-        {isExpired && <Login/>}
+        {!isExpired && (<Main/>)}
+        {isExpired && (<Login/>)}
       </Fragment>
 
   );

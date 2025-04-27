@@ -33,15 +33,15 @@ let FriendsSuggest = () => {
             <div id="friends-container" className="mb-5" >
                 <div className="heading">
                     <h4 className="heading-title">People You May Know</h4>
-                    {/* <a to="/friends/requests" className="view-more-btn">See All</a> */}
                 </div>
                 <div className="friend-grid-container">
                     {
-                        friends.map((friend,key)=> {
+                        friends.map((friend,index)=> {
+
                             if(myProfile.friendReqs&&myProfile.friendReqs.includes(friend._id)){
-                                return <FGI key={key} profileReqs={friend.friendReqs} type="req"  id={friend._id} profilePic={friend.profilePic} fullName={friend.user.firstName+' '+ friend.user.surname}></FGI>
+                                return <FGI key={index} profileReqs={friend.friendReqs} type="req"  id={friend._id} profilePic={friend.profilePic} fullName={friend.user.firstName+' '+ friend.user.surname}></FGI>
                             }
-                            return <FGI key={key} profileReqs={friend.friendReqs} type="sug"  id={friend._id} profilePic={friend.profilePic} fullName={friend.user.firstName+' '+ friend.user.surname}></FGI>
+                            return <FGI key={index} profileReqs={friend.friendReqs} type="sug"  id={friend._id} profilePic={friend.profilePic} fullName={friend.user.firstName+' '+ friend.user.surname}></FGI>
                         })
                     }
 

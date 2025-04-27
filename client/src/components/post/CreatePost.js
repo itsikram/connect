@@ -1,11 +1,11 @@
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import ModalContainer from '../modal/ModalContainer'
 import UserPP from "../UserPP";
 import $, { post } from 'jquery'
 import api from "../../api/api";
 
-let CreatePost = () => {
+let CreatePost = ({setNewsFeed}) => {
 
 
     let profileData = useSelector(state => state.profile)
@@ -14,6 +14,7 @@ let CreatePost = () => {
 
     // setting visibilty state for post modal container
     let [isPostModal, setPostModal] = useState(false)
+    let [isUploading, setIsUploading] = useState(false)
 
     let handleCpFieldClick = (e) => {
         setPostModal(true)
@@ -25,9 +26,10 @@ let CreatePost = () => {
 
     let [postData, setPostData] = useState({
         caption: '',
-        photos: null,
+        attachments: null,
         urls: null
     })
+    let [attachmentType, setAttachmentType] = useState(false)
 
     const [hasStory, setHasStory] = useState(false);
 
@@ -51,7 +53,7 @@ let CreatePost = () => {
             }
         })
 
-    },[])
+    }, [])
 
 
     const useMediaQuery = (query) => {
@@ -99,70 +101,150 @@ let CreatePost = () => {
 
     // handle photo field update
 
-    let handlePhotosChange = (e) => {
+    let handleAttachmentChange = useCallback((e) => {
         let currentTarget = e.currentTarget
         $(currentTarget).parents('.cpm-attachment-upload').slideUp()
         $(currentTarget).parents('.cpm-attachment-upload').siblings('.cpm-attachment-preview').slideDown()
 
 
-        let name = e.target.name;
-        let photos = e.target.files;
-        var url = URL.createObjectURL(photos[0])
 
-        setPostData(state => {
-            return {
-                ...state,
-                [name]: photos[0],
-                urls: url
-            }
-        })
-    }
+        let name = e.target.name;
+        let attachments = e.target.files[0];
+        handleUploadAttachment(attachments.type,attachments)
+
+
+    })
 
     // handling post submit 
 
     let preventDefault = (e) => {
         e.preventDefault()
     }
-    let handlePostSubmit = async (e) => {
-        e.preventDefault()
+
+    let handleUploadAttachment = async (type,attachment) => {
+        setIsUploading(true)
         try {
 
-            let postFormData = new FormData()
-            postFormData.append('caption', postData.caption)
+            let fileType = type.split('/')[0]
+            setAttachmentType(fileType)
 
-            let imageFormData = new FormData();
-            imageFormData.append('image', postData.photos);
+            switch (fileType) {
+                
+                case 'image':
+                    let imageFormData = new FormData();
 
-            let uploadImageRes = await api.post('/upload/', imageFormData, {
-                headers: {
-                    'content-type': 'multipart/form-data'
-                }
-            })
-            console.log(uploadImageRes)
+                    imageFormData.append('attachment',attachment);
+                    imageFormData.append('type', 'image/png');
 
-            if (uploadImageRes.status == 200) {
-                var uploadedImageUrl = uploadImageRes.data.secure_url;
-                postFormData.append('photo_url', uploadedImageUrl)
+                    let uploadImageRes = await api.post('/upload/', imageFormData, {
+                        headers: {
+                            'content-type': 'multipart/form-data'
+                        }
+                    })
+                    if (uploadImageRes.status == 200) {
+                        setIsUploading(false)
+                        var uploadedImageUrl = uploadImageRes.data.secure_url;
+                        setPostData(state => {
+                            return {
+                                ...state,
+                                urls: uploadedImageUrl,
+                                type: fileType,
 
-                let res = await api.post('/post/create/', postFormData, {
-                    headers: {
-                        'content-type': 'multipart/form-data'
+                            }
+                        })
                     }
-                })
 
-                if (res.status === 200) {
-                    setPostModal(false)
-                }
+                    break;
+                case 'video':
+                    let watchUploadFormData = new FormData();
+                    watchUploadFormData.append('attachment', attachment);
+                    watchUploadFormData.append('type', 'video/mp4');
 
+                    let uploadWatchRes = await api.post('/upload/video', watchUploadFormData, {
+                        headers: {
+                            'content-type': 'multipart/form-data'
+                        }
+                    })
 
+                    if (uploadWatchRes.status == 200) {
+                        var uploadedWatchUrl = uploadWatchRes.data.secure_url;
+                        setIsUploading(false)
+                        setPostData(state => {
+                            return {
+                                ...state,
+                                type: fileType,
+                                urls: uploadedWatchUrl
+                            }
+                        })
+
+                    }
+                    break;
             }
+
+
 
 
 
         } catch (error) {
             console.log(error)
         }
+
+
+
     }
+
+
+
+
+
+    let handlePostSubmit = useCallback(async (e) => {
+        e.preventDefault()
+        try {
+
+            switch (postData.type) {
+                
+                case 'image':
+                    let postFormData = new FormData()
+                    postFormData.append('caption', postData.caption)
+                    postFormData.append('urls', postData.urls)
+
+                    let res = await api.post('/post/create/', postFormData, {
+                        headers: {
+                            'content-type': 'multipart/form-data'
+                        }
+                    })
+
+                    if (res.status === 200) {
+                        setPostModal(false)
+                    }
+
+                    break;
+                case 'video':
+
+                let watchRes = await api.post('/watch/create', {caption: postData.caption, videoUrl: postData.urls}, {
+                    headers: {
+                        'content-type': 'multipart/form-data'
+                    }
+                })
+
+                if (watchRes.status === 200) {
+                    setPostModal(false)
+                }
+                    break;
+            }
+
+
+
+
+
+        } catch (error) {
+            console.log(error)
+        }
+
+    })
+
+
+
 
 
     return (
@@ -234,7 +316,7 @@ let CreatePost = () => {
                                                 Add Photos/Videos
                                             </span>
                                         </div>
-                                        <input onChange={handlePhotosChange} name="photos" type="file"></input>
+                                        <input onChange={handleAttachmentChange} name="photos_vidoes" type="file"></input>
                                     </div>
                                 </div>
                                 <div className="cpm-attachment">
@@ -248,7 +330,7 @@ let CreatePost = () => {
 
                                 </div>
                                 <div className="cpm-submit-button">
-                                    <button onClick={handlePostSubmit} className="button" type="submit"> Post </button>
+                                    <button onClick={handlePostSubmit} className="button" disabled={isUploading && true} type="submit"> {isUploading ? 'Media Uploading....' : postData.urls ?  'Post Now' : 'Upload'} </button>
                                 </div>
                             </form>
                         </div>

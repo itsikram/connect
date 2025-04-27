@@ -52,7 +52,6 @@ const SingleStory = (props) => {
     let removeReact = async (storyId, postType = 'story') => {
         let placeRes = await api.post('/react/removeReact', { id: storyId, postType })
         if (placeRes.status === 200) {
-            console.log(placeRes)
             setReactType(false)
             return true;
         } else {
@@ -65,7 +64,6 @@ const SingleStory = (props) => {
 
         let placeRes = await api.post('/react/addReact', { id: storyId, reactType, postType })
         if (placeRes.status === 200) {
-            console.log(placeRes)
             // setTotalReacts(placeRes.data.reacts.length)
             // setPlacedReacts([...placedReacts, type])
             setReactType(reactType)
@@ -167,7 +165,7 @@ const SingleStory = (props) => {
     return (
         <>
             <StoryContainer>
-                {story == null ? (<p></p>) : (
+                {story == null ? (<p></p>) : 
                     <div className='single-story-container'>
 
                         <div className='single-story' style={{ background: storyBg }}>
@@ -227,10 +225,8 @@ const SingleStory = (props) => {
                         <Outlet></Outlet>
 
                     </div>
-                )}
+                }
             </StoryContainer>
-
-
         </>
     )
 }

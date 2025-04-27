@@ -3,6 +3,7 @@ import SignUP from "./SignUp";
 import $ from 'jquery'
 import api from '../api/api'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from "react-router-dom";
 let Login = (props) => {
 
     let showSignup = (e) => {
@@ -69,9 +70,10 @@ let Login = (props) => {
                             <input onChange={handleChange} type="password" name="password" className="password" placeholder="Password" />
                             <p id="loginErrorMsg" style={{ color: 'red' }}>{error.message}</p>
                             <input type="submit" onClick={handleSubmit} className="submit-button" value="Login" />
-                            <a href="javascript:void(0)" className="forgot-password">
-                                Forgotten password? {window.location.hostname}
-                            </a>
+                            <span className="forgot-password">
+                                Forgotten password?
+                            </span>
+
                         </div>
 
                         <div onClick={showSignup} className="create-account-button">

@@ -6,12 +6,12 @@ import Post from "../post/Post";
 import ProfileDetails from "./ProfileDetails";
 import api from "../../api/api";
 import $ from 'jquery'
+import PostSkeleton from "../../skletons/post/PostSkeleton";
 
 
 let PorfilePosts = () => {
     let {profile} = useParams()
     let myProfileData = useSelector(state => state.profile) || {}
-    console.log(myProfileData)
     let isAuth = myProfileData._id === profile
     const [posts,setPosts] = useState([])
 
@@ -91,12 +91,16 @@ let PorfilePosts = () => {
                 </div>
                 <div className="posts-container">
                     {
-                        isAuth && <CreatePost></CreatePost>
+                        isAuth && <CreatePost setNewsFeed={setPosts}></CreatePost>
                     }
                     
-                    {posts && posts.map((data) => {
-                        return <Post key={data._id} myProfile={myProfileData} data={data}></Post>
-                    })}
+                    {posts ? posts.map((data,index) => {
+                        return <Post key={index} myProfile={myProfileData} data={data}></Post>
+                    })
+                    :
+                    <PostSkeleton  count={3}/>
+                
+                }
                     
                 </div>
             </div>

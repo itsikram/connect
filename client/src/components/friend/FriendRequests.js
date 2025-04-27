@@ -25,8 +25,8 @@ let FriendRequests = () => {
                 <div className="friend-grid-container">
 
                     {
-                        reqData.map((req, key) => {
-                            return <FGI key={key} id={req._id} profilePic={req.profilePic} fullName={req.user.firstName+ ' ' + req.user.surname} type="req"></FGI>
+                        reqData.map((req, index) => {
+                            return <FGI key={index} id={req._id} profilePic={req.profilePic} fullName={req.user.firstName+ ' ' + req.user.surname} type="req"></FGI>
                         })
                     }
 

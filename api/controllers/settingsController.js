@@ -1,11 +1,17 @@
 const Setting = require('../models/Setting')
 
 exports.getSetting = async(req,res,next) => {
+    let profileId = req.query.profileId
 
+    let settings = await Setting.findOne({profile: profileId})
+
+    if(settings) {
+        res.json(settings).status(200)
+    }
 }
 
 exports.addSetting = async(req,res,next) => {
-    
+
 }
 
 exports.updateSetting = async(req,res,next) => {
@@ -26,6 +32,7 @@ exports.updateSetting = async(req,res,next) => {
     }
 
     let updatedSetting = await Setting.findOneAndUpdate({profile: profileId},settingObejct, {new: true});
+    console.log(updatedSetting)
 
     if(updatedSetting) {
         return res.json(updatedSetting).status(200)

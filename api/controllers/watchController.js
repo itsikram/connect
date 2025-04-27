@@ -1,30 +1,33 @@
-const Watch = require('../models/Post')
+const Watch = require('../models/Watch')
 const Profile = require('../models/Profile')
 const User = require('../models/User')
 const Comment = require('../models/Comment')
 const jwt = require('jsonwebtoken')
 const CmntReply = require('../models/CmntReply')
 const mongoose = require('mongoose')
-
+const Post = require('../models/Post')
 
 exports.createWatch = async(req,res,next) => {
+    let profileId = req.profile._id
+    let caption = req.body.caption
+    let videoUrl = req.body.videoUrl
+    console.log('vu',req.body, req.query, req.param)
     try {
-        let profileId = req.profile._id
-        let caption = req.body.caption
-        let VideoUrl = req.body.VideoUrl || ""
+
+
         let watch = new Watch({
             caption,
-            videoUrl: VideoUrl,
+            videoUrl: videoUrl,
             author: profileId
 
         })
 
         let savedData = await watch.save()
         res.json({
-            message: 'Watch Created Successfully'
+            message: 'Watch Created Successfully',
+            data: savedData
         }).status(200)
 
-        
     } catch (error) {
         next(error)
     }
@@ -51,6 +54,47 @@ exports.deleteWatch = async (req,res,next) => {
 
 
 
+        
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.getRelatedWatchs = async(req,res,next) => {
+
+    try {
+        let profile_id = req.query.profile;
+
+        // if(!mongoose.isValidObjectId(profile_id)) return res.json().status(400)
+        let watches = await Watch.find().populate([
+            {
+                path: 'author',
+                model: Profile,
+                populate: {
+                    path: 'user'
+                }
+            },
+            {
+                path: 'comments',
+                model: Comment,
+                populate:[ {
+                    path: 'author',
+                    select: ['profilePic','user'],
+                    populate: {
+                        path: 'user',
+                        select: ['firstName','surname']
+                    }
+                },{
+                    path: 'replies',
+                    Model: CmntReply,
+                    populate: {
+                        path: 'author',
+                        model: Profile
+                    }
+                }]
+            }]).sort({'createdAt': -1})
+
+        res.json(watches).status(200)
         
     } catch (error) {
         next(error)

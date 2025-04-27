@@ -9,12 +9,12 @@ import StoryCard from "../components/story/StoryCard";
 import api from "../api/api";
 import $ from 'jquery'
 import { setLoading } from "../services/actions/optionAction";
-import { useLocation } from "react-router-dom";
+import PostSkeleton from "../skletons/post/PostSkeleton";
+import StoryListSkleton from "../skletons/story/StoryListSkleton";
 
 
 let Home = () => {
-    // setting state to store window width
-    let location = useLocation();
+
     let dispatch = useDispatch()
     let storyContainer = useRef()
     function scrollLeft(e) {
@@ -36,12 +36,14 @@ let Home = () => {
     let [pageNumber, setPageNumber] = useState(0)
 
     let loadData = async () => {
-        let nfRes = await api.get('/post/newsFeed/',{params: {
-            pageNumber: pageNumber + 1
-        }})
+        let nfRes = await api.get('/post/newsFeed/', {
+            params: {
+                pageNumber: pageNumber + 1
+            }
+        })
         if (nfRes.status === 200) {
             setPageNumber(pageNumber + 1)
-            setNewsFeed(state => [...state,...nfRes.data.posts])
+            setNewsFeed(state => [...state, ...nfRes.data.posts])
             let hasPosts = nfRes.data.hasNewPost
             setHasNewPosts(hasPosts)
             setLoadNewPosts(false)
@@ -60,35 +62,35 @@ let Home = () => {
             const scrollTop = window.scrollY;
             const windowHeight = window.innerHeight;
             const fullHeight = document.body.scrollHeight;
-      
+
             const scrolled = (scrollTop + windowHeight) / fullHeight;
-      
+
             if (scrolled >= 0.8) {
-                
-                if(loadNewPosts == false) {
+
+                if (loadNewPosts == false) {
                     setLoadNewPosts(true)
                 }
             }
-          };
-          window.addEventListener("scroll", handleScroll);
-    //   return () => window.removeEventListener("scroll", handleScroll);
+        };
+        window.addEventListener("scroll", handleScroll);
+        //   return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
 
 
     useEffect(() => {
 
-        if(loadNewPosts) {
+        if (loadNewPosts) {
 
-            if(hasNewPosts) {
+            if (hasNewPosts) {
                 loadData()
             }
-           
+
         }
-    },[loadNewPosts])
+    }, [loadNewPosts])
 
     useEffect(() => {
-        dispatch(setLoading(true))
+        dispatch(setLoading(false))
 
         // window width 
         window.matchMedia("(max-width:768px)").addEventListener('change', (e) => {
@@ -109,19 +111,17 @@ let Home = () => {
 
                         <Col md="6">
 
-                        <CreatePost></CreatePost>
+                            <CreatePost setNewsFeed={setNewsFeed}></CreatePost>
 
                             <div id="newsfeed-container" className="newsfeed-container">
-
                                 {
-                                    stories.length > 0 && (
+                                    stories.length > 0 ? (
                                         <div id="nf-story-container" >
                                             <div ref={storyContainer} className="nf-story-overflow-container">
 
                                                 {
-                                                    stories.length > 0 &&
-                                                    stories.map(story => {
-                                                        return <StoryCard key={story._id} data={story}></StoryCard>
+                                                    stories.map((story,index) => {
+                                                        return <StoryCard key={index} data={story}></StoryCard>
                                                     })
                                                 }
                                             </div>
@@ -134,7 +134,25 @@ let Home = () => {
                                             </div>
 
                                         </div>
-                                    )
+                                    ) :
+
+                                        (
+                                            <div id="nf-story-container" >
+                                                <div ref={storyContainer} className="nf-story-overflow-container">
+
+                                                    <StoryListSkleton count={7} />
+
+                                                </div>
+                                                <div className="nf-story-arrow-left" onClick={scrollLeft.bind(this)} >
+                                                <i className="fa fa-chevron-left"></i>
+                                            </div>
+                                            <div className="nf-story-arrow-right" onClick={scrollRight.bind(this)} >
+                                                <i className="fa fa-chevron-right"></i>
+                                            </div>
+                                            
+
+                                            </div>
+                                        )
                                 }
 
 
@@ -142,10 +160,14 @@ let Home = () => {
                                 <div id="nf-post-container">
 
                                     {
-                                        newsFeeds.map(newsFeed => {
-                                            return <Post key={newsFeed._id} data={newsFeed}></Post>
-                                        })
+                                        newsFeeds.length > 0 ?
+                                            newsFeeds.map((newsFeed,index) => {
+                                                return <Post key={index} data={newsFeed}></Post>
+                                            })
+
+                                            : <PostSkeleton count={3} />
                                     }
+                                    <PostSkeleton count={1} />
 
                                 </div>
 

@@ -1,3 +1,4 @@
+const { isValidObjectId } = require('mongoose');
 const Message = require('../models/Message')
 const Profile = require('../models/Profile')
 const User = require('../models/User')
@@ -117,8 +118,9 @@ module.exports = function messageSocket(io, socket) {
         io.to(room).emit('newMessage', updatedMessage);
     });
 
-    socket.on('emotion_change', ({ room, emotion, friendId }) => {
-        io.to(friendId).emit('emotion_change', emotion);
+    socket.on('emotion_change', async({ profileId, emotion, friendId }) => {
+        let updateProfile = await Profile.findOneAndUpdate({_id: profileId}, {lastEmotion: emotion},{new: true})
+        io.to(friendId).emit('emotion_change', updateProfile.lastEmotion);
     })
 
     socket.on('typing', ({ room, isTyping, type, receiverId }) => {
@@ -144,8 +146,21 @@ module.exports = function messageSocket(io, socket) {
                 io.to(message.room).emit('seenMessage', msg);
             }
         }
-
     });
+
+    socket.on('last_emotion', async({friendId, profileId}) => {
+
+        if(!isValidObjectId(friendId) && ! isValidObjectId(profileId)) return;
+
+        let profileData = await Profile.findOne({_id: friendId}).select('lastEmotion')
+        if(profileData) {
+            io.to(profileId).emit('last_emotion', profileData)
+        }
+
+    })
+
+
+
 
     // socket.on('update_last_login', async function (userId) {
     //     if (!userId) return;

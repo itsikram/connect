@@ -3,11 +3,15 @@ import ModalContainer from "../modal/ModalContainer";
 import AvatarEditor from "react-avatar-editor";
 import api from "../../api/api";
 import { useSelector } from "react-redux";
-import {useParams} from "react-router-dom"
+import { useParams } from "react-router-dom"
+import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import SkeletonCard from "../../skletons/SkeletonCard";
+
+
 const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
 let ProfilePic = ({ profileData }) => {
-    let {profile} = useParams()
+    let { profile } = useParams()
 
     let myProfileData = useSelector(state => state.profile)
     // handle profile pic upload
@@ -21,13 +25,12 @@ let ProfilePic = ({ profileData }) => {
     const [hasStory, setHasStory] = useState(false);
     const [ppCaption, setPpCaption] = useState('');
     useEffect(() => {
-        api.get('/profile/hasStory?profileId='+profile).then(res => {
-            if(res.status == 200) {
-                console.log(res.data)
+        api.get('/profile/hasStory?profileId=' + profile).then(res => {
+            if (res.status == 200) {
                 setHasStory(res.data.hasStory)
             }
         })
-        
+
     }, [profile])
     var profilePic = profileData.profilePic;
     var pp_url = profilePic;
@@ -91,13 +94,13 @@ let ProfilePic = ({ profileData }) => {
                 let ppFormData = new FormData();
                 ppFormData.append('image', profilePicFile)
 
-                let uplaodPPRes = await api.post('/upload',ppFormData, {
+                let uplaodPPRes = await api.post('/upload', ppFormData, {
                     headers: {
-                        'Content-Type':'multipart/form-data'
+                        'Content-Type': 'multipart/form-data'
                     }
                 })
 
-                if(uplaodPPRes.status === 200) {
+                if (uplaodPPRes.status === 200) {
 
                     let profilePicUrl = uplaodPPRes.data.url;
                     let PPostFormData = new FormData()
@@ -112,7 +115,7 @@ let ProfilePic = ({ profileData }) => {
                     if (res.status === 200) {
                         window.location.reload()
                     }
-    
+
                 }
 
             })
@@ -156,7 +159,11 @@ let ProfilePic = ({ profileData }) => {
     return (
         <Fragment>
             <div className="profile-pic">
-                <div className={`profilePic-container ${hasStory =='yes' ? 'has-story' : ''}`}  onClick={PPContainerClick}>
+
+                {/* <SkeletonCard /> */}
+
+
+                <div className={`profilePic-container ${hasStory == 'yes' ? 'has-story' : ''}`} onClick={PPContainerClick}>
                     <img src={pp_url} alt="Profile Pic" />
 
                 </div>
@@ -224,7 +231,7 @@ let ProfilePic = ({ profileData }) => {
                                     color={[0, 0, 0, 0.5]} // RGBA
                                     scale={1.1}
                                     rotate={0}
-                                    style={{ margin: 'auto', marginBottom: '20px',maxWidth: '100%',height: '100%',width: '100%' }}
+                                    style={{ margin: 'auto', marginBottom: '20px', maxWidth: '100%', height: '100%', width: '100%' }}
                                 />
                             }
                             <input onChange={ppInputChange} name="profilePic" className="pp-upload-input" type='file'></input>

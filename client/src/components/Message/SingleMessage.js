@@ -5,7 +5,9 @@ import UserPP from "../UserPP";
 import socket from "../../common/socket";
 import $ from 'jquery'
 import api from "../../api/api";
-
+import checkImgLoading from "../../utils/checkImgLoading";
+import isValidUrl from "../../utils/isValiUrl";
+import ImageSkleton from "../../skletons/post/ImageSkleton";
 let getMessageTime = (timestamp) => {
     const inputDate = moment(timestamp);
     const now = moment();
@@ -16,24 +18,39 @@ let getMessageTime = (timestamp) => {
     return formattedTime;
 }
 
-const isValidUrl = (string) => {
-    try {
-        new URL(string);
-        return true;
-    } catch (err) {
-        return false;
-    }
-};
+
 
 
 const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReplyData, setIsReplying }) => {
+
+
+
     let myProfile = useSelector(state => state.profile)
     let myId = myProfile._id
     let friendId = friendProfile._id
     let isReacted = msg.reacts.includes(myId) || msg.reacts.includes(myId)
     let [isReactedByMe, setIsReactedByMe] = useState(msg.reacts.includes(myId))
     let [isReactedByFriend, setIsReactedByFriend] = useState(msg.reacts.includes(friendId))
+    let [imageLoaded, setImageLoaded] = useState(false)
+    let [parentImageLoaded, setParentImageLoaded] = useState(false)
     let [hasParentComment, setHasParentComment] = useState((msg && msg?.parent === undefined ? false : true))
+
+    useEffect(() => {
+        if (isValidUrl(msg.attachment)) {
+            checkImgLoading(msg.attachment, setImageLoaded)
+        }
+        if (isValidUrl(msg?.parent?.attachment)) {
+            checkImgLoading(msg?.parent?.attachment, setParentImageLoaded)
+        }
+    }, [msg])
+
+    useEffect(() => {
+        if (imageLoaded) {
+
+        }
+    }, [imageLoaded])
+
+
     useEffect(() => {
 
         socket.on('messageReacted', (messageId) => {
@@ -115,7 +132,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
         let selectedMessage = document.querySelector(`#chatMessageList .chat-message-container.message-id-${parentId} .chat-message`)
 
         if (selectedMessage !== null) {
-            selectedMessage.scrollIntoView({behavior: "smooth" })
+            selectedMessage.scrollIntoView({ behavior: "smooth" })
             selectedMessage.style.border = '2px solid #29B1A9'
         }
     }
@@ -125,7 +142,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
         {msg.senderId !== myId ?
 
             (
-                <div index={index} className={`chat-message-container message-receive message-id-${msg._id} ${isReactedByMe === true || isReactedByFriend == true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
+                <div className={`chat-message-container message-receive message-id-${msg._id} ${isReactedByMe === true || isReactedByFriend == true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
                     <div className='chat-message-profilePic'>
                         <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active={isActive ? true : false} ></UserPP>
                     </div>
@@ -140,24 +157,31 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
                         {msg?.parent === undefined || msg?.parent === null ? (<></>) : (<p onClick={handleParentMsgClick.bind(this)} data-parent={msg?.parent?._id} className={`parent-message-container ${isValidUrl(msg?.parent?.attachment) && 'has-attachment'}`}>
                             <span>{msg?.parent?.message}</span>
 
-
                             {
-                                isValidUrl(msg?.parent?.attachment) && (<div className="message-attachment-container">
+                                parentImageLoaded == true ? (<div className="message-attachment-container">
                                     <img src={msg?.parent?.attachment} alt="Message Attchment" className="message-attachment" />
-                                </div>)
+                                </div>
+                                )
+                                    :
+                                    isValidUrl(msg?.parent?.attachment) && (<ImageSkleton />)
+
                             }
                         </p>)}
 
                         <div className='message-container mb-0'>
 
                             <span>{msg.message}</span>
-                            
+
                         </div>
 
                         {
-                            isValidUrl(msg.attachment) && (<div className="message-attachment-container">
+                            imageLoaded == true ? (<div className="message-attachment-container">
                                 <img src={msg.attachment} alt="Message Attchment" className="message-attachment" />
-                            </div>)
+                            </div>
+                            )
+                                :
+                                isValidUrl(msg.attachment) && (<ImageSkleton />)
+
                         }
 
                         <span className='message-react'><i>👍</i></span>
@@ -171,7 +195,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
             :
 
             (
-                <div key={index} className={`chat-message-container message-sent message-id-${msg._id} ${isReactedByMe === true || isReactedByFriend == true ? 'message-reacted' : ''}  ${msg.isSeen ? 'message-seen' : 'message-unseen'}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
+                <div className={`chat-message-container message-sent message-id-${msg._id} ${isReactedByMe === true || isReactedByFriend == true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
 
 
                     <div className={`chat-message ${isValidUrl(messages.attachment) && 'has-attachment'}`}>
@@ -186,12 +210,16 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
 
                         {msg?.parent === undefined || msg?.parent === null ? (<></>) : (<>
                             <p onClick={handleParentMsgClick.bind(this)} data-parent={msg?.parent?._id} className={`parent-message-container ${isValidUrl(msg?.parent?.attachment) && 'has-attachment'}`}>
-                            <span>{msg?.parent?.message}</span>
+                                <span>{msg?.parent?.message}</span>
 
                                 {
-                                    isValidUrl(msg?.parent?.attachment) && (<div className="message-attachment-container">
+                                    parentImageLoaded == true ? (<div className="message-attachment-container">
                                         <img src={msg?.parent?.attachment} alt="Message Attchment" className="message-attachment" />
-                                    </div>)
+                                    </div>
+                                    )
+                                        :
+                                        isValidUrl(msg?.parent?.attachment) && (<ImageSkleton />)
+
                                 }
                             </p>
 
@@ -201,14 +229,20 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
                         <div className='message-container mb-0'>
 
                             <span>{msg.message}</span>
-                            
+
                         </div>
 
+
                         {
-                            isValidUrl(msg.attachment) && (<div className="message-attachment-container">
+                            imageLoaded == true ? (<div className="message-attachment-container">
                                 <img src={msg.attachment} alt="Message Attchment" className="message-attachment" />
-                            </div>)
+                            </div>
+                            )
+                                :
+                                isValidUrl(msg.attachment) && (<ImageSkleton />)
+
                         }
+
                         <span className='message-react'><i>👍</i></span>
 
                     </div>
@@ -216,7 +250,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
                     {
 
                         // <div className={`chat-message-seen-status ${msg.isSeen ? 'seen' : 'unseen'}`} style={{ 'visibility': (messages[messages.length - 1]._id === msg._id && msg.isSeen == true) ? 'visible' : 'hidden' }}>
-                        <div className={`chat-message-seen-status`}>
+                        <div className={`chat-message-seen-status ${msg.isSeen ? 'message-seen' : 'message-unseen'}`}>
 
                             <img src={friendProfile.profilePic} alt='Seen' />
                         </div>

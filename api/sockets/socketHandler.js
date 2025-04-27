@@ -8,6 +8,11 @@ module.exports = function socketHandler(io){
         console.log(`User connected: ${socket.id}`);
         let rooms = [socket.handshake.query.profile]
 
+
+        socket.on('bump', (friendProfile,myProfile) => {
+            io.to(friendProfile._id).emit('bumpUser', friendProfile,myProfile)
+        })
+
         socket.on('call-user', (data) => {
             console.log('call user')
 

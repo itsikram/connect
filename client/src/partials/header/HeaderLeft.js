@@ -123,10 +123,10 @@ let HeaderLeft = () => {
 
           {hasSearchResult && (
             <ul className="header-search-results">
-              {searchedUsers && searchedUsers.map((item, key) => {
+              {searchedUsers && searchedUsers.map((item, index) => {
 
                 return (
-                  <li className="search-result-item" key={key} onClick={() => { setHasSearchResult(false); setMobileSearchMenu(false) }}>
+                  <li className="search-result-item" key={index} onClick={() => { setHasSearchResult(false); setMobileSearchMenu(false) }}>
                     <Link to={'/' + item._id}>
                       <div className="user-profile-pic">
                         <UserPP profilePic={item.profilePic} profile={item._id}></UserPP>

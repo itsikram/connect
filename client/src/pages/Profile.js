@@ -63,8 +63,6 @@ let Profile = (props) => {
         </div>
     );
 
-        console.log('if',isFriend)
-
     // handle Active classes of profile Tab  menu
     let profileTabItemClick = (e) => {
         let target = $(e.currentTarget);
@@ -84,12 +82,11 @@ let Profile = (props) => {
                         (<SkeletonLoader />)
                     }
                     <div className="profile-info-container">
-                    <SkeletonLoader />
 
                         <ProfilePic profileData={profileData}></ProfilePic>
                         <div className="profile-info">
                             <div className="profile-name">
-                                <h3 className="full-name">{profileData.user && profileData.user.firstName} {profileData.user && profileData.user.surname} <span className="nickname"></span></h3>
+                                <h3 className="full-name">{profileData.user && profileData.user.firstName} {profileData.user && profileData.user.surname} {profileData?.nickname && (<span className="nickname">({ profileData.nickname})</span>)}</h3>
                                 <div className="friends-count">
                                     <Link className='text-decoration-none' to={`/${profileData._id}/friends`}>
                                         {
