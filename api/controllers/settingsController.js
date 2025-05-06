@@ -6,6 +6,8 @@ exports.getSetting = async(req,res,next) => {
     let settings = await Setting.findOne({profile: profileId})
 
     if(settings) {
+        console.log('all setings',settings)
+
         res.json(settings).status(200)
     }
 }
@@ -32,13 +34,10 @@ exports.updateSetting = async(req,res,next) => {
     }
 
     let updatedSetting = await Setting.findOneAndUpdate({profile: profileId},settingObejct, {new: true});
-    console.log(updatedSetting)
+    console.log('uset',settingObejct,updatedSetting)
 
     if(updatedSetting) {
         return res.json(updatedSetting).status(200)
     }
 
-    if(settingObejct) {
-        let 
-    }
 }

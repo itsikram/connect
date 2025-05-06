@@ -5,7 +5,7 @@ const multer = require('multer');
 
 const upload = multer({ storage: multer.memoryStorage() }); // Create an endpoint for image upload 
 
-Router.post('/', isAuth,upload.single('attachment'), uploadImage);
+Router.post('/', isAuth,upload.single('image'), uploadImage);
 Router.post('/video', isAuth,upload.single('attachment'), uploadVideo);
 
 module.exports = Router;

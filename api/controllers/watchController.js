@@ -11,7 +11,6 @@ exports.createWatch = async(req,res,next) => {
     let profileId = req.profile._id
     let caption = req.body.caption
     let videoUrl = req.body.videoUrl
-    console.log('vu',req.body, req.query, req.param)
     try {
 
 

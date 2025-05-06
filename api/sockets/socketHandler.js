@@ -14,7 +14,6 @@ module.exports = function socketHandler(io){
         })
 
         socket.on('call-user', (data) => {
-            console.log('call user')
 
             io.to(data.userToCall).emit('receive-call', {
               signal: data.signalData,
@@ -24,8 +23,8 @@ module.exports = function socketHandler(io){
           });
         
           socket.on('answer-call', (data) => {
-            console.log('answer call')
             io.to(data.to).emit('call-accepted', data.signal);
+
           });
 
 

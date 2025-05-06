@@ -51,6 +51,49 @@ exports.signUp = async(req,res,next) => {
     }
     
 }
+exports.changePass = async(req,res,next) => {
+    let {newPassword,currentPassword,confirmPassword} = req.body
+    let myProfile = req.profile || ''
+    let userId = req.profile.user._id || ''
+    if(newPassword !== confirmPassword) return res.status(400).json({message: 'Your New Password and confirm password is not same'})
+    try {
+        let user = await User.findOne({profile: myProfile._id});
+
+        let matchPassword = await bcrypt.compare(currentPassword,user.password)
+        if(!matchPassword) return res.status(400).json({message: 'Your Current Password Is Invalid'})
+        if( matchPassword == true) {
+            let newHashPassword = await bcrypt.hash(newPassword,10);
+            let updatedUser = await User.findOneAndUpdate({_id:userId },{
+                password: newHashPassword
+            },{new: true})
+
+            if(updatedUser) {
+                let profile = await Profile.findOne({_id: myProfile._id}).populate('user')
+                let accessToken =  jwt.sign({user_id: userId.toString()},SECRET_KEY,{
+                    expiresIn: '5d'
+                })
+
+                let resData = {
+                    firstName: updatedUser.firstName,
+                    user_id: updatedUser._id,
+                    surname:updatedUser.surname,
+                    profile: profile._id,
+                    accessToken
+                }
+                console.log(resData)
+
+                return res.json(resData).status(202)
+            }
+
+        }
+
+
+
+    }catch(e) {
+        next(e)
+    }
+    
+}
 
 exports.login = async(req,res,next) => {
     let {email,password } = req.body;

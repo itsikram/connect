@@ -6,7 +6,8 @@ cloudinary.config({ cloud_name: 'dz88yjerw', api_key: '148133121975522', api_sec
 
 exports.uploadImage = async (req, res, next) => {
 
-    if (!req.file) { return res.status(400).json({ error: 'No file uploaded' }); } // Create an upload stream and pipe the file buffer to Cloudinary 
+
+    if (!req.file) { return res.json({ error: 'No file uploaded' }).status(400); } // Create an upload stream and pipe the file buffer to Cloudinary 
     let uploadStream = cloudinary.uploader.upload_stream((error, result) => {
         if (error) {
             return res.status(500).json({ error });

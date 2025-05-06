@@ -1,8 +1,5 @@
 
 require('dotenv').config();
-const path = require("path");
-const Profile = require('./models/Profile');
-const User = require('./models/User');
 const express = require('express')
 const PORT = process.env.PORT || 4000;
 const mongoose = require('mongoose')
@@ -16,6 +13,7 @@ const routes = require('./Routes/routes')
 let app = express();
 const socketHandler = require('./sockets/socketHandler')
 const httpServer = createServer(app)
+const fs = require('fs');
 app.use(cors());
 
 const io = socketIo(httpServer, {

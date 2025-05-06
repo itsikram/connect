@@ -10,6 +10,8 @@ let settingSchema = new Schema({
         trim: true,
     },
     isShareEmotion: Boolean,
+    showIsTyping: Boolean,
+
     profile: {
         ref : Profile,
         type: Schema.Types.ObjectId

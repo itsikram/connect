@@ -39,6 +39,14 @@ let profileSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Profile'
     }],
+    workPlaces: [{
+        type: Object
+    }],
+    schools: [{
+        type: Object
+    }],
+    presentAddress: String,
+    permanentAddress: String,
     following: [{
         type: Schema.Types.ObjectId
     }],
