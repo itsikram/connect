@@ -1,5 +1,5 @@
-import React, {Fragment, useEffect,useState} from "react";
-import { useParams } from "react-router-dom";
+import React, {Fragment, useCallback, useEffect,useState} from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import CreatePost from "../post/CreatePost";
 import Post from "../post/Post";
@@ -14,6 +14,7 @@ let PorfilePosts = () => {
     let myProfileData = useSelector(state => state.profile) || {}
     let isAuth = myProfileData._id === profile
     const [posts,setPosts] = useState([])
+    let navigate = useNavigate()
 
     useEffect(() => {
         api.get('/post/myPosts',{
@@ -61,7 +62,10 @@ let PorfilePosts = () => {
         }
     }
 
-    
+    let handleEditProfileDetails = useCallback(e => {
+        navigate('/settings/')
+    }) 
+
     
 
     return(
@@ -84,7 +88,7 @@ let PorfilePosts = () => {
                     <div className="details">
                         <ProfileDetails/>
                         {
-                            isAuth &&   <div className="edit-button"> Edit Details</div>
+                            isAuth &&   <div onClick={handleEditProfileDetails} className="edit-button"> Edit Details</div>
 
                         }
                     </div>
@@ -94,7 +98,7 @@ let PorfilePosts = () => {
                         isAuth && <CreatePost setNewsFeed={setPosts}></CreatePost>
                     }
                     
-                    {posts ? posts.map((data,index) => {
+                    {posts.length > 0 ? posts.map((data,index) => {
                         return <Post key={index} myProfile={myProfileData} data={data}></Post>
                     })
                     :

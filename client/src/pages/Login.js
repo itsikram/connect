@@ -39,7 +39,6 @@ let Login = (props) => {
                 localStorage.setItem('user', user)
                 window.location.reload()
 
-
             } else {
                 alert(res.data.message)
             }
@@ -60,10 +59,10 @@ let Login = (props) => {
             <div id="login">
                 <div className="login-container">
                     <div className="logo-container text-center">
-                        <img src="https://programmerikram.com/wp-content/uploads/2025/03/ics_logo-1.png" alt="Ics Logo" />
+                        <img src="https://programmerikram.com/wp-content/uploads/2025/05/ics_logo_out_transparent.png" alt="Connect Logo" />
                     </div>
                     <div id="login-form">
-                        <h1 className="text-center login-heading primary-color mb-3 fw-bold">ICS - Login</h1>
+                        <h1 className="text-center login-heading primary-color mb-3 fw-bold">Connect - Login</h1>
 
                         <div className="forms-container">
                             <input onChange={handleChange} className="email" name="email" type="text" placeholder="Email address or phone number" />

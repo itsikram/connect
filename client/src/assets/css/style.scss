@@ -23,6 +23,10 @@ $profilebg: #242526;
 
 }
 
+a {
+    color: $pc
+}
+
 .bt {
     border-top: 1px solid $bc;
 
@@ -104,16 +108,50 @@ body {
 
 #videoCallModal {
 
+
+
     .video-call-container {
         position: relative;
         min-height: 400px;
 
         .my-video,
         .receive-my-video {
-            width: 150px;
+            width: 95% !important;
             position: absolute;
-            top: 10px;
-            left: 10px;
+            bottom: 10px !important;
+            right: 10px !important;
+            border-radius: 10px;
+            border: 3px solid $pc;
+            transition: 0.5s;
+        }
+
+        .friends-video,
+        .receive-friends-video {
+            border-radius: 10px;
+            border: 3px solid $pc;
+            transition: 0.5s;
+        }
+
+    }
+
+    .video-call-container.mobile {
+        position: relative;
+        min-height: 200px;
+
+
+        .my-video {
+            width: 95% !important;
+            bottom: 10px !important;
+            right: 10px !important;
+            border-radius: 10px;
+            border: 3px solid $pc;
+
+        }
+
+        .receive-my-video {
+            width: 95% !important;
+            bottom: 10px !important;
+            right: 10px !important;
             border-radius: 10px;
             border: 3px solid $pc;
         }
@@ -123,6 +161,74 @@ body {
             border-radius: 10px;
             border: 3px solid $pc;
         }
+
+    }
+
+    .call-accepted {
+        .video-call-container {
+            .my-video {
+                width: 150px !important;
+                bottom: 10px !important;
+                right: 10px !important;
+                border-radius: 10px;
+                border: 3px solid $pc;
+                transition: 0.5s;
+            }
+
+            .receive-my-video {
+                width: 150px !important;
+                position: absolute;
+                bottom: 10px !important;
+                right: 10px !important;
+                border-radius: 10px;
+                border: 3px solid $pc;
+                transition: 0.5s;
+            }
+
+            .friends-video,
+            .receive-friends-video {
+                border-radius: 10px;
+                border: 3px solid $pc;
+                transition: 0.5s;
+            }
+
+        }
+
+        .video-call-container.mobile {
+            position: relative;
+            min-height: 200px;
+
+
+            .my-video {
+                width: 100px !important;
+                bottom: 10px !important;
+                right: 10px !important;
+                border-radius: 10px;
+                border: 3px solid $pc;
+
+            }
+
+            .receive-my-video {
+                width: 100px !important;
+                bottom: 10px !important;
+                right: 10px !important;
+                border-radius: 10px;
+                border: 3px solid $pc;
+            }
+
+            .friends-video,
+            .receive-friends-video {
+                border-radius: 10px;
+                border: 3px solid $pc;
+            }
+
+        }
+
+    }
+
+    .vc-modal-heading {
+        color: $pc;
+        font-weight: 600;
     }
 
     .call-buttons {
@@ -153,6 +259,18 @@ body {
         .call-button-ends {}
 
         .call-button-receive {}
+
+        .call-button-microphone {
+            i {
+                color: $pc;
+            }
+        }
+
+        .call-button-switch {
+            i,svg {
+                color: $pc;
+            }
+        }
     }
 }
 
@@ -1019,7 +1137,7 @@ body {
 }
 
 .nf-post {
-    min-height: 200px;
+    // min-height: 200px;
     background-color: #242526;
     border-radius: 5px;
     margin-bottom: 15px;
@@ -1099,6 +1217,40 @@ body {
                 display: flex;
                 align-items: center;
                 justify-content: flex-end;
+                position: relative;
+
+                .post-option-menu {
+                    padding: 10px;
+                    border-radius: 10px;
+                    background-color: $bbgc;
+                    position: absolute;
+                    width: 200px;
+                    top: 100%;
+                    right: 0;
+
+                    ul {
+                        list-style: none;
+                        margin: 0;
+                        padding: 0;
+
+                        li {
+                            text-align: center;
+                            margin-bottom: 5px;
+                            padding: 5px;
+                            border-bottom: 1px solid $profilebg;
+                            transition: 0.3s;
+                            cursor: pointer;
+                        }
+                        li:last-child {
+                            border-bottom: 0;
+                        }
+                        li:hover {
+                            border-radius: 5px;
+
+                            background-color: $profilebg;
+                        }
+                    }
+                }
 
                 button {
                     background: transparent;
@@ -3471,6 +3623,13 @@ body {
                     align-items: center;
                     justify-content: space-around;
 
+                    .post-react-container {
+
+                        img {
+                            min-width: 32px;
+                        }
+                    }
+
                     .button {
                         display: flex;
                         justify-content: center;
@@ -3480,6 +3639,7 @@ body {
                         border-radius: 7px;
                         transition: 0.1s;
                         cursor: pointer;
+
 
                         .react-like {
                             display: flex;
@@ -5079,12 +5239,14 @@ body {
 
                 .chat-header-username {
                     margin: 0;
-                    font-size: 18px;
-                    margin-bottom: -7px;
+                    font-size: 16px;
+                    margin-bottom: -3px;
                 }
 
                 .chat-header-active-status {
                     font-size: 14px;
+                    display: block;
+                    margin-bottom: -5px;
                 }
             }
 
@@ -5095,6 +5257,44 @@ body {
             .chat-header-action-btn-container {
                 display: flex;
                 align-items: center;
+                position: relative;
+
+                .chat-option-menu {
+                    padding: 10px;
+                    border-radius: 10px;
+                    background-color: $bbgc;
+                    position: absolute;
+                    width: 200px;
+                    top: 100%;
+                    right: 0;
+                    z-index: 9999999999;
+
+
+                    ul {
+                        list-style: none;
+                        margin: 0;
+                        padding: 0;
+
+                        li {
+                            text-align: center;
+                            margin-bottom: 5px;
+                            padding: 5px;
+                            padding-bottom: 8px;
+                            border-bottom: 1px solid $profilebg;
+                            transition: 0.3s;
+                            cursor: pointer;
+                            line-height: 1;
+                        }
+                        li:last-child {
+                            border-bottom: 0;
+                        }
+                        li:hover {
+                            border-radius: 5px;
+
+                            background-color: $profilebg;
+                        }
+                    }
+                }
 
                 .action-button {
                     height: 35px;
@@ -5199,7 +5399,7 @@ body {
                     border-radius: 15px;
                     color: $tc;
                     position: relative;
-                    max-width: 72%;
+                    max-width: 70%;
                     margin: 5px !important;
                     margin-right: 10px !important;
 
@@ -5660,7 +5860,8 @@ body {
                 display: flex;
                 margin: 0;
                 align-items: center;
-
+                justify-content: start;
+                flex-direction: row;
                 .cpm-profilePic {
                     transform: scale(0.7);
                 }
@@ -5672,6 +5873,28 @@ body {
                     text-transform: capitalize;
                     color: $tc;
 
+                }
+
+                .cpm-feelings-container {
+                    select {
+                        background-color: $profilebg;
+                        color: $tc;
+                        border: 2px solid $pc;
+                        margin-left: 10px;
+
+                    }
+
+                }
+
+                .cpm-location-container {
+                    margin-left: 20px;
+
+                    input {
+                        border: 2px solid $pc;
+                        background-color: $profilebg;
+                        color: $tc;
+
+                    }
                 }
             }
 
@@ -5803,6 +6026,20 @@ body {
         }
     }
 
+}
+
+.share-post-container {
+
+    textarea {
+        background-color: $profilebg;
+        color: $tc;
+        border: 1px solid $bc;
+        outline: 0;
+    }
+    textarea:focus {
+        background-color: $profilebg;
+        color: $tc;
+    }
 }
 
 .ReactModal__Content {
@@ -5972,6 +6209,11 @@ body {
 
 
 @media only screen and (max-width: 768px) {
+
+    .nf-create-post .bottom .button-container li {
+        flex-direction: column;
+        align-items: center;
+    }
 
     .story-container {
         .single-story-meta-container {

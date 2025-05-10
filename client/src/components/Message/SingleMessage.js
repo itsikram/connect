@@ -21,7 +21,7 @@ let getMessageTime = (timestamp) => {
 
 
 
-const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReplyData, setIsReplying }) => {
+const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReplyData, setIsReplying, setIsPreview, isPreview, msgListRef, isMsgLoading }) => {
 
 
 
@@ -30,6 +30,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
     let friendId = friendProfile._id
     let isReacted = msg.reacts.includes(myId) || msg.reacts.includes(myId)
     let [isReactedByMe, setIsReactedByMe] = useState(msg.reacts.includes(myId))
+    let [foundParentMsg, setFoundParentMsg] = useState(false)
     let [isReactedByFriend, setIsReactedByFriend] = useState(msg.reacts.includes(friendId))
     let [imageLoaded, setImageLoaded] = useState(false)
     let [parentImageLoaded, setParentImageLoaded] = useState(false)
@@ -111,6 +112,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
     let handleReplyMessage = async (e) => {
         let messageId = $(e.currentTarget).data('id');
         setIsReplying(true)
+        setIsPreview(true)
         setReplyData({
             messageId,
             body: msg.message
@@ -124,17 +126,53 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
     let handleParentMsgClick = async (e) => {
         let parentId = e.currentTarget.dataset.parent
 
-        let allMessages = document.querySelectorAll(`#chatMessageList .chat-message-container`)
+        let allMessages = document.querySelectorAll(`#chatMessageList .chat-message-container .chat-message`)
         allMessages.forEach((element, key) => {
-            element.style.border = ''
+            element.style.border = 'unset'
         })
 
         let selectedMessage = document.querySelector(`#chatMessageList .chat-message-container.message-id-${parentId} .chat-message`)
 
+
         if (selectedMessage !== null) {
             selectedMessage.scrollIntoView({ behavior: "smooth" })
             selectedMessage.style.border = '2px solid #29B1A9'
+            setFoundParentMsg(true)
+
         }
+
+        let scrollEvent = new CustomEvent('scroll', { bubbles: true, cancelable: true })
+
+        let msgFoundInterval = setInterval(() => {
+
+            if (foundParentMsg) {
+                selectedMessage = document.querySelector(`#chatMessageList .chat-message-container.message-id-${parentId} .chat-message`)
+                selectedMessage.scrollIntoView({ behavior: "smooth" })
+                selectedMessage.style.border = '2px solid #29B1A9';
+                clearInterval(msgFoundInterval)
+            }
+
+            if (selectedMessage == null) {
+                if (isMsgLoading == false) {
+                    msgListRef.current.scrollTop = 10
+                    msgListRef.current.dispatchEvent(scrollEvent)
+                    selectedMessage = document.querySelector(`#chatMessageList .chat-message-container.message-id-${parentId} .chat-message`)
+                }
+
+            } else {
+
+                selectedMessage = document.querySelector(`#chatMessageList .chat-message-container.message-id-${parentId} .chat-message`)
+                if (selectedMessage) {
+                    setFoundParentMsg(true)
+                    clearInterval(msgFoundInterval)
+                    selectedMessage.scrollIntoView({ behavior: "smooth" })
+                    selectedMessage.style.border = '2px solid #29B1A9'
+                }
+
+            }
+
+        }, 1500)
+
     }
 
 
@@ -142,7 +180,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
         {msg.senderId !== myId ?
 
             (
-                <div className={`chat-message-container message-receive message-id-${msg._id} ${isReactedByMe === true || isReactedByFriend == true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
+                <div key={index} className={`chat-message-container message-receive message-id-${msg._id} ${isReactedByMe === true || isReactedByFriend == true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
                     <div className='chat-message-profilePic'>
                         <UserPP profilePic={`${friendProfile.profilePic}`} profile={friendProfile._id} active={isActive ? true : false} ></UserPP>
                     </div>
@@ -163,7 +201,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
                                 </div>
                                 )
                                     :
-                                    isValidUrl(msg?.parent?.attachment) && (<ImageSkleton />)
+                                    isValidUrl(msg?.parent?.attachment) && (<ImageSkleton style={{ minWidth: '200px' }} />)
 
                             }
                         </p>)}
@@ -176,11 +214,11 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
 
                         {
                             imageLoaded == true ? (<div className="message-attachment-container">
-                                <img src={msg.attachment} alt="Message Attchment" className="message-attachment" />
+                                <img src={msg.attachment} alt="" className="message-attachment" />
                             </div>
                             )
                                 :
-                                isValidUrl(msg.attachment) && (<ImageSkleton />)
+                                isValidUrl(msg.attachment) && (<ImageSkleton style={{ minWidth: '200px' }} />)
 
                         }
 
@@ -214,11 +252,11 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
 
                                 {
                                     parentImageLoaded == true ? (<div className="message-attachment-container">
-                                        <img src={msg?.parent?.attachment} alt="Message Attchment" className="message-attachment" />
+                                        <img src={msg?.parent?.attachment} alt="" className="message-attachment" />
                                     </div>
                                     )
                                         :
-                                        isValidUrl(msg?.parent?.attachment) && (<ImageSkleton />)
+                                        isValidUrl(msg?.parent?.attachment) && (<ImageSkleton style={{ minWidth: '200px' }} />)
 
                                 }
                             </p>
@@ -239,7 +277,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
                             </div>
                             )
                                 :
-                                isValidUrl(msg.attachment) && (<ImageSkleton />)
+                                isValidUrl(msg.attachment) && (<ImageSkleton style={{ minWidth: '200px' }} />)
 
                         }
 

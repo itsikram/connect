@@ -37,6 +37,12 @@ let postSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: Profile
     },
+    parentPost: {
+        type: Schema.Types.ObjectId,
+        ref: Profile
+    },
+    location: String,
+    feelings: String,
     type: {
         type: String,
         default: 'post'

@@ -9,7 +9,6 @@ import api from "../../api/api";
 import { addNotification, addNotifications, viewNotification,viewNotifications,deleteNotifications } from "../../services/actions/notificationActions";
 let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
 const profilePath = "/" + userInfo.profile + "/"
-const default_pp_url = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
 let HeaderRight = ({ dispatch, useSelector }) => {
     let profileData = useSelector(state => state.profile)
@@ -23,7 +22,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
     let [totalMessages, setTotalMessages] = useState(0)
     let location = useLocation();
     const [imageExists, setImageExists] = useState(null);
-    var pp_url = profileData.profilePic;
+    let [ppUrl, setPpUrl] = useState('https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png')
 
 
     const [notificationOption, setNotificationOption] = useState(false);
@@ -41,11 +40,11 @@ let HeaderRight = ({ dispatch, useSelector }) => {
     };
 
     useEffect(() => {
-        checkImage(pp_url)
-        if (!imageExists) {
-            pp_url = default_pp_url;
+
+        if(profileData?.profilePic) {
+            setPpUrl(profileData.profilePic)
         }
-    }, [])
+    }, [profileData])
 
     useEffect(() => {
         setIsMsgMenu(false)
@@ -141,7 +140,6 @@ let HeaderRight = ({ dispatch, useSelector }) => {
       let NoficationOptionMenu = () => {
         return (
             <div className="header-notification-option-menu" style={{ position: 'relative', display: 'inline-block' }} ref={notficationOptionMenuRef}>
-
         
               {notificationOption && (
                 <div style={{
@@ -156,7 +154,6 @@ let HeaderRight = ({ dispatch, useSelector }) => {
                     <li onClick={markAllAsRead} style={{ padding: '8px 16px', cursor: 'pointer' }}>Mark All As Read</li>
                     <li onClick={handleNotiDelete} style={{ padding: '8px 16px', cursor: 'pointer' }}>Delete All</li>
                     <li style={{ padding: '8px 16px', cursor: 'pointer' }}><Link to={'/settings/notification'}>Notification Setting</Link></li>
-
 
                   </ul>
                 </div>
@@ -242,7 +239,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
                     )}
                     <li onClick={clickProfileBtn} className="header-quick-menu-item item-profile" title="">
                         <div className="profile-pic">
-                            <img src={pp_url} alt="Author Name" />
+                            <img src={ppUrl} alt="Author Name" />
 
                         </div>
 
@@ -254,7 +251,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
 
                                     <div className="all-profiles">
                                         {
-                                            profileData && <UserPP profilePic={profileData.profilePic} />
+                                            profileData && <UserPP profilePic={ppUrl} />
 
                                         }
                                         <span className="text-capitalize"> {profileData.fullName ? profileData.fullName : profileData.user && profileData.user.firstName + ' ' + profileData.user.surname} </span>

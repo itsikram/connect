@@ -3,33 +3,35 @@ import { useParams } from 'react-router-dom';
 import api from '../../api/api';
 import { useSelector } from 'react-redux'
 import PFI from './PFI';
-
+import PfiSkleton from '../../skletons/profile/PfiSkleton';
 const ProfileFriends = () => {
 
     let myProfile = useSelector(state => state.profile)
-    let [friendsData,setFriendsData] = useState([])
+    let [friendsData, setFriendsData] = useState([])
+    let [hasFriendsData, setHasFriendsData] = useState(true)
     let [isAuth, setIsAuth] = useState(false)
 
     let params = useParams()
 
-    useEffect(()=> {
+    useEffect(() => {
         let isAuth = params.profile === myProfile._id ? true : false
         setIsAuth(isAuth)
-        if(isAuth) {
+        if (isAuth) {
             return setFriendsData(myProfile.friends)
 
         }
 
-        api.get('/friend/getFriends',{
+        api.get('/friend/getFriends', {
             params: {
                 profile: params.profile
             }
 
         }).then(res => {
+            setHasFriendsData(res.data.length > 0 ? true : false)
             setFriendsData(res.data)
         }).catch(e => console.log(e))
 
-    },[params,myProfile])
+    }, [params, myProfile])
 
 
     return (
@@ -39,23 +41,35 @@ const ProfileFriends = () => {
                 <h4 className='section-title'>
                     Friends
                 </h4>
-                <div className='friend-items-container'>
+                {
+                    friendsData.length > 0 ?
+                        <>
+                            <div className='friend-items-container'>
 
-                    {
-                        friendsData.map((friend,index)=> {
-                            if (!isAuth) {
-                                return  <PFI key={index} friend={friend}></PFI>
+                                {
+                                    friendsData.map((friend, index) => {
+                                        if (!isAuth) {
+                                            return <PFI key={index} friend={friend}></PFI>
 
-                            }else if(friend._id !== myProfile._id) {
-                                return  <PFI key={index} friend={friend}></PFI>
+                                        } else if (friend._id !== myProfile._id) {
+                                            return <PFI key={index} friend={friend}></PFI>
 
+                                        }
+                                    })
+                                }
+                            </div>
+                        </>
+                        :
+                        <>
+                            {
+                                hasFriendsData && <div className='friend-items-container'>
+                                    <PfiSkleton count={6} />
+                                </div>
                             }
-                        })
-                    }
 
+                        </>
+                }
 
-
-                </div>
 
             </div>
 

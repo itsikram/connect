@@ -5,7 +5,7 @@ import UserPP from "../UserPP";
 import $, { post } from 'jquery'
 import api from "../../api/api";
 
-let CreatePost = ({setNewsFeed}) => {
+let CreatePost = ({ setNewsFeed }) => {
 
 
     let profileData = useSelector(state => state.profile)
@@ -27,7 +27,9 @@ let CreatePost = ({setNewsFeed}) => {
     let [postData, setPostData] = useState({
         caption: '',
         attachments: null,
-        urls: null
+        urls: null,
+        location: '',
+        feelings: ''
     })
     let [attachmentType, setAttachmentType] = useState(false)
 
@@ -89,6 +91,10 @@ let CreatePost = ({setNewsFeed}) => {
         let value = e.target.value
         let name = e.target.name
 
+        if (attachmentType == false && name == 'caption') {
+            setAttachmentType('caption')
+        }
+
         setPostData(state => {
             return {
                 ...state,
@@ -106,12 +112,8 @@ let CreatePost = ({setNewsFeed}) => {
         $(currentTarget).parents('.cpm-attachment-upload').slideUp()
         $(currentTarget).parents('.cpm-attachment-upload').siblings('.cpm-attachment-preview').slideDown()
 
-
-
-        let name = e.target.name;
         let attachments = e.target.files[0];
-        handleUploadAttachment(attachments.type,attachments)
-
+        handleUploadAttachment(attachments.type, attachments)
 
     })
 
@@ -121,7 +123,7 @@ let CreatePost = ({setNewsFeed}) => {
         e.preventDefault()
     }
 
-    let handleUploadAttachment = async (type,attachment) => {
+    let handleUploadAttachment = async (type, attachment) => {
         setIsUploading(true)
         try {
 
@@ -129,11 +131,11 @@ let CreatePost = ({setNewsFeed}) => {
             setAttachmentType(fileType)
 
             switch (fileType) {
-                
+
                 case 'image':
                     let imageFormData = new FormData();
 
-                    imageFormData.append('attachment',attachment);
+                    imageFormData.append('image', attachment);
                     imageFormData.append('type', 'image/png');
 
                     let uploadImageRes = await api.post('/upload/', imageFormData, {
@@ -181,14 +183,9 @@ let CreatePost = ({setNewsFeed}) => {
                     break;
             }
 
-
-
-
-
         } catch (error) {
             console.log(error)
         }
-
 
 
     }
@@ -202,11 +199,15 @@ let CreatePost = ({setNewsFeed}) => {
         try {
 
             switch (postData.type) {
-                
+
+
+
                 case 'image':
                     let postFormData = new FormData()
                     postFormData.append('caption', postData.caption)
                     postFormData.append('urls', postData.urls)
+                    postFormData.append('feelings', postData.feelings)
+                    postFormData.append('location', postData.location)
 
                     let res = await api.post('/post/create/', postFormData, {
                         headers: {
@@ -221,15 +222,35 @@ let CreatePost = ({setNewsFeed}) => {
                     break;
                 case 'video':
 
-                let watchRes = await api.post('/watch/create', {caption: postData.caption, videoUrl: postData.urls}, {
-                    headers: {
-                        'content-type': 'multipart/form-data'
-                    }
-                })
+                    let watchRes = await api.post('/watch/create', { caption: postData.caption, videoUrl: postData.urls, location: postData.location, feelings: postData.feelings }, {
+                        headers: {
+                            'content-type': 'multipart/form-data'
+                        }
+                    })
 
-                if (watchRes.status === 200) {
-                    setPostModal(false)
-                }
+                    if (watchRes.status === 200) {
+                        setPostModal(false)
+                    }
+                    break;
+
+                default:
+
+                    let defaultFormData = new FormData()
+                    defaultFormData.append('caption', postData.caption)
+                    defaultFormData.append('urls', postData.urls)
+                    defaultFormData.append('feelings', postData.feelings)
+                    defaultFormData.append('location', postData.location)
+
+                    let defaultRes = await api.post('/post/create/', defaultFormData, {
+                        headers: {
+                            'content-type': 'multipart/form-data'
+                        }
+                    })
+
+                    if (defaultRes.status === 200) {
+                        setPostModal(false)
+                    }
+
                     break;
             }
 
@@ -242,8 +263,6 @@ let CreatePost = ({setNewsFeed}) => {
         }
 
     })
-
-
 
 
 
@@ -296,6 +315,25 @@ let CreatePost = ({setNewsFeed}) => {
                                 <div className="cpm-username">
                                     <h3>{profileName}</h3>
                                 </div>
+                                <div className="cpm-feelings-container ml-2">
+                                    <select name="feelings" onChange={handleCaptionField} className="form-control">
+                                        <option value='0'>
+                                            Select Feelings
+                                        </option>
+                                        <option value='funny'>
+                                            Funny
+                                        </option>
+                                        <option value='lovely'>
+                                            Lovely
+                                        </option>
+                                        <option value='sad'>
+                                            Sad
+                                        </option>
+                                    </select>
+                                </div>
+                                <div className="cpm-location-container">
+                                    <input type="text" name="location" onChange={handleCaptionField} className="form-control" placeholder="Location...." />
+                                </div>
                             </div>
                             <form className="cpm-form" onSubmit={preventDefault}>
                                 <div className="cpm-form-text">
@@ -330,7 +368,7 @@ let CreatePost = ({setNewsFeed}) => {
 
                                 </div>
                                 <div className="cpm-submit-button">
-                                    <button onClick={handlePostSubmit} className="button" disabled={isUploading && true} type="submit"> {isUploading ? 'Media Uploading....' : postData.urls ?  'Post Now' : 'Upload'} </button>
+                                    <button onClick={handlePostSubmit.bind(this)} className="button" disabled={isUploading} type="submit">  {postData.urls || postData.caption ? (isUploading == true ? 'Media Uploading....' : 'Post Now') : 'Upload'}  </button>
                                 </div>
                             </form>
                         </div>

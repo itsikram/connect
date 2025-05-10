@@ -8,7 +8,9 @@ import { useSelector } from 'react-redux'
 import UserPP from "../UserPP";
 import { Link } from "react-router-dom";
 import { Container, Row, Col } from 'react-bootstrap';
-import LeftSidebar from '../../partials/sidebar/Ls';
+import ImageSkleton from '../../skletons/post/ImageSkleton';
+import ModalContainer from '../modal/ModalContainer';
+import useIsMobile from '../../utils/useIsMobile';
 import Momemt from 'react-moment'
 import PostComment from "./PostComment";
 import SingleReactor from './SingleReactor';
@@ -24,6 +26,9 @@ const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/d
 const SinglePost = () => {
     let { postId } = useParams()
     let [postData, setPostData] = useState(false)
+    let [isShareModal, setIsShareModal] = useState(false)
+    let [shareCap, setShareCap] = useState(false)
+    let isMobile = useIsMobile();
     let loadData = async () => {
 
         let res = await api.get('post/single', { params: { postId } })
@@ -256,15 +261,28 @@ const SinglePost = () => {
 
     }
     let commentOnClick = (e) => {
-
         let target = e.currentTarget;
-
         $(target).parents('.footer').find('.field-comment-text').focus();
-
-
     }
-    let shareOnClick = (e) => {
 
+    let shareOnClick = (e) => {
+        setIsShareModal(true)
+    }
+
+    let onCloseShareReq = () => {
+        setIsShareModal(false)
+    }
+    let handleShareCapChange = (e) => {
+        let newCaption = e.currentTarget.value
+        setShareCap(newCaption)
+    }
+    let onClickShareNow = async (e) => {
+        e.preventDefault();
+        let res = await api.post('post/share', { postId: postData._id, caption: shareCap })
+
+        if (res.status == 200) {
+            setIsShareModal(false)
+        }
     }
 
     let authProfilePicture = useSelector(state => state.profile.profilePic)
@@ -280,6 +298,473 @@ const SinglePost = () => {
         })
     }, [])
 
+    let PostContent = () => {
+        switch (postData.type) {
+            case 'share':
+                return (
+                    <div className="share-nf-post nf-post">
+                        <div className="header">
+                            <div className="reason">
+                                <span className="fs-5">
+                                    <b><Link to={`/${postData.author._id}`}>{postData.author.fullName}</Link></b> Shared <b><Link to={`/${postData.parentPost.author._id}`}>{postData.parentPost.author.fullName}'s</Link> </b>
+                                    <span className='text-capitalize'>{postData.parentPost.type}</span>
+                                </span>
+                            </div>
+                            <div className="author-info">
+                                <div className="left">
+                                    <div className="author-pp">
+                                        <UserPP profilePic={postData.author.profilePic} profile={postData.author._id} active={false}></UserPP>
+                                    </div>
+                                    <div className="post-nd-container">
+                                        <Link to={'/' + postData.author._id}>
+                                            <h4 className="author-name">
+                                                {postData.author.fullName}
+                                            </h4>
+                                        </Link>
+                                        <span className="post-time">
+                                            <Momemt fromNow >{postData.createdAt}</Momemt>
+                                        </span>
+                                    </div>
+
+                                </div>
+                                <div className="right">
+                                    {
+                                        isAuth && <button className="post-three-dot"><i className="far fa-ellipsis-h"></i></button>
+                                    }
+
+                                    <button onClick={hideThisPost.bind(this)} className="post-close"> <i className="far fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={`nf-post ${type} m-3 border body overflow-hidden`}>
+                            <div className="header">
+                                {
+                                    type === 'profilePic' &&
+                                    <div className="reason">
+                                        <span className="d-none">
+                                            <b>Shared a photos</b>
+                                        </span>
+
+                                        <span>
+                                            Updated Profile Picture
+                                        </span>
+                                    </div>
+                                }
+                                <div className="author-info">
+                                    <div className="left">
+                                        <div className="author-pp">
+                                            <UserPP profilePic={postData.parentPost.author.profilePic} profile={postData.parentPost.author._id}></UserPP>
+                                        </div>
+                                        <div className="post-nd-container">
+                                            <Link to={'/' + postData.author._id}>
+                                                <h4 className="author-name">
+                                                    {postData.parentPost.author.fullName}
+                                                </h4>
+                                            </Link>
+                                            <span className="post-time">
+                                                <Momemt fromNow >{postData.parentPost.createdAt}</Momemt>
+                                            </span>
+                                        </div>
+
+                                    </div>
+                                    <div className="right">
+
+                                    </div>
+                                </div>
+
+                            </div>
+                            <p className="caption">
+                                {postData.caption}
+                            </p>
+                            <div className="body">
+                                <p className="caption">
+                                    {postData.parentPost.caption}
+                                </p>
+                                {
+                                    postPhoto == 'null' ? <></> : (thumbExists &&
+                                        <div className="attachment">
+                                            <Link to={`/post/${postData._id}`}>
+                                                <img src={postPhoto} alt="post" />
+
+                                            </Link>
+                                        </div>
+
+                                        ||
+
+                                        <>
+                                            <ImageSkleton />
+                                            {/* <p className="fs-5 text-center text-danger">Post image not available</p> */}
+                                        </>
+
+                                    )
+                                }
+                            </div>
+
+                        </div>
+
+                        <div className="footer">
+                            <div className="react-count">
+                                <div className="reacts">
+
+
+                                    {
+                                        placedReacts.includes('like') ? <div className="react"> <img src={Rlike} alt="like" />  </div> : <span></span>
+
+                                    }
+                                    {
+                                        placedReacts.includes('love') ? <div className="react"> <img src={Rlove} alt="love" /> </div> : <span></span>
+
+                                    }
+                                    {
+                                        placedReacts.includes('haha') ? <div className="react"> <img src={Rhaha} alt="love" /> </div> : <span></span>
+
+                                    }
+
+
+                                    <span className="text">
+                                        {postData.reacts && totalReacts} {totalReacts > 1 ? 'Reacts' : 'React'}
+                                    </span>
+                                </div>
+                                <div className="comment-share">
+                                    <div className="comment">
+                                        <div className="text">{postData.comments && totalComments}
+
+                                        </div>
+                                        <div className="icon">
+                                            <i className="far fa-comment-alt"></i>
+                                        </div>
+
+                                    </div>
+                                    <div className="shares">
+                                        <div className="text">
+                                            {postData.shares && totalShares}
+                                        </div>
+                                        <div className="icon">
+                                            <i className="fa fa-share"></i>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <div className="like-comment-share">
+                                <div className="buttons-container">
+                                    <div className={`react-buttons button ${reactType ? 'reacted' : ''}`}>
+                                        <div onClick={likeBtnOnClick} onMouseOver={likeMouseOver} className={`react-like ${reactType == true ? 'reacted' : ''}`}>
+                                            <span className="react-icon" datatype={reactType || ''}>
+                                                {
+                                                    reactType == 'haha' ? <img src={Rhaha} alt="haha" /> : <span></span>
+                                                }
+                                                {
+                                                    reactType == 'love' ? <img src={Rlove} alt="love" /> : <span></span>
+                                                }
+                                                {
+                                                    reactType == false || reactType == 'like' ? <img src={Rlike} alt="like" /> : <span></span>
+                                                }
+                                            </span>
+                                            <span className="text text-capitalize">{reactType ? reactType : 'like'}</span>
+                                        </div>
+                                        <div className="post-react-container">
+                                            <div className={`react react-like ${reactType == 'like' ? 'reacted' : ''}`} onClick={likeOnClick} id="postReactLike" title="Like">
+                                                <img src={Rlike} alt="love" />
+                                            </div>
+                                            <div className={`react react-love ${reactType == 'love' ? 'reacted' : ''}`} onClick={loveOnClick} id="postReactLove" title="Love">
+                                                <img src={Rlove} alt="love" />
+                                            </div>
+                                            <div className={`react react-haha ${reactType == 'haha' ? 'reacted' : ''}`} onClick={hahaOnClick} id="postReactHaha" title="Haha">
+                                                <img src={Rhaha} alt="haha" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div onClick={commentOnClick} className="comment button">
+                                        <span className="icon">
+                                            <i className="far fa-comment-alt"></i>
+                                        </span>
+                                        <span className="text">Comment</span>
+                                    </div>
+                                    <div onClick={shareOnClick} className="share button">
+                                        <span className="icon">
+                                            <i className="far fa-share"></i>
+                                        </span>
+                                        <span className="text">Share</span>
+
+                                    </div>
+                                    <ModalContainer
+                                        title="View Cover Photo"
+                                        style={{ width: isMobile ? '95%' : "600px", top: "50%" }}
+                                        isOpen={isShareModal}
+                                        onRequestClose={onCloseShareReq}
+                                        id="cp-view-modal"
+                                    >
+
+                                        <div className="modal-header">
+                                            <div></div>
+                                            <div onClick={onCloseShareReq} className="modal-close-btn text-danger"><i className="far fa-times"></i></div>
+                                        </div>
+
+                                        <div className='modal-body'>
+                                            <div className="share-post-container">
+                                                <div className="share-post-header">
+                                                    <div className="row">
+                                                        <div className="col-1">
+                                                            <UserPP profilePic={myProfile.profilePic}></UserPP>
+
+                                                        </div>
+                                                        <div className="col-3">
+                                                            <h3>{myProfile.fullName}</h3>
+                                                        </div>
+                                                    </div>
+                                                    <div className="row">
+                                                        <div className="col">
+                                                            Your Sharing {postData.author.fullName || 'Someone'}'s Post
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="share-post-body my-3">
+                                                    <textarea className="form-control" rows="3" onChange={handleShareCapChange.bind(this)} placeholder="What's On Your Mind?"></textarea>
+                                                    <div className="share-post-button text-end mt-2">
+                                                        <button className="btn btn-primary" onClick={onClickShareNow}>Share Now</button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="share-post-footer">
+                                                    {/* <button className="btn btn-primary">Share Now</button> */}
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+
+                                    </ModalContainer>
+                                </div>
+                            </div>
+                            {/* <PostComment post={postData} commentState={setTotalComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment> */}
+
+
+
+                        </div>
+
+                    </div>
+
+                )
+                break;
+
+            default:
+                return (
+                    <div className={`nf-post ${type}`}>
+                        <div className="header">
+                            {
+                                type === 'profilePic' &&
+                                <div className="reason">
+                                    <span className="d-none">
+                                        <b>A bitch</b> commented.
+                                    </span>
+
+                                    <span>
+                                        Updated Profile Picture
+                                    </span>
+                                </div>
+                            }
+                            <div className="author-info">
+                                <div className="left">
+                                    <div className="author-pp">
+                                        <UserPP profilePic={postAuthorPP} profile={postData.author._id} active={true}></UserPP>
+                                    </div>
+                                    <div className="post-nd-container">
+                                        <h4 className="author-name">
+                                            <Link to={'/' + postData.author._id}>
+                                                {postData.author.fullName}
+                                            </Link>
+
+
+
+                                            {
+                                                postData.fellings && <span className="post-feelings"> <small className="text-lowercase text-secondary">is felling</small> {postData.fellings || ''}</span>
+
+                                            }
+
+                                            {
+                                                postData.location && <span className="post-location"> <small className="text-lowercase text-secondary"> at</small> {postData.location || ''}</span>
+                                            }
+                                        </h4>
+                                        <span className="post-time">
+                                            <Momemt fromNow >{postData.createdAt}</Momemt>
+                                        </span>
+                                    </div>
+
+                                </div>
+                                <div className="right">
+                                    {
+                                        isAuth && <button className="post-three-dot"><i className="far fa-ellipsis-h"></i></button>
+                                    }
+
+                                    <button onClick={hideThisPost.bind(this)} className="post-close"> <i className="far fa-times"></i></button>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div className="body">
+                            <p className="caption">
+                                {postData.caption}
+                            </p>
+                            {
+                                postPhoto == 'null' ? <></> : (thumbExists &&
+                                    <div className="attachment">
+                                        <img src={postPhoto} alt="post" />
+
+                                    </div>
+
+                                    ||
+
+                                    <p className="fs-5 text-center text-danger">Post image not available</p>)
+                            }
+
+                        </div>
+                        <div className="footer">
+                            <div className="react-count">
+                                <div className="reacts">
+
+
+                                    {
+                                        placedReacts.includes('like') ? <div className="react"> <img src={Rlike} alt="like" />  </div> : <span></span>
+
+                                    }
+                                    {
+                                        placedReacts.includes('love') ? <div className="react"> <img src={Rlove} alt="love" /> </div> : <span></span>
+
+                                    }
+                                    {
+                                        placedReacts.includes('haha') ? <div className="react"> <img src={Rhaha} alt="love" /> </div> : <span></span>
+
+                                    }
+
+
+                                    <span className="text">
+                                        {postData.reacts && totalReacts} {totalReacts > 1 ? 'Reacts' : 'React'}
+                                    </span>
+                                </div>
+                                <div className="comment-share">
+                                    <div className="comment">
+                                        <div className="text">{postData.comments && totalComments}
+
+                                        </div>
+                                        <div className="icon">
+                                            <i className="far fa-comment-alt"></i>
+                                        </div>
+
+                                    </div>
+                                    <div className="shares">
+                                        <div className="text">
+                                            {postData.shares && totalShares}
+                                        </div>
+                                        <div className="icon">
+                                            <i className="fa fa-share"></i>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <div className="like-comment-share">
+                                <div className="buttons-container">
+                                    <div className={`react-buttons button ${reactType ? 'reacted' : ''}`}>
+                                        <div onClick={likeBtnOnClick} onMouseOver={likeMouseOver} className={`react-like ${reactType == true ? 'reacted' : ''}`}>
+                                            <span className="react-icon" datatype={reactType || ''}>
+                                                {
+                                                    reactType == 'haha' ? <img src={Rhaha} alt="haha" /> : <span></span>
+                                                }
+                                                {
+                                                    reactType == 'love' ? <img src={Rlove} alt="love" /> : <span></span>
+                                                }
+                                                {
+                                                    reactType == false || reactType == 'like' ? <img src={Rlike} alt="like" /> : <span></span>
+                                                }
+                                            </span>
+                                            <span className="text text-capitalize">{reactType ? reactType : 'like'}</span>
+                                        </div>
+                                        <div className="post-react-container">
+                                            <div className={`react react-like ${reactType == 'like' ? 'reacted' : ''}`} onClick={likeOnClick} id="postReactLike" title="Like">
+                                                <img src={Rlike} alt="love" />
+                                            </div>
+                                            <div className={`react react-love ${reactType == 'love' ? 'reacted' : ''}`} onClick={loveOnClick} id="postReactLove" title="Love">
+                                                <img src={Rlove} alt="love" />
+                                            </div>
+                                            <div className={`react react-haha ${reactType == 'haha' ? 'reacted' : ''}`} onClick={hahaOnClick} id="postReactHaha" title="Haha">
+                                                <img src={Rhaha} alt="haha" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div onClick={commentOnClick} className="comment button">
+                                        <span className="icon">
+                                            <i className="far fa-comment-alt"></i>
+                                        </span>
+                                        <span className="text">Comment</span>
+                                    </div>
+                                    <div onClick={shareOnClick} className="share button">
+                                        <span className="icon">
+                                            <i className="far fa-share"></i>
+                                        </span>
+                                        <span className="text">Share</span>
+                                        <ModalContainer
+                                            title="Share Post"
+                                            style={{ width: isMobile ? '95%' : "600px", top: "50%" }}
+                                            isOpen={isShareModal}
+                                            onRequestClose={onCloseShareReq}
+                                            id="cp-view-modal"
+                                        >
+
+                                            <div className="modal-header">
+                                                <div></div>
+                                                <div onClick={onCloseShareReq} className="modal-close-btn text-danger"><i className="far fa-times"></i></div>
+                                            </div>
+                                            <div className='modal-body'>
+                                            <div className="share-post-container">
+                                                <div className="share-post-header">
+                                                    <div className="row">
+                                                        <div className="col-1">
+                                                            <UserPP profilePic={myProfile.profilePic}></UserPP>
+
+                                                        </div>
+                                                        <div className="col-3">
+                                                            <h3>{myProfile.fullName}</h3>
+                                                        </div>
+                                                    </div>
+                                                    <div className="row">
+                                                        <div className="col">
+                                                            Your Sharing {postData.author.fullName || 'Someone'}'s Post
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="share-post-body my-3">
+                                                    <textarea className="form-control" onChange={(e) => setShareCap(e.target.value)} value={shareCap} ></textarea>
+                                                    <div className="share-post-button text-end mt-2">
+                                                        <button className="btn btn-primary" onClick={onClickShareNow}>Share Now</button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="share-post-footer">
+                                                    {/* <button className="btn btn-primary">Share Now</button> */}
+                                                </div>
+
+                                            </div>
+                                            </div>
+
+
+                                        </ModalContainer>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                )
+                break;
+        }
+    }
 
 
 
@@ -289,164 +774,11 @@ const SinglePost = () => {
 
             <Container className='single-post-container' >
                 <Row>
-
-
                     <Col md="6" className='br'>
                         <div id="post-container">
                             <div>
-                                {postData && (
-                                    <div className={`nf-post ${type}`}>
-                                        <div className="header">
-                                            {
-                                                type === 'profilePic' &&
-                                                <div className="reason">
-                                                    <span className="d-none">
-                                                        <b>A bitch</b> commented.
-                                                    </span>
+                                {postData && (<PostContent />)}
 
-                                                    <span>
-                                                        Updated Profile Picture
-                                                    </span>
-                                                </div>
-                                            }
-                                            <div className="author-info">
-                                                <div className="left">
-                                                    <div className="author-pp">
-                                                        <UserPP profilePic={postAuthorPP} profile={postData.author._id} active={true}></UserPP>
-                                                    </div>
-                                                    <div className="post-nd-container">
-                                                        <Link to={'/' + postData.author._id}>
-                                                            <h4 className="author-name">
-                                                                {postData.author.user.firstName + ' ' + postData.author.user.surname}
-                                                            </h4>
-                                                        </Link>
-                                                        <span className="post-time">
-                                                            <Momemt fromNow >{postData.createdAt}</Momemt>
-                                                        </span>
-                                                    </div>
-
-                                                </div>
-                                                <div className="right">
-                                                    {
-                                                        isAuth && <button className="post-three-dot"><i className="far fa-ellipsis-h"></i></button>
-                                                    }
-
-                                                    <button onClick={hideThisPost.bind(this)} className="post-close"> <i className="far fa-times"></i></button>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                        <div className="body">
-                                            <p className="caption">
-                                                {postData.caption}
-                                            </p>
-                                            {
-                                                (thumbExists &&
-                                                    <div className="attachment">
-                                                        <img src={postPhoto} alt="post" />
-
-                                                    </div>
-
-                                                    ||
-
-                                                    <p className="fs-5 text-center text-danger">Post image not available</p>)
-                                            }
-
-                                        </div>
-                                        <div className="footer">
-                                            <div className="react-count">
-                                                <div className="reacts">
-
-
-                                                    {
-                                                        placedReacts.includes('like') ? <div className="react"> <img src={Rlike} alt="like" />  </div> : <span></span>
-
-                                                    }
-                                                    {
-                                                        placedReacts.includes('love') ? <div className="react"> <img src={Rlove} alt="love" /> </div> : <span></span>
-
-                                                    }
-                                                    {
-                                                        placedReacts.includes('haha') ? <div className="react"> <img src={Rhaha} alt="love" /> </div> : <span></span>
-
-                                                    }
-
-
-                                                    <span className="text">
-                                                        {postData.reacts && totalReacts} {totalReacts > 1 ? 'Reacts' : 'React'}
-                                                    </span>
-                                                </div>
-                                                <div className="comment-share">
-                                                    <div className="comment">
-                                                        <div className="text">{postData.comments && totalComments}
-
-                                                        </div>
-                                                        <div className="icon">
-                                                            <i className="far fa-comment-alt"></i>
-                                                        </div>
-
-                                                    </div>
-                                                    <div className="shares">
-                                                        <div className="text">
-                                                            {postData.shares && totalShares}
-                                                        </div>
-                                                        <div className="icon">
-                                                            <i className="fa fa-share"></i>
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
-                                            <div className="like-comment-share">
-                                                <div className="buttons-container">
-                                                    <div className={`react-buttons button ${reactType ? 'reacted' : ''}`}>
-                                                        <div onClick={likeBtnOnClick} onMouseOver={likeMouseOver} className={`react-like ${reactType == true ? 'reacted' : ''}`}>
-                                                            <span className="react-icon" datatype={reactType || ''}>
-                                                                {
-                                                                    reactType == 'haha' ? <img src={Rhaha} alt="haha" /> : <span></span>
-                                                                }
-                                                                {
-                                                                    reactType == 'love' ? <img src={Rlove} alt="love" /> : <span></span>
-                                                                }
-                                                                {
-                                                                    reactType == false || reactType == 'like' ? <img src={Rlike} alt="like" /> : <span></span>
-                                                                }
-                                                            </span>
-                                                            <span className="text text-capitalize">{reactType ? reactType : 'like'}</span>
-                                                        </div>
-                                                        <div className="post-react-container">
-                                                            <div className={`react react-like ${reactType == 'like' ? 'reacted' : ''}`} onClick={likeOnClick} id="postReactLike" title="Like">
-                                                                <img src={Rlike} alt="love" />
-                                                            </div>
-                                                            <div className={`react react-love ${reactType == 'love' ? 'reacted' : ''}`} onClick={loveOnClick} id="postReactLove" title="Love">
-                                                                <img src={Rlove} alt="love" />
-                                                            </div>
-                                                            <div className={`react react-haha ${reactType == 'haha' ? 'reacted' : ''}`} onClick={hahaOnClick} id="postReactHaha" title="Haha">
-                                                                <img src={Rhaha} alt="haha" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div onClick={commentOnClick} className="comment button">
-                                                        <span className="icon">
-                                                            <i className="far fa-comment-alt"></i>
-                                                        </span>
-                                                        <span className="text">Comment</span>
-                                                    </div>
-                                                    <div onClick={shareOnClick} className="share button">
-                                                        <span className="icon">
-                                                            <i className="far fa-share"></i>
-                                                        </span>
-                                                        <span className="text">Share</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                )}
                             </div>
 
                         </div>
@@ -463,7 +795,7 @@ const SinglePost = () => {
 
                                     return (
 
-                                        <SingleReactor key={index} reactor={item}/>
+                                        <SingleReactor key={index} reactor={item} />
 
                                     )
 
@@ -475,7 +807,7 @@ const SinglePost = () => {
                     </Col>
                     <Col md="3">
                         <div className='sp-comments-container'>
-                            <h4 className='section-title'>Comments { postData?.comments && `(${postData?.comments.length})`}</h4>
+                            <h4 className='section-title'>Comments {postData?.comments && `(${postData?.comments.length})`}</h4>
                             {postData?.comments && (<PostComment post={postData} commentState={setTotalComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>)}
                         </div>
 

@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 import socket from '../common/socket';
 function App() {
 
-    return (<></>)
     const myProfile = useSelector(state => state.profile)
     const [stream, setStream] = useState();
     const [me, setMe] = useState();
@@ -34,7 +33,6 @@ function App() {
 
     useEffect(() => {
         setMe(myProfile._id)
-
     }, [myProfile])
 
     const callUser = (id) => {

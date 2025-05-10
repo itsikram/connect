@@ -50,6 +50,9 @@ let profileSchema = new Schema({
     following: [{
         type: Schema.Types.ObjectId
     }],
+    blockedUsers: [{
+        type: Schema.Types.ObjectId
+    }],
     settings: {
         type: Object,
     },

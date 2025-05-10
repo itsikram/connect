@@ -18,7 +18,11 @@ const MessageSetting = () => {
     })
 
     let handleShowTypingChange = useCallback(async(e) => {
-
+        let isChecked = e.currentTarget.checked
+        let updateSetting = await api.post('setting/update', { showIsTyping: isChecked })
+        if (updateSetting.status == 200) {
+            dispatch(loadSettings(updateSetting.data))
+        }
     })
 
     return (
@@ -33,10 +37,10 @@ const MessageSetting = () => {
                         </div> */}
 
                         <div className="form-check form-switch my-3">
-                            <input checked={settings.showTyping === true ? true : false} type="checkbox" onChange={handleShowTypingChange.bind(this)} className="form-check-input" id="showTyping" />
+                            <input checked={settings.showIsTyping === true ? true : false} type="checkbox" onChange={handleShowTypingChange.bind(this)} className="form-check-input" id="showTyping" />
                             <label className="form-check-label" for="showTyping">Show Typing</label>
                             <br />
-                            <small id="emailHelp" className="form-text text-muted">It will show your typing message to your friends inbox without sending</small>
+                            <small id="showTypingChangeText" className="form-text text-muted">It will show your typing message to your friends inbox before sending</small>
 
                         </div>
 
@@ -46,7 +50,6 @@ const MessageSetting = () => {
                             <label className="form-check-label" for="shareEmotionCheck">Share Face Mode</label>
                             <br />
                             <small id="emailHelp" className="form-text text-muted">We'll access your camera to recognize your mode by scanning your face</small>
-
                         </div>
 
                         <button type="submit" className="btn btn-primary">Save Settings</button>

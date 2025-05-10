@@ -90,6 +90,7 @@ let ProfilePic = ({ profileData }) => {
                     lastModified: new Date().getTime()
 
                 })
+                // return console.log('profilePicFile',profilePicFile)
 
                 let ppFormData = new FormData();
                 ppFormData.append('image', profilePicFile)
@@ -102,7 +103,7 @@ let ProfilePic = ({ profileData }) => {
 
                 if (uplaodPPRes.status === 200) {
 
-                    let profilePicUrl = uplaodPPRes.data.url;
+                    let profilePicUrl = uplaodPPRes.data.secure_url;
                     let PPostFormData = new FormData()
                     PPostFormData.append('profilePicUrl', profilePicUrl)
                     PPostFormData.append('type', 'profilePic')
@@ -131,9 +132,7 @@ let ProfilePic = ({ profileData }) => {
     }
 
     let ppInputChange = (e) => {
-
         setProfileimage(e.target.files[0])
-
     }
 
     let isAuth = myProfileData._id === profileData._id

@@ -3,13 +3,16 @@ import $ from 'jquery'
 import { Link,useParams } from 'react-router-dom';
 import api from '../../api/api';
 import { useSelector } from 'react-redux';
-
+import checkImgLoading from '../../utils/checkImgLoading';
+import ImageSkleton from '../../skletons/friend/ImageSkleton';
 const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
 
 const PFI = (props) => {
     let friend = props.friend
     let myProfile = useSelector(state => state.profile)
+    let [isPpLoaded, setIsPpLoaded] = useState(false);
+    let [profilePic, setProfilePic] = useState(friend.profilePic || default_pp_src);
     let params = useParams();
 
     let [isFriend, setIsFriend] = useState(false)
@@ -20,33 +23,23 @@ const PFI = (props) => {
                 setIsFriend(true)
             }
         })
+        checkImgLoading(friend.profilePic, setIsPpLoaded)
+
                 
     },[params])
 
+    useEffect(() => {
 
-    // let isFriend = myProfile.friends && myProfile.friends.includes(friend._id)
-    let isMe = myProfile._id === friend._id
+        if(isPpLoaded) {
+            setProfilePic(friend.profilePic)
+        }
 
-    let friendFullName = friend.fullName? friend.fullName : friend.user && friend.user.firstName + " " + friend.user.surname
-
-    const [imageExists, setImageExists] = useState(null);
-
-    var profilePic = `${friend.profilePic}`;
-    var pp_url = profilePic;
-    const checkImage = (url) => {
-        const img = new Image();
-        img.src = url;
-
-        img.onload = () => setImageExists(true);
-        img.onerror = () => setImageExists(false);
-    };
-
-    checkImage(profilePic)
+    }, [isPpLoaded])
 
 
-    if (!imageExists) {
-        pp_url = default_pp_src
-    }
+    let friendFullName = friend.fullName ? friend.fullName : friend.user && friend.user.firstName + " " + friend.user.surname
+
+
 
 
     let handleFrndOptionClick = (e) => {
@@ -61,8 +54,10 @@ const PFI = (props) => {
             let res = await api.post('/friend/removeFriend', {
                 profile: friend._id
             })
-            $(e.currentTarget).parents('.friend-item').fadeOut()
+            if(res.status == 200) {
+                $(e.currentTarget).parents('.friend-item').fadeOut()
 
+            }
 
         } catch (error) {
             console.log(error)
@@ -73,21 +68,27 @@ const PFI = (props) => {
         try {
 
             let target = e.currentTarget
-            await api.post('/friend/sendRequest/', { profile: friend._id })
-            $(target).parents('.friend-item').hide()
+            let res = await api.post('/friend/sendRequest/', { profile: friend._id })
+            if(res.status == 200) {
+                $(target).parents('.friend-item').hide()
+
+            }
 
         } catch (error) {
             console.log(error)
         }
     }
     return (
-        <div>
+        <>
             <div className='friend-item'>
 
                 <div className='friend-info'>
                     <Link to={'/' + friend._id}>
                         <div className='friend-profilePic'>
-                            <img src={pp_url} alt={friendFullName} ></img>
+                            {
+                                isPpLoaded ? <img src={profilePic} alt={friendFullName} ></img> : <ImageSkleton />
+                            }
+                            
                         </div>
                         <div className='friend-details'>
                             <h4 className='friend-name text-capitalize'>{friendFullName}</h4>
@@ -126,7 +127,7 @@ const PFI = (props) => {
 
                 </div>
             </div>
-        </div>
+        </>
     );
 }
 

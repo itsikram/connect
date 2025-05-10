@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 4000;
 const mongoose = require('mongoose')
 const MONGODB_URI = process.env.NODE_ENV == 'production' ? process.env.PROD_MONGODB_URI : process.env.DEV_MONGODB_URI;
 mongoose.set('strictQuery', false)
+mongoose.set('strictPopulate', false);
 const socketIo = require('socket.io');
 const { createServer } = require('http')
 const cors = require('cors');

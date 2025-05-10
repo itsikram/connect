@@ -1,42 +1,36 @@
-import React, { Fragment,useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import api from '../../api/api';
 import $ from 'jquery'
 import { useSelector } from 'react-redux';
-
-const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
-
+import checkImgLoading from '../../utils/checkImgLoading';
+import ImageSkleton from '../../skletons/friend/ImageSkleton';
 
 
 let FGI = (props) => {
 
+    let [isPpLoaded, setIsPpLoaded] = useState(false)
+    let [profilePic, setProfilePic] = useState(props?.profilePic || 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png')
     let myProfile = useSelector(state => state.profile)
-
     let type = props.type;
-    let profilePic = props.profilePic
     let fullName = props.fullName
     let profile = props.id ? props.id : ''
 
     let profileReqs = props.profileReqs ? props.profileReqs : false
     let isReq = profileReqs && profileReqs.includes(myProfile._id)
 
-    const [imageExists, setImageExists] = useState(null);
 
-    var pp_url = profilePic;
-    const checkImage = (url) => {
-        const img = new Image();
-        img.src = url;
+    useEffect(() => {
+        if (props.profilePic) {
+            checkImgLoading(profilePic, setIsPpLoaded)
+        }
+    }, [props])
 
-        img.onload = () => setImageExists(true);
-        img.onerror = () => setImageExists(false);
-    };
-
-    checkImage(profilePic)
-
-
-    if(!imageExists) {
-        pp_url = default_pp_src
-    }
+    useEffect(() => {
+        if (isPpLoaded) {
+            setProfilePic(props.profilePic)
+        }
+    }, [isPpLoaded])
 
     // handle friend request button clicks
     let handleAcceptReq = async (e) => {
@@ -106,21 +100,44 @@ let FGI = (props) => {
 
         return (
             <Fragment>
-                <div className="friend-grid-item request">
-                    <Link to={`/${profile}/`}>
-                        <div className="profile-picture" alt="profile pic" style={{backgroundImage: `url(${pp_url})`}}></div>
-                    </Link>
+                {
+                    (isPpLoaded == true) ? (
+                        <>
+                            <div className="friend-grid-item request">
+                                <Link to={`/${profile}/`}>
+                                    <div className="profile-picture" alt="profile pic" style={{ backgroundImage: `url(${profilePic})` }}></div>
+                                </Link>
 
-                    <div className="grid-body">
-                        <Link to={`/${profile}/`}>
-                            <h5 className="profile-name">{fullName}</h5>
-                        </Link>
+                                <div className="grid-body">
+                                    <Link to={`/${profile}/`}>
+                                        <h5 className="profile-name">{fullName}</h5>
+                                    </Link>
 
-                        <div onClick={handleAcceptReq} className="primary-button button">Confirm</div>
-                        <div onClick={handleDeleteReq} className="button">Delete</div>
+                                    <div onClick={handleAcceptReq} className="primary-button button">Confirm</div>
+                                    <div onClick={handleDeleteReq} className="button">Delete</div>
 
-                    </div>
-                </div>
+                                </div>
+                            </div>
+                        </>
+                    ) : (<>
+                        <div className="friend-grid-item request">
+                            <Link to={`/${profile}/`}>
+                                <ImageSkleton />
+                            </Link>
+
+                            <div className="grid-body">
+                                <Link to={`/${profile}/`}>
+                                    <h5 className="profile-name">{fullName}</h5>
+                                </Link>
+
+                                <div onClick={handleAcceptReq} className="primary-button button">Confirm</div>
+                                <div onClick={handleDeleteReq} className="button">Delete</div>
+
+                            </div>
+                        </div>
+                    </>)
+                }
+
             </Fragment>
         )
 
@@ -129,25 +146,58 @@ let FGI = (props) => {
 
     return (
         <Fragment>
-            <div className="friend-grid-item suggest">
-                <Link to={`/${profile}/`}>
-                <div className="profile-picture" alt="profile pic" style={{backgroundImage: `url(${pp_url})`}}></div>
-                </Link>
 
-                <div className="grid-body">
-                    <Link to={`/${profile}/`}>
-                        <h5 className="profile-name">{fullName}</h5>
-                    </Link>
+            {
+                isPpLoaded ? (
+                    <>
+                        <div className="friend-grid-item suggest">
+                            <Link to={`/${profile}/`}>
+                                <div className="profile-picture" alt="profile pic" style={{ backgroundImage: `url(${profilePic})` }}></div>
+                            </Link>
 
-                    <div onClick={handleAddFriend} className="primary-button add-friend button">
-                        {
-                            isReq ? 'Request Sent' : 'Add Frind'
-                        }
-                    </div>
-                    <div onClick={handleRomoveFriend} className="button remove-friend">Remove</div>
+                            <div className="grid-body">
+                                <Link to={`/${profile}/`}>
+                                    <h5 className="profile-name">{fullName}</h5>
+                                </Link>
 
-                </div>
-            </div>
+                                <div onClick={handleAddFriend} className="primary-button add-friend button">
+                                    {
+                                        isReq ? 'Request Sent' : 'Add Frind'
+                                    }
+                                </div>
+                                <div onClick={handleRomoveFriend} className="button remove-friend">Remove</div>
+
+                            </div>
+                        </div>
+                    </>
+                ) :
+                    (
+                        <>
+                            <div className="friend-grid-item suggest">
+                                <Link to={`/${profile}/`}>
+                                    <ImageSkleton />
+
+                                </Link>
+
+                                <div className="grid-body">
+                                    <Link to={`/${profile}/`}>
+                                        <h5 className="profile-name">{fullName}</h5>
+                                    </Link>
+
+                                    <div onClick={handleAddFriend} className="primary-button add-friend button">
+                                        {
+                                            isReq ? 'Request Sent' : 'Add Frind'
+                                        }
+                                    </div>
+                                    <div onClick={handleRomoveFriend} className="button remove-friend">Remove</div>
+
+                                </div>
+                            </div>
+                        </>
+                    )
+
+            }
+
         </Fragment>
     )
 }

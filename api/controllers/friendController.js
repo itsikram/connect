@@ -55,6 +55,55 @@ exports.postFrndReq = async (req, res, next) => {
 
 }
 
+exports.postBlockFrnd = async (req, res, next) => {
+    try {
+
+        let friendId = req.body.friendId
+        let profile = req.profile;
+
+        let updateProfile = await Profile.findOneAndUpdate({_id: profile._id},{
+            $push: {
+                blockedUsers: friendId
+            }
+        })
+
+        if(updateProfile) {
+            return res.status(200).json({message: 'User Block Successfully'})
+        }
+
+        return res.status(400).json({message: 'User Cannot Be blocked'})
+
+
+
+    } catch (error) {
+        next(error)
+    }
+}
+exports.postUnblockFrnd = async (req, res, next) => {
+    try {
+
+        let friendId = req.body.friendId
+        let profile = req.profile;
+
+        let updateProfile = await Profile.findOneAndUpdate({_id: profile._id},{
+            $pull: {
+                blockedUsers: friendId
+            }
+        })
+
+        if(updateProfile) {
+            return res.status(200).json({message: 'User Unlock Successfully'})
+        }
+
+        return res.status(400).json({message: 'User Cannot Be unblocked'})
+
+
+
+    } catch (error) {
+        next(error)
+    }
+}
+
 exports.getFrndReq = async (req, res, next) => {
     try {
 

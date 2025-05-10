@@ -10,27 +10,19 @@ import $ from 'jquery'
 import { sendMessage } from "../services/actions/messageActions";
 import ChatHeader from '../components/Message/ChatHeader';
 import ChatFooter from '../components/Message/ChatFooter';
-import useIsMobile from '../utils/isMobile';
-// const useMediaQuery = (query) => {
-//     const [matches, setMatches] = useState(window.matchMedia(query).matches);
+import useIsMobile from '../utils/useIsMobile';
 
-//     useEffect(() => {
-//         const media = window.matchMedia(query);
-//         const listener = (e) => setMatches(e.matches);
-//         media.addEventListener("change", listener);
-//         return () => media.removeEventListener("change", listener);
-//     }, [query]);
 
-//     return matches;
-// };
 
-const Chat = ({ socket, cameraVideoRef }) => {
+const Chat = ({ socket }) => {
     let dispatch = useDispatch();
     let profile = useSelector(state => state.profile)
     let headerHeight = useSelector(state => state.option.headerHeight)
     let bodyHeight = useSelector(state => state.option.bodyHeight)
+    let settings = useSelector(state => state.setting)
     let userId = profile._id
     let [friendProfile, setFriendProfile] = useState({})
+    let [isBlockedMe, setIsBlockedMe] = useState(true)
     const [lastSeen, setLastSeen] = useState(false);
 
     let isMobile = useIsMobile()
@@ -38,16 +30,20 @@ const Chat = ({ socket, cameraVideoRef }) => {
     const [room, setRoom] = useState('');
     const [isActive, setIsActive] = useState(false);
     const [isReplying, setIsReplying] = useState(false);
-
+    const [isPreview, setIsPreview] = useState(false);
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
+    const [isMsgLoading, setIsMsgLoading] = useState(false);
     const [typeMessage, setTypeMessage] = useState('');
-    const [isPreview, setIsPreview] = useState(false);
+    const [hasMoreMessages, setHasMoreMessages] = useState(true);
+    const [isLoaded, setIsLoaded] = useState(false)
+    const [scrollPercent, setScrollPercent] = useState(0);
     const [replyData, setReplyData] = useState({ messageId: null, body: null });
     const msgListRef = useRef(null);
     const messageInput = useRef(null);
     const chatHeader = useRef(null);
     const chatFooter = useRef(null);
+
 
     const chatNewAttachment = useRef(null);
     const messageActionButtonContainer = useRef(null);
@@ -60,6 +56,29 @@ const Chat = ({ socket, cameraVideoRef }) => {
     const messageInputWidth = chatFooterWidth - newAttachmentWidth - messageActionButtonContainerWidth
     let isLoading = useSelector(state => state.option.isLoading);
 
+    const scrollToLastMessage = e => {
+        if (msgListRef.current != null) {
+            let isLastMsg = setInterval(() => {
+                let lastMsg = document.querySelector('#chatMessageList .chat-message-container:last-child')
+                    lastMsg?.scrollIntoView({ behavior: "smooth" });
+            }, 500)
+
+            msgListRef.current.addEventListener('scroll',e => {
+                let scrollBottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
+                console.log('scrl', e.target.scrollHeight, e.target.scrollTop,scrollBottom)
+
+                if(scrollBottom <= 5) {
+                clearInterval(isLastMsg)
+
+                }
+
+            })
+
+        }
+
+
+    }
+
 
 
     if (messageInput.current !== null) {
@@ -71,7 +90,6 @@ const Chat = ({ socket, cameraVideoRef }) => {
     let params = useParams()
     let friendId = params.profile;
 
-    const [hasMoreMessages, setHasMoreMessages] = useState(true);
     const [listContainerHeight, setListContainerHeight] = useState(chatBoxHeight - chatHeaderHeight - chatFooterHeight);
     const [cmlStyles, setCmlStyles] = useState({
         height: `${isMobile ? bodyHeight - headerHeight - chatFooterHeight - chatHeaderHeight : listContainerHeight}px`,
@@ -79,17 +97,11 @@ const Chat = ({ socket, cameraVideoRef }) => {
         overflowY: 'scroll'
     });
 
-    const [isLoaded, setIsLoaded] = useState(false)
+
 
     useEffect(() => {
         let newListHeaderHeight = bodyHeight - headerHeight - chatHeaderHeight - chatFooterHeight
         setListContainerHeight(newListHeaderHeight)
-
-        if (isReplying == true) {
-            setIsPreview(true)
-        } else {
-            setIsPreview(false)
-        }
 
         setCmlStyles({
             height: `${isMobile ? bodyHeight - headerHeight - chatFooterHeight - chatHeaderHeight : listContainerHeight}px`,
@@ -98,7 +110,6 @@ const Chat = ({ socket, cameraVideoRef }) => {
         })
     }, [isReplying, isLoaded])
 
-    const [scrollPercent, setScrollPercent] = useState(0);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -125,6 +136,7 @@ const Chat = ({ socket, cameraVideoRef }) => {
         if (hasMoreMessages) {
             if (scrollPercent < 30) {
                 socket.emit('loadMessages', { myId: userId, friendId, skip: messages.length })
+                setIsMsgLoading(true)
                 setHasMoreMessages(false)
             }
         }
@@ -159,7 +171,7 @@ const Chat = ({ socket, cameraVideoRef }) => {
             socket.off('messageReactRemoved')
             socket.off('is_active')
         }
-    }, [friendProfile,params])
+    }, [friendProfile, params])
 
 
     useEffect(() => {
@@ -173,7 +185,6 @@ const Chat = ({ socket, cameraVideoRef }) => {
                 profileId: friendId
             }
         }).then((res) => {
-            // alert('data load')
             setFriendProfile(res.data)
             dispatch(setLoading(false))
 
@@ -183,9 +194,12 @@ const Chat = ({ socket, cameraVideoRef }) => {
 
     useEffect(() => {
 
-        setTimeout(() => {
-            document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
-        }, 1200);
+        if (friendProfile) {
+            setIsBlockedMe(friendProfile.blockedUsers ? friendProfile.blockedUsers.includes(profile._id) : false)
+        }
+
+        scrollToLastMessage()
+
 
         if (!friendId || !userId) return; // Prevent self-chat
         const newRoom = [userId, friendId].sort().join('_');
@@ -199,6 +213,7 @@ const Chat = ({ socket, cameraVideoRef }) => {
 
         socket.on('loadMessages', ({ loadedMessages, hasNewMessage }) => {
             setHasMoreMessages(hasNewMessage)
+            setIsMsgLoading(false)
             setMessages(messages => [...loadedMessages, ...messages])
             // setPageNumber(currentPage + 1)
         })
@@ -211,16 +226,12 @@ const Chat = ({ socket, cameraVideoRef }) => {
             if (msg.receiverId == userId && msg.senderId == friendId) {
                 setMessages((prevMessages) => [...prevMessages, msg]);
 
-                setTimeout(() => {
-                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
-                }, 500);
+                scrollToLastMessage()
             }
             if (msg.senderId == userId && msg.receiverId == friendId) {
                 setMessages((prevMessages) => [...prevMessages, msg]);
 
-                setTimeout(() => {
-                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
-                }, 500);
+                scrollToLastMessage()
             }
 
         });
@@ -236,9 +247,8 @@ const Chat = ({ socket, cameraVideoRef }) => {
                 if (isTyping == true) {
                     setIsTyping(true)
                     setTypeMessage(type)
-                    setTimeout(() => {
-                        document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
-                    }, 500);
+                    scrollToLastMessage()
+
                 } else {
                     setIsTyping(false)
                 }
@@ -280,13 +290,13 @@ const Chat = ({ socket, cameraVideoRef }) => {
 
 
 
-let footerProps = {chatFooter,room,friendId,setIsTyping,setIsReplying,isReplying,chatNewAttachment,messageActionButtonContainer,userId,messageInput}
+    let footerProps = { chatFooter, room, friendId, setIsTyping, setIsReplying, isReplying, chatNewAttachment, messageActionButtonContainer, userId, messageInput, replyData, isPreview, setIsPreview }
 
     return (
         <div>
             <div id="chatBox" style={{ minHeight: `${chatBoxHeight}px` }}>
                 <div ref={chatHeader} className='chat-header'>
-                    <ChatHeader friendProfile={friendProfile} isActive={isActive} lastSeen={lastSeen} room={room} />
+                    <ChatHeader friendProfile={friendProfile} friendProfilePic={friendProfile.profilePic} isActive={isActive} lastSeen={lastSeen} room={room} />
 
                 </div>
                 <div className='chat-body'>
@@ -295,10 +305,8 @@ let footerProps = {chatFooter,room,friendId,setIsTyping,setIsReplying,isReplying
                         {
                             messages.map((msg, index) => {
 
-
                                 return (
-
-                                    <SingleMessage key={index} msg={msg} friendProfile={friendProfile} messages={messages} isActive={isActive} setIsReplying={setIsReplying} setReplyData={setReplyData} />
+                                    <SingleMessage key={index} msg={msg} friendProfile={friendProfile} messages={messages} isActive={isActive} setIsReplying={setIsReplying} setReplyData={setReplyData} isPreview={isPreview} setIsPreview={setIsPreview} msgListRef={msgListRef} isMsgLoading={isMsgLoading}/>
                                 )
                             })
 
@@ -326,7 +334,16 @@ let footerProps = {chatFooter,room,friendId,setIsTyping,setIsReplying,isReplying
                     </div>
                 </div>
 
-                <ChatFooter  {...footerProps} />
+                {
+                    !isBlockedMe ?
+
+                        <ChatFooter  {...footerProps} />
+                        :
+                        <div ref={chatFooter} className="chat-footer">
+                            <p className='text-center text-danger fs-4 mb-0'>{friendProfile.fullName} Blocked You</p>
+                        </div>
+
+                }
             </div>
 
 

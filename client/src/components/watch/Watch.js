@@ -31,7 +31,6 @@ const Watch = ({ watch }) => {
     let [reactType, setReactType] = useState(false);
     let [placedReacts, setPlacedReacts] = useState([]);
     const [imageExists, setImageExists] = useState(false);
-    const [thumbExists, setThumbExists] = useState(null);
     const [watchUrl, setWatchUrl] = useState(watch.videoUrl)
     const displayedWatch = useRef(null) // document.getElementById(`watch-${watch._id}`)
     const nfwatch = useRef(null) // document.getElementById(`watch-${watch._id}`)

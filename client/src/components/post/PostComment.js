@@ -1,8 +1,9 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 import $ from 'jquery'
 import UserPP from '../UserPP';
 import api from '../../api/api';
 import SingleComment from './SingleComment';
+import { Link, useLocation } from 'react-router-dom';
 const loadingUrl = 'https://programmerikram.com/wp-content/uploads/2025/03/loading.gif'
 function isValidUrl(str) {
     return true;
@@ -16,16 +17,38 @@ function isValidUrl(str) {
 }
 
 const PostComment = (props) => {
-    let post = props.post || {}
     let authProfilePicture = props.authProfilePicture
     let authProfileId = props.authProfile;
     let myProfile = props.myProfile ? props.myProfile : {}
     let isAuth = myProfile._id === authProfileId
+    const location = useLocation();
+
+    let [isSingle, setIsSingle] = useState(location.pathname.includes(`/${(props?.post?._id || '').toString()}`));
+
+    useEffect(() => {
+        setIsSingle(location.pathname.includes(`/${(post?._id || '').toString()}`))
+    }, [[],location])
+
+    let [post,setPost] = useState({})
+    let [allComments, setAllComments] = useState(isSingle ? props.post.comments : props.post.comments.slice(-2))
+    let [uploadedImageUrl, setUploadedImageUrl] = useState(null);
+    let [isNewCmnt, setIsNewCmnt] = useState(2);
+
 
     // handle all comment state 
 
-    let [allComments, setAllComments] = useState(post.comments)
-    let [uploadedImageUrl, setUploadedImageUrl] = useState(null);
+
+    useEffect(() => {
+        setPost(props.post || {})
+        // setAllComments(props.post.comments && props.post.comments.reverse())
+    },[props])
+
+
+    useEffect(() => {
+        // setAllComments((post.comments || []).reverse())
+    },[post]) 
+
+
 
     
     let [commentData, setCommentData] = useState({
@@ -99,15 +122,16 @@ const PostComment = (props) => {
                     attachment: uploadedImageUrl,
                     post: (post._id).toString()
                 })
+
                 if (res.status === 200) {
                     let data = res.data
                     data.author = myProfile
                     let newComment = data
                     setAllComments(state => {
-                        let oldComments = [...state].slice(-3)
                         let cr = [
-                            ...state,
-                            ...[newComment]
+                            ...allComments,
+                            ...[newComment],
+
                         ]
 
                         setCommentData([])
@@ -136,14 +160,14 @@ const PostComment = (props) => {
             <div className="comments">
 
                 {
-                   allComments && allComments.map((comment, index) => {
+                   allComments.length > 0 && (allComments).map((comment, index) => {
                         
                         return comment && <SingleComment comment={comment} post={post} key={index} myProfile={myProfile}></SingleComment>
                     })
                 }
 
                 {
-                    post.comments.length > allComments.length && <div className="more-comment-button"> View more comments</div>
+                     (props.post?.comments.length > 2 && !isSingle)  &&  (<div className="more-comment-button"> <Link to={`/post/${post._id}`} >View more comments</Link></div>)
 
                 }
             </div>

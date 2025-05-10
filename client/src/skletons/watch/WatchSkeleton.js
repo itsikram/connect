@@ -1,7 +1,7 @@
 import React from 'react';
 
 
-const PostSkeleton = ({ count = 1 }) => {
+const WatchSkeleton = ({ count = 1 }) => {
     return Array(count).fill(0).map((_, index) => (
       <div key={index} className="skeleton-card">
         {/* Header */}
@@ -26,5 +26,5 @@ const PostSkeleton = ({ count = 1 }) => {
     ));
   };
   
-  export default PostSkeleton;
+  export default WatchSkeleton;
 // export default CpSkleton;

@@ -8,6 +8,7 @@ import Friends from "./Friends";
 import Video from "./Video.js";
 import Marketplace from './Marketplace'
 import Groups from './Groups'
+import YtDownload from "./YtDownload.js";
 import Message from "./Message";
 import Story from "./Story";
 import StoryReacts from "../components/story/StoryReacts.js";
@@ -37,7 +38,6 @@ import ProfileIkramul from "./ProfileIkramul";
 import socket from '../common/socket.js'
 import AudioCall from "../components/AudioCall/AudioCall.js";
 import { loadSettings } from "../services/actions/settingsActions.js";
-
 import ProfileSetting from "../components/setting/ProfileSetting.js";
 import AccountSetting from "../components/setting/AccountSetting.js";
 import PrivacySetting from "../components/setting/PrivacySetting.js";
@@ -76,7 +76,6 @@ const Main = () => {
     const params = useParams();
     const audioElement = useRef(null)
 
-
     const [isTabActive, setIsTabActive] = useState(!document.hidden);
 
     const userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
@@ -87,10 +86,15 @@ const Main = () => {
             profileId
         }}).then(res => {
             if(res.status == 200) {
+                console.log('lod data',res.data)
                 dispatch(loadSettings(res.data))
             }
         })
+
+        
     },[])
+
+
     const playSound = (data) => {
         audioElement?.current.play();
 
@@ -234,7 +238,7 @@ const Main = () => {
                 {
                     isLoading && (<div id="site-loader">
                         <div className="loader-logo-container">
-                            <img src="https://programmerikram.com/wp-content/uploads/2025/03/ics_logo-1.png" alt="ICS" />
+                            <img src="https://programmerikram.com/wp-content/uploads/2025/05/ics_logo_out_transparent.png" alt="connect" />
                         </div>
                     </div>)}
 
@@ -283,6 +287,7 @@ const Main = () => {
                             <Route path="/marketplace" element={<Marketplace />}> </Route>
 
                             <Route path="/groups" element={<Groups />}> </Route>
+                            <Route path="/yt-download" element={<YtDownload />}> </Route>
                             <Route path="/settings" element={<Settings/>}></Route>
 
                             <Route path="/settings/" element={<Settings />}>

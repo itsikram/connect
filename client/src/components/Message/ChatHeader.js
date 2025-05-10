@@ -3,62 +3,199 @@ import socket from '../../common/socket';
 import UserPP from '../UserPP';
 import { useSelector } from 'react-redux';
 import * as faceapi from "face-api.js";
-import { useParams, useLocation } from 'react-router-dom';
-import Webcam from 'react-webcam';
+import { useParams, useLocation, Link, useNavigate } from 'react-router-dom';
 import Peer from 'simple-peer';
 import ModalContainer from '../modal/ModalContainer';
-import isMobile from '../../utils/isMobile';
-
-const ChatHeader = ({ friendProfile, isActive, room, lastSeen }) => {
+import useIsMobile from '../../utils/useIsMobile';
+import api from '../../api/api';
+const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic }) => {
     const [emotion, setEmotion] = useState(false);
     const [myEmotion, setMyEmotion] = useState(false)
     const [friendId, setFriendId] = useState(false)
+    const [isLoaded, setIsLoaded] = useState(false)
+    const [friendPP, setFriendPP] = useState(friendProfilePic)
+    const [isMicrophone, setIsMicrophone] = useState(true)
+    const [isBackCamera, setIsBackCamera] = useState(false);
+
     const [stream, setStream] = useState();
     const [callAccepted, setCallAccepted] = useState(false);
     const [me, setMe] = useState('');
-    const [receivingCall, setReceivingCall] = useState(false);
-    const [caller, setCaller] = useState('');
-    const [callerSignal, setCallerSignal] = useState();
+    const [isChatOptionMenu, setIsChatOptionMenu] = useState(false)
+    const [receiverId, setReceiverId] = useState();
     const [isVideoCalling, setIsVideoCalling] = useState(false)
     const cameraVideoRef = useRef(null)
     const location = useLocation();
     const myVideo = useRef();
     const userVideo = useRef();
     const connectionRef = useRef();
-
-
+    const callEndBtn = useRef();
     let settings = useSelector(state => state.setting)
     let profile = useSelector(state => state.profile)
     let profileId = profile._id
-
+    let isMobile = useIsMobile();
     let params = useParams()
 
-    let handleVideoCallBtn = (e) => {
-        setIsVideoCalling(true)
-        let receiverId = e.currentTarget.dataset.id
+    let navigate = useNavigate();
 
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-            setStream(stream);
 
-            if (myVideo.current) {
-                myVideo.current.srcObject = stream;
+    let handleMicrophoneClick = useCallback(() => {
+        alert(isMicrophone)
+        setIsMicrophone(!isMicrophone)
+    })
+
+    let closeVideoCall = e => {
+        return;
+    }
+
+
+
+    useEffect(() => {
+
+        socket.on('videoCallEnd', (friendId) => {
+            let mouseEevent = new MouseEvent('click', { bubbles: true, cancelable: false })
+            if (callEndBtn.current) {
+                callEndBtn.current.dispatchEvent(mouseEevent)
+            }
+        })
+
+        return () => {
+            socket.off('videoCallEnd')
+        }
+    }, [])
+
+    const callUser = (id) => {
+        if (stream) {
+            const peerA = new Peer({
+                initiator: true,
+                trickle: false,
+                stream: stream,
+            });
+
+            peerA.on('signal', (data) => {
+                socket.emit('call-user', {
+                    userToCall: id,
+                    signalData: data,
+                    from: me,
+                    name: profile.fullName || '',
+                    isVideoCall: true
+                });
+            });
+
+            peerA.on('stream', (currentStream) => {
+                userVideo.current.srcObject = currentStream;
+            });
+
+            connectionRef.current = peerA;
+        }
+
+    };
+
+    useEffect(() => {
+        socket.on('call-accepted', (signal) => {
+            setCallAccepted(true);
+            if (connectionRef.current && !connectionRef.current.destroyed) {
+                try {
+                    connectionRef.current.signal(signal);
+                } catch (err) {
+                    console.error("Error signaling accepted call:", err);
+                }
             }
         });
 
-        callUser(receiverId)
+        return () => {
+            socket.off('call-accepted');
+        };
+    }, []);
 
 
-    }
-    const startVideo = () => {
-
-        if (settings.isShareEmotion === true) {
-            if (!navigator.mediaDevices) return;
-
-            navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-                cameraVideoRef.current.srcObject = stream;
-            }).catch((err) => console.error("Error accessing webcam: ", err));
+    useEffect(() => {
+        if (stream && receiverId && !connectionRef.current) {
+            callUser(receiverId);
         }
+    }, [stream, receiverId]);
+
+    useEffect(() => {
+        if (isVideoCalling == true) {
+            navigator.mediaDevices.enumerateDevices()
+                .then(devices => {
+                    const videoDevices = devices.filter(device => device.kind === "videoinput");
+                    const backCamera = videoDevices.find(device => device.label.toLowerCase().includes("back") || device.label.toLowerCase().includes("environment"));
+
+                    return navigator.mediaDevices.getUserMedia({
+                        video: { deviceId: isBackCamera && backCamera?.deviceId || videoDevices[0].deviceId },
+                        audio: isMicrophone
+                    }).then((stream) => {
+                        setStream(stream);
+                        if (myVideo?.current) {
+                            myVideo.current.srcObject = stream;
+                        }
+                    });
+                })
+            // navigator.mediaDevices.getUserMedia({ video: true, audio: isMicrophone }).then((stream) => {
+            //     setStream(stream);
+            //     if (myVideo?.current) {
+            //         myVideo.current.srcObject = stream;
+            //     }
+            // });
+        }
+
+    }, [isVideoCalling])
+
+    let handleVideoCallBtn = useCallback((e) => {
+        setIsVideoCalling(true)
+        let receiverId = e.currentTarget.dataset.id
+        setReceiverId(receiverId)
+
+    })
+
+
+    let handleLeaveCall = useCallback(() => {
+        socket.emit('leaveVideoCall', friendId)
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+        }
+
+        if (myVideo.current) {
+            myVideo.current.srcObject = null;
+        }
+        if (userVideo.current) {
+            userVideo.current.srcObject = null;
+        }
+
+        setStream(false)
+        setCallAccepted(false);
+        setIsVideoCalling(false);
+        if (connectionRef?.current) {
+            connectionRef.current.destroy();
+            connectionRef.current = null;
+        }
+
+    })
+
+
+    const startVideo = () => {
+        if (!navigator.mediaDevices) return;
+
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                const videoDevices = devices.filter(device => device.kind === "videoinput");
+                const backCamera = videoDevices.find(device => device.label.toLowerCase().includes("back") || device.label.toLowerCase().includes("environment"));
+
+                return navigator.mediaDevices.getUserMedia({
+                    video: { deviceId: isBackCamera && backCamera?.deviceId || videoDevices[0].deviceId },
+                    audio: isMicrophone
+                }).then((stream) => {
+                    cameraVideoRef.current.srcObject = stream;
+                })
+            })
+
+        // navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+        //     cameraVideoRef.current.srcObject = stream;
+        // }).catch((err) => console.error("Error accessing webcam: ", err));
+
+
     };
+
 
     const stopCamera = () => {
         const stream = cameraVideoRef.current?.srcObject;
@@ -69,22 +206,21 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen }) => {
         }
     };
     const detectEmotions = () => {
-
-        setInterval(async () => {
-            if (cameraVideoRef.current) {
-                const detections = await faceapi.detectAllFaces(cameraVideoRef.current, new faceapi.TinyFaceDetectorOptions())
-                    .withFaceExpressions();
-
-                if (detections.length > 0) {
-                    const emotions = detections[0].expressions;
-                    const maxEmotion = Object.keys(emotions).reduce((a, b) => emotions[a] > emotions[b] ? a : b);
-                    if (room && myEmotion !== maxEmotion) {
-                        setMyEmotion(maxEmotion)
+        setTimeout(() => {
+            setInterval(async () => {
+                if (cameraVideoRef.current) {
+                    const detections = await faceapi.detectAllFaces(cameraVideoRef.current, new faceapi.TinyFaceDetectorOptions())
+                        .withFaceExpressions();
+                    if (detections.length > 0) {
+                        const emotions = detections[0].expressions;
+                        const maxEmotion = Object.keys(emotions).reduce((a, b) => emotions[a] > emotions[b] ? a : b);
+                        if (room && myEmotion !== maxEmotion) {
+                            setMyEmotion(maxEmotion)
+                        }
                     }
                 }
-
-            }
-        }, 500);
+            }, 100);
+        }, 3000)
 
     }
 
@@ -98,89 +234,20 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen }) => {
         setMe(profile._id)
     }, [profile])
 
-    useEffect(() => {
-
-        socket.on('receive-call', (data) => {
-            setReceivingCall(true);
-            setCaller(data.from);
-            setCallerSignal(data.signal);
-        });
-
-        socket.on('videoCallEnd', (friendId) => {
-            setReceivingCall(false)
-            setIsVideoCalling(false)
-            setCallAccepted(false)
-        })
-
-        return () => {
-            socket.off('receive-call')
-            socket.off('videoCallEnd')
-        }
-    }, [])
-
-    const callUser = (id) => {
-        const peer = new Peer({
-            initiator: true,
-            trickle: false,
-            stream: stream,
-        });
-
-        peer.on('signal', (data) => {
-            socket.emit('call-user', {
-                userToCall: id,
-                signalData: data,
-                from: me,
-                name: profile.fullName,
-            });
-        });
-
-        peer.on('stream', (currentStream) => {
-            userVideo.current.srcObject = currentStream;
-        });
-
-        socket.on('call-accepted', (signal) => {
-            setCallAccepted(true);
-            if (signal) {
-                peer.signal(signal);
-
-            }
-        });
-
-        connectionRef.current = peer;
-    };
-
-
-    let closeVideoCall = e => {
-        if (isVideoCalling || callAccepted) {
-            setIsVideoCalling(true)
-
-        } else {
-            setIsVideoCalling(false)
-
-        }
-    }
-
-    let handleLeaveCall = () => {
-        setCallAccepted(false);
-        setIsVideoCalling(false);
-        socket.emit('leaveVideoCall', friendId)
-        // leaveCall()
-        setIsVideoCalling(false)
-    }
 
     let handleBumpBtnClick = useCallback((e) => {
         socket.emit('bump', friendProfile, profile)
     })
 
-
     useEffect(() => {
         if (room) {
-            startVideo();
-            loadModels();
+            if (settings.isShareEmotion === true) {
+                startVideo();
+                loadModels();
+            }
         }
 
-    }, [room, params]);
-
+    }, [room, settings]);
 
     useEffect(() => {
         stopCamera()
@@ -190,7 +257,8 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen }) => {
     useEffect(() => {
         setFriendId(friendProfile._id)
         socket.emit('last_emotion', { friendId: friendProfile._id, profileId })
-
+        setIsLoaded(friendProfile._id ? true : false)
+        setFriendPP(friendProfile?.profilePic)
     }, [friendProfile])
 
     useEffect(() => {
@@ -206,7 +274,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen }) => {
         })
 
         socket.on('last_emotion', data => {
-            setEmotion(data.lastEmotion && `Last: ${data.lastEmotion}`)
+            setEmotion(data.lastEmotion && ` L: ${data.lastEmotion}`)
         })
 
         return () => {
@@ -214,38 +282,74 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen }) => {
         }
     }, [emotion])
 
+    let handleSwitchClick = useCallback(() => {
+        setIsBackCamera(!isBackCamera)
+    })
 
+    let chatOptionMenu = useRef(null)
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (chatOptionMenu.current && !chatOptionMenu.current.contains(event.target)) {
+                setIsChatOptionMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
+    let handleChatOptionClick = useCallback(e => {
+        setIsChatOptionMenu(!isChatOptionMenu)
+    })
 
+    let handleBlockUser = useCallback(async(e) => {
+        let blockRes = await api.post('friend/block',{friendId})
+        if(blockRes.status == 200) {
+            alert('User Blocked')
+        }
+    })
+    let handleUnBlockUser = useCallback(async(e) => {
+        let blockRes = await api.post('friend/unblock',{friendId})
+        if(blockRes.status == 200) {
+            alert('User unblocked')
+        }
+    })
+    let handleViewProfile = useCallback(async(e) => {
+        navigate(`/${friendId}`)
+    })
 
     return (
         <>
 
-            {/* <div>
-                <Webcam
-                    audio={false}
-                    ref={cameraVideoRef}
-                    screenshotFormat="image/jpeg"
-                    width={350}
-                    videoConstraints={{
-                        facingMode: "user", // or "environment" for rear camera on mobile
-                    }}
-                />
-                <button>Capture photo</button>
-            </div> */}
-            <div className='chat-header-user'>
+            <div className={`chat-header-user ${!isLoaded && 'skleton-card'}`}>
                 <div className='chat-header-profilePic'>
-                    <UserPP profilePic={`${friendProfile.profilePic}`} hasStory={false} profile={friendProfile._id} active={isActive ? true : false}></UserPP>
+                    <UserPP profilePic={`${friendPP}`} hasStory={false} profile={friendProfile._id} active={isActive ? true : false}></UserPP>
                 </div>
-                <div className='chat-header-user-info'>
-                    <h4 className='chat-header-username'> {`${friendProfile == true && friendProfile.fullName ? friendProfile.fullName : friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname}`}</h4>
-                    {isActive ? (<span className='chat-header-active-status'>Online </span>) : (lastSeen && <span className='chat-header-active-status'>Last Seen: {lastSeen} </span>)}
 
-                    {
-                        emotion && (<span className='chat-header-active-status text-capitalized'> | {emotion}</span>)
-                    }
+                {
+                    isLoaded == true ?
+                        <>
+                            <div className='chat-header-user-info'>
+                                <h4 className='chat-header-username'> {`${friendProfile == true ? (friendProfile?.fullName || '') : friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname}`}</h4>
+                                {
+                                    emotion && (<span className='chat-header-active-status text-capitalized'>{emotion}</span>)
+                                }
 
-                </div>
+                            </div>
+                        </>
+                        :
+                        <>
+                            <div className='chat-header-user-info'>
+                                <div className="skeleton-lines">
+                                    <div className="skeleton-line short" />
+                                    <div className="skeleton-line medium" />
+                                </div>
+
+                            </div>
+                        </>
+                }
+
             </div>
 
             <div className='chat-header-action'>
@@ -259,42 +363,81 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen }) => {
                     <div onClick={handleVideoCallBtn} data-id={friendId} className='video-call-button action-button'>
                         <i className="fas fa-video"></i>
                     </div>
-                    <div className='info-button action-button'>
+                    <div onClick={handleChatOptionClick.bind(this)} className='info-button action-button'>
                         <i className="fas fa-info-circle"></i>
                     </div>
+
+                    {isChatOptionMenu && (
+                        <div className="chat-option-menu" ref={chatOptionMenu} >
+                            <ul>
+                                <li onClick={handleViewProfile.bind(this)}>View Profile</li>
+                                {
+                                    profile?.blockedUsers.includes(friendId) ? <><li onClick={handleUnBlockUser.bind(this)}>Unblock {friendProfile.user.firstName}</li></> : <><li onClick={handleBlockUser.bind(this)}>Block {friendProfile.user.firstName}</li></>
+                                }
+                                
+                                <li>Report {friendProfile.user.firstName}</li>
+                            </ul>
+                        </div>
+                    )}
                 </div>
 
                 <ModalContainer
                     title="Video Call"
-                    style={{ width: isMobile ? '95%' : "600px", top: "50%" }}
+                    style={{ width: isMobile ? '95%' : "600px", top: "50%", borderRadius: '10px' }}
                     isOpen={isVideoCalling || callAccepted}
                     onRequestClose={closeVideoCall}
                     id="videoCallModal"
                 >
-                    <div style={{ padding: 0 }}>
-                        {<h2 className='text-center text-primary'>Video Call</h2>}
+                    <div className={`${callAccepted ? 'call-accepted' : ''}`} style={{ padding: 0 }}>
+                        {<h2 className='text-center vc-modal-heading'>Video Call - {friendProfile && friendProfile.fullName}</h2>}
                         <p className='fs-3 text-center'>
-                            Calling {friendProfile && friendProfile.fullName}
+                            {!callAccepted && <>Calling {friendProfile && friendProfile.fullName}</>}
                         </p>
-                        <div className='video-call-container'>
+                        <div className={`video-call-container ${isMobile ? 'mobile' : ''}`}>
+                            {<video playsInline ref={userVideo} className='friends-video' autoPlay style={{ width: '100%', display: callAccepted ? 'block' : 'none' }} />}
                             <video playsInline muted ref={myVideo} autoPlay className='my-video' style={{ width: '150px' }} />
-                            {<video playsInline ref={userVideo} className='friends-video' autoPlay style={{ width: '100%' }} />}
                         </div>
                         <div className='call-buttons'>
-                            <button onClick={handleLeaveCall.bind(this)} className='call-button-ends call-button bg-danger'>
-                                <i class="fa fa-phone"></i>
+
+                            <button onClick={handleLeaveCall.bind(this)} ref={callEndBtn} className='call-button-ends call-button bg-danger'>
+                                <i className="fa fa-phone"></i>
                             </button>
+                            {
+                                callAccepted && <>
+                                    <button onClick={handleMicrophoneClick.bind(this)} className='call-button-microphone call-button'>
+                                        {
+                                            isMicrophone ? <i className="fa fa-microphone"></i> : <i class="fa fa-microphone-slash"></i>
+                                        }
+                                    </button>
+                                    <button onClick={handleSwitchClick.bind(this)} className='call-button-switch call-button'>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                                            <path d="M11 7H5a2 2 0 0 0-2 2v4" />
+                                            <path d="M13 17h6a2 2 0 0 0 2-2v-4" />
+                                            <polyline points="16 3 21 3 21 8" />
+                                            <polyline points="8 21 3 21 3 16" />
+                                            <path d="M21 3l-6.5 6.5" />
+                                            <path d="M3 21l6.5-6.5" />
+                                        </svg>
+
+                                    </button>
+
+
+                                </>
+                            }
 
                         </div>
 
                     </div>
-                </ModalContainer>
+                </ModalContainer >
 
 
 
-            </div>
+            </div >
             {
-                settings.isShareEmotion === true && <video style={{ display: 'none' }} ref={cameraVideoRef} autoPlay muted width="600" height="400" />
+                settings.isShareEmotion === true && (
+                    <video style={{ display: 'none' }} ref={cameraVideoRef} autoPlay muted width="600" height="400" />
+                )
             }
 
         </>

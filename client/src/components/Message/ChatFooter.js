@@ -1,22 +1,23 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import socket from '../../common/socket';
 import $ from 'jquery'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import api from '../../api/api';
 
 import { sendMessage } from '../../services/actions/messageActions';
 
-const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAttachment,messageActionButtonContainer,setIsReplying,userId,messageInput }) => {
+const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAttachment,messageActionButtonContainer,setIsReplying,userId,messageInput,replyData,isPreview, setIsPreview }) => {
 
     const dispatch = useDispatch()
     const [mInputWith, setmInputWith] = useState(true);
     const [inputValue, setInputValue] = useState('');
-    const [isPreview, setIsPreview] = useState(false);
     const [attachmentUrl, setAttachmentUrl] = useState(false)
-    const [replyData, setReplyData] = useState({ messageId: null, body: null });
-
     const imageInput = useRef(null);
+    const settings = useSelector(state => state.setting)
 
+    useEffect(() => {
+        console.log('rdt', isReplying,replyData)
+    },[replyData])
 
     const handleSendMessage = useCallback((e) => {
         e.preventDefault();
@@ -25,7 +26,7 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
         let isDisabled = $(e.target).hasClass('button-disabled') || false
         if (isDisabled) return;
 
-        if (inputValue.trim() && room) {
+        if (room) {
 
             if (isReplying) {
                 let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: replyData.messageId }
@@ -68,10 +69,12 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
         socket.emit('typing', { receiverId: userId, room, isTyping: false, type: inputValue })
     }
 
-    let updateTyping = (e) => {
-        let value = e.target.value;
-        socket.emit('update_type', { room, type: value })
-    }
+    // let updateTyping = (e) => {
+    //     let value = e.target.value;
+    //     if(settings.showIsTyping) {
+    //         socket.emit('update_type', { room, type: value })
+    //     }
+    // }
     const enterEvent = new KeyboardEvent("keydown", {
         key: "Enter",
         keyCode: 13,
@@ -91,12 +94,15 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
         setInputValue('👍')
         setTimeout(() => {
             messageInput.current.dispatchEvent(enterEvent);
-
         }, 200)
     }
 
     let handleInputChange = (e) => {
         setInputValue(e.target.value)
+
+        if(settings.showIsTyping) {
+            socket.emit('update_type', { room, type: e.target.value })
+        }
     }
 
     let handlePreviewCloseBtn = (e) => {
@@ -145,14 +151,6 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
     }
 
 
-
-
-
-
-
-
-
-
     return (
         <>
             <div ref={chatFooter} className="chat-footer">
@@ -160,7 +158,7 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
                 {
                     isPreview && (<div className='new-message-preview-container'>
                         {
-                            isReplying && (
+                            isReplying  && (
                                 <div className='reply-message-preview-form'>
                                     <p className='text-small'>
                                         {replyData.body}
@@ -184,7 +182,6 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
 
 
                 <div className="new-message-container">
-
                     <div ref={chatNewAttachment} className='chat-new-attachment'>
                         <div className='chat-atachment-button-container'>
 
@@ -201,13 +198,10 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
                                 <i className="fas fa-microphone"></i>
                             </div>
                         </div>
-
-
                     </div>
                     <div className='new-message-form'>
-
                         <div className='new-message-input-container'>
-                            <input ref={messageInput} style={{ width: mInputWith + 'px' }} onChange={handleInputChange} value={inputValue} onKeyDown={handleKeyPress} placeholder='Send Message....' id='newMessageInput' className='new-message-input' onFocus={addTyping} onKeyUp={updateTyping.bind(this)} onBlur={removeTyping} />
+                            <input ref={messageInput} style={{ width: mInputWith + 'px' }} onChange={handleInputChange} value={inputValue} onKeyDown={handleKeyPress} placeholder='Send Message....' id='newMessageInput' className='new-message-input' onFocus={addTyping} onBlur={removeTyping} />
                         </div>
                         <div ref={messageActionButtonContainer} className='message-action-button-container'>
 
@@ -220,7 +214,6 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
                                         <i className="fas fa-thumbs-up"></i>
                                     </div>
                             }
-
 
                         </div>
                     </div>

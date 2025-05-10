@@ -19,6 +19,7 @@ module.exports = function socketHandler(io){
               signal: data.signalData,
               from: data.from,
               name: data.name,
+              isVideo: data.isVideo
             });
           });
         

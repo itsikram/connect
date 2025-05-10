@@ -7,14 +7,33 @@ const PrivacySetting = () => {
                 <div className='setting-field-container'>
                     <h3 className='text-center'>Privacy Settings</h3>
                     <form>
+
                         <div className="form-group mb-2">
-                            <label for="username">First Name</label>
-                            <input type="text" className="form-control" id="firstName" name='firstName' placeholder="Enter Frist Name" />
+                            <label for="username">Who Can See you Posts?</label>
+                            <select className='form-control'>
+                                <option  value='om'>Only Me</option>
+                                <option value='fof'>Friend of Friends</option>
+                                <option value='public'>Public</option>
+                            </select>
                         </div>
                         <div className="form-group mb-2">
-                            <label for="username">Last Name</label>
-                            <input type="text" className="form-control" id="lastName" name='lastName' placeholder="Enter Last Name" />
+                            <label for="username">Who Can Sent you Friend Request?</label>
+                            <select className='form-control'>
+                                <option  value='om'>Only Me</option>
+                                <option value='fof'>Friend of Friends</option>
+                                <option value='public'>Public</option>
+                            </select>
                         </div>
+                        <div className="form-group mb-2">
+                            <label for="username">Who Can Post on your Timeline?</label>
+                            <select className='form-control'>
+                                <option  value='om'>Only Me</option>
+                                <option value='fof'>Friend of Friends</option>
+                                <option value='public'>Public</option>
+                            </select>
+                        </div>
+
+
 
                         <button type="submit" className="btn btn-primary">Save Settings</button>
                     </form>

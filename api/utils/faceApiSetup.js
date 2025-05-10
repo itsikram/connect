@@ -12,4 +12,5 @@ const loadModels = async () => {
   await faceapi.nets.faceRecognitionNet.loadFromDisk(MODEL_URL);
 };
 
+
 module.exports = { faceapi, canvas, loadModels };
