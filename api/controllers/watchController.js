@@ -104,6 +104,9 @@ exports.getMyWatchs = async(req,res,next) => {
 
     try {
         let profile_id = req.query.profile;
+        if(profile_id == req.profile.username) {
+            profile_id = req.profile._id
+        }
 
         if(!mongoose.isValidObjectId(profile_id)) return res.json().status(400)
         let watchs = await Watch.find({author: profile_id}).populate([

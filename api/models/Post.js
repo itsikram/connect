@@ -29,6 +29,10 @@ let postSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: Profile
     }],
+    visits: [{
+        type: Schema.Types.ObjectId,
+        ref: Profile
+    }],
     audience: {
         type: Number,
         default: 3

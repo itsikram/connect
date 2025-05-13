@@ -89,6 +89,16 @@ const Settings = () => {
                                         </span>
                                     </Link>
                                 </li>
+                                <li onClick={handleClick.bind(this)} className='setting-groups-item'>
+                                    <Link to="sound">
+                                        <span>
+                                            Sounds
+                                        </span>
+                                        <span>
+                                            <i className='fa fa-chevron-right'></i>
+                                        </span>
+                                    </Link>
+                                </li>
                             </ul>
                         </div>
                     </div>

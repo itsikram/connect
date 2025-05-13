@@ -4,11 +4,11 @@ import AvatarEditor from "react-avatar-editor";
 import api from "../../api/api";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom"
-import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
-import SkeletonCard from "../../skletons/SkeletonCard";
-
-
-const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
+import ImageSkleton from "../../skletons/post/ImageSkleton";
+import checkImgLoading from "../../utils/checkImgLoading";
+import isValidUrl from "../../utils/isValiUrl";
+import PpSkleton from "../../skletons/profile/PpSkleton";
+const defaultPpSrc = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
 let ProfilePic = ({ profileData }) => {
     let { profile } = useParams()
@@ -18,10 +18,9 @@ let ProfilePic = ({ profileData }) => {
 
     const [isPPModal, setIsPPModal] = useState(false)
     const [isPPViewModal, setIsPPViewModal] = useState(false)
-    const [isCPViewModal, setIsCPViewModal] = useState(false)
     const [profileImage, setProfileimage] = useState()
-
-    const [imageExists, setImageExists] = useState(null);
+    const [ppUrl, setPpUrl] = useState(profileData.profilePic)
+    const [isPpLoaded, setIsPpLoaded] = useState(profileData.profilePic);
     const [hasStory, setHasStory] = useState(false);
     const [ppCaption, setPpCaption] = useState('');
     useEffect(() => {
@@ -32,22 +31,21 @@ let ProfilePic = ({ profileData }) => {
         })
 
     }, [profile])
-    var profilePic = profileData.profilePic;
-    var pp_url = profilePic;
-    const checkImage = (url) => {
-        const img = new Image();
-        img.src = url;
 
-        img.onload = () => setImageExists(true);
-        img.onerror = () => setImageExists(false);
-    };
+    useEffect(() => {
+        if(profileData) {
+        setPpUrl(isValidUrl(profileData.profilePic) ? profileData.profilePic : '')
 
-    checkImage(profilePic)
+        }else {
+            setPpUrl(defaultPpSrc)
+        }
+    },[profileData])
+
+    useEffect(e => {
+          ppUrl && checkImgLoading(ppUrl, setIsPpLoaded)
+    }, [ppUrl])
 
 
-    if (!imageExists) {
-        pp_url = default_pp_src
-    }
     // handle profile pic editors
     let profilePicEditor = ''
 
@@ -108,6 +106,7 @@ let ProfilePic = ({ profileData }) => {
                     PPostFormData.append('profilePicUrl', profilePicUrl)
                     PPostFormData.append('type', 'profilePic')
                     PPostFormData.append('caption', ppCaption)
+
                     let res = await api.post('/profile/update/profilePic', PPostFormData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
@@ -163,7 +162,7 @@ let ProfilePic = ({ profileData }) => {
 
 
                 <div className={`profilePic-container ${hasStory == 'yes' ? 'has-story' : ''}`} onClick={PPContainerClick}>
-                    <img src={pp_url} alt="Profile Pic" />
+                { isPpLoaded ? <img src={ppUrl} alt="" /> : <ImageSkleton  /> }
 
                 </div>
 

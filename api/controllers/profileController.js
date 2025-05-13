@@ -13,12 +13,12 @@ exports.prefileHasStory = async function (req, res, next) {
         let hasStory = await Story.exists({ author: profileId, createdAt: { $gte: twentyFourHoursAgo } })
         if (hasStory == null) {
             return res.json({ 'message': 'Story Not Available', 'hasStory': 'no' }).status(200)
-    
+
         } else {
             return res.json({ 'message': 'Story Available', 'hasStory': 'yes' }).status(200)
-    
+
         }
-    }else {
+    } else {
         return res.json({ 'message': 'Story Not Available', 'hasStory': 'no' }).status(400)
 
     }
@@ -29,10 +29,18 @@ exports.prefileHasStory = async function (req, res, next) {
 exports.profileGet = async function (req, res, next) {
     let profileId = req.query.profileId
     if (profileId == false) return;
+    console.log('usernasme not exits')
 
-    if (mongoose.isValidObjectId(profileId)) {
-        console.log('valid')
-        let hasProfile = await Profile.exists({ _id: profileId })
+    let hasUsername = await Profile.findOne({ username: profileId })
+    if (hasUsername) {
+        console.log('usernasme exits')
+        let profileData = await Profile.findOne({ username: profileId }).populate('user')
+        return res.json(profileData).status(200)
+
+    }
+
+    if (!hasUsername && mongoose.isValidObjectId(profileId)) {
+        let hasProfile = await Profile.findOne({ _id: profileId })
         if (!hasProfile) return res.json({ message: 'Profile Not Found' }).status(404)
         let profileData = await Profile.findOne({ _id: profileId }).populate('user')
         if (profileData) {
@@ -40,7 +48,10 @@ exports.profileGet = async function (req, res, next) {
         } else {
             return next()
         }
+    } else {
+
     }
+
 
     return next()
 }
@@ -141,18 +152,18 @@ exports.updateBioPost = async (req, res, next) => {
 }
 exports.updateProfile = async (req, res, next) => {
     try {
-        let reqData = {...req.body}
+        let reqData = { ...req.body }
 
-        if(req.body.firstName && req.body.surname ) {
+        if (req.body.firstName && req.body.surname) {
 
-            reqData.fullName = req.body.firstName+' '+ req.body.surname
+            reqData.fullName = req.body.firstName + ' ' + req.body.surname
 
-        let updatedUser = await User.findOneAndUpdate({_id: req.profile.user}, {
-            firstName: req.body.firstName,
-            surname: req.body.surname
-        },{new: true})
+            let updatedUser = await User.findOneAndUpdate({ _id: req.profile.user }, {
+                firstName: req.body.firstName,
+                surname: req.body.surname
+            }, { new: true })
 
-    }
+        }
 
         console.log(reqData)
 

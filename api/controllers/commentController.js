@@ -11,6 +11,7 @@ exports.postAddComment = async (req, res, next) => {
         let body = req.body.body|| ''
         let post = req.body.post || ''
         let profile = req.profile._id|| ''
+        let myProfileData = req.profile
 
         let io = req.app.get('io')
 
@@ -40,10 +41,10 @@ exports.postAddComment = async (req, res, next) => {
         if(updatePost.author._id !== profile) {
             let notification = {
                 receiverId: updatePost.author._id,
-                text: `${updatePost.author.fullName} Commented in your post`,
+                text: `${myProfileData.fullName} Commented in your post`,
                 link: '/post/'+post,
                 type: 'postComment',
-                icon: updatePost.author.profilePic
+                icon: myProfileData.profilePic
             }
 
             saveNotification(io, notification)
@@ -60,7 +61,8 @@ exports.storyAddComment = async (req, res, next) => {
     try {
         let body = req.body.body
         let storyId = req.body.storyId
-        let profile = req.profile._id
+        let myProfileData = req.profile
+        let profile = myProfileData._id
 
         let io = req.app.get('io')
         
@@ -83,10 +85,10 @@ exports.storyAddComment = async (req, res, next) => {
         if((updateStory.author._id).toString() !== (profile).toString()) {
             let notification = {
                 receiverId: updateStory.author._id,
-                text: `${updateStory.author.fullName} Commented in your Story`,
+                text: `${myProfileData.fullName} Commented in your Story`,
                 link: '/story/'+storyId,
                 type: 'storyComment',
-                icon: updateStory.author.profilePic
+                icon: myProfileData.profilePic
             }
     
             saveNotification(io, notification)
@@ -149,6 +151,7 @@ exports.postCommentReply = async (req, res, next) => {
         let authorId = req.body.authorId
         let replyMsg = req.body.replyMsg
         let myProfileId = req.profile._id
+        let myProfile = req.profile
         let io = req.app.get('io')
 
 
@@ -183,10 +186,10 @@ exports.postCommentReply = async (req, res, next) => {
                     if(updateComment.post.author._id !== myProfileId) {
                         let notification = {
                             receiverId: updateComment.post.author._id,
-                            text: `${updateComment.post.author.fullName} Replied to your comment`,
+                            text: `${myProfile.fullName} Replied to your comment`,
                             link: '/post/'+(updateComment.post).toString(),
                             type: 'postCommentReply',
-                            icon: updateComment.post.author.profilePic
+                            icon: myProfile.profilePic
                         }
                 
                         saveNotification(io, notification)
@@ -276,6 +279,7 @@ exports.removeReplyReact = async (req, res, next) => {
 exports.postDeleteComment = async (req, res, next) => {
     try {
         let commentId = req.body.commentId
+        console.log(commentId)
         let deleteComment = await Comment.findOneAndDelete({ _id: commentId })
         if (deleteComment) {
             await Post.findByIdAndUpdate({

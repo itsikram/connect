@@ -5,8 +5,7 @@ import { useSelector } from "react-redux";
 import { Link, useParams, useLocation } from "react-router-dom";
 import socket from "../../common/socket";
 import Moment from "react-moment";
-
-
+import MsgListSkleton from "../../skletons/message/MsgListSkleton";
 let isProfileActive = (id) => {
     return true
     socket.emit('is_active', { profileId: id, myId: profileId })
@@ -14,8 +13,6 @@ let isProfileActive = (id) => {
         return () => {
             return isUserActive;
         }
-
-
     })
 
 
@@ -24,6 +21,7 @@ let isProfileActive = (id) => {
 function truncateString(str, maxLength) {
     return str.length > maxLength ? str.slice(0, maxLength) + '...' : str
 }
+
 
 let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
 const profileId = userInfo.profile
@@ -42,7 +40,6 @@ const MessageList = () => {
     useEffect(() => {
 
         myContacts && myContacts.map((contact, index) => {
-
 
             setContactPerson(contact.person)
             setContactMessages(contact.messages)
@@ -134,7 +131,7 @@ const MessageList = () => {
                 <div className={"message-list-container"}>
                     <ul className={"message-list"}>
                         {
-                            myContacts ? myContacts.map((contactItem, index) => {
+                            myContacts.length > 0 ? myContacts.map((contactItem, index) => {
                                 let contactPerson = (contactItem.person)
                                 let contactMessages = (contactItem.messages || [])
                                 let authorFullName = contactPerson?.fullName
@@ -154,7 +151,7 @@ const MessageList = () => {
                                         </div>
                                     </li></Link>
 
-                            }) : <h4 className={"data-not-found"}>No Message List to Show</h4>
+                            }) : <MsgListSkleton count={5} /> // <h4 className={"data-not-found"}>No Message List to Show</h4>
                         }
 
                     </ul>

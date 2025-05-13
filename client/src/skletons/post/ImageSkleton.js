@@ -1,12 +1,15 @@
 import React from 'react';
 
 const ImageSkleton = ({ count = 1, style }) => {
-    return  Array(count).fill(0).map((_, index) => (
-      <div  key={index} className="skeleton-card no-border">
+  return Array(count).fill(0).map((_, index) => (
+    <div className='pp-skleton-container' style={{backgroundColor: 'gray'}}>
+      <div style={{ padding: 0 }} key={index} className="skeleton-card no-border">
         {/* Main Content */}
-        <div style={style} className="skeleton-main" />
+        <div style={{ padding: 0 }} className="skeleton-main" />
 
       </div>
-    ));
-  };
+    </div>
+
+  ));
+};
 export default ImageSkleton;

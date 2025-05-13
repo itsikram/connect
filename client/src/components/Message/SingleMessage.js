@@ -233,7 +233,7 @@ const SingleMessage = ({ index, msg, friendProfile, isActive, messages, setReply
             :
 
             (
-                <div className={`chat-message-container message-sent message-id-${msg._id} ${isReactedByMe === true || isReactedByFriend == true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
+                <div key={index} className={`chat-message-container message-sent message-id-${msg._id} ${isReactedByMe === true || isReactedByFriend == true ? 'message-reacted' : ''}`} data-toggle="tooltip" title={getMessageTime(msg.timestamp)}>
 
 
                     <div className={`chat-message ${isValidUrl(messages.attachment) && 'has-attachment'}`}>

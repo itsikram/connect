@@ -11,6 +11,14 @@ let settingSchema = new Schema({
     },
     isShareEmotion: Boolean,
     showIsTyping: Boolean,
+    ringtone: {
+        type: Number,
+        default: 1
+    },
+    themeMode: {
+        type: String,
+        default: 'dark'
+    },
 
     profile: {
         ref : Profile,

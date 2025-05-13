@@ -13,7 +13,9 @@ let PorfilePosts = () => {
     let {profile} = useParams()
     let myProfileData = useSelector(state => state.profile) || {}
     let isAuth = myProfileData._id === profile
+    let [profileData, setProfileData] = useState(false)
     const [posts,setPosts] = useState([])
+    const [bio,setBio] = useState(myProfileData.bio)
     let navigate = useNavigate()
 
     useEffect(() => {
@@ -26,12 +28,36 @@ let PorfilePosts = () => {
                 setPosts(res.data)
             }
         })
+
+        
+        api.get('/profile', {
+            params: {
+                profileId: profile
+            }
+        }).then((res) => {
+            setProfileData(res.data)
+
+        }).catch(e => console.log(e))
+
     },[profile])
+
+
+    useEffect(() => {
+
+        api.get('/profile', {
+            params: {
+                profileId: profile
+            }
+        }).then((res) => {
+            setProfileData(res.data)
+            setBio(res.data.bio)
+        }).catch(e => console.log(e))
+
+    }, [])
 
 
 
     // handle edit bio functions
-    const [bio,setBio] = useState(myProfileData.bio)
     let updateBioData = (e) => {
         setBio(e.target.value)
     }
@@ -42,7 +68,7 @@ let PorfilePosts = () => {
             if($(target).hasClass('edit-button')){
                 $(target).siblings('.bio-text').hide()
                 $(target).siblings('.bio-text-textarea').show()
-                $(target).siblings('.bio-text-textarea').val(bio || myProfileData.bio)
+                $(target).siblings('.bio-text-textarea').val(bio)
                 $(target).removeClass('edit-button')
                 $(target).addClass('save-button')
                 $(target).text('Save Bio')
@@ -75,7 +101,7 @@ let PorfilePosts = () => {
                     <h4 className="section-title">Intro</h4>
                     <div className="profile-bio">
                         <p className="bio-text">
-                            {bio || myProfileData.bio}
+                            {bio}
                         </p>
                         <textarea onChange={updateBioData} value={bio} className={"bio-text-textarea"}>
                             

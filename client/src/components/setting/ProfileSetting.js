@@ -17,7 +17,8 @@ const ProfileSetting = () => {
         nickname: '',
         username: '',
         workPlaces: [{}],
-        schools: [{}]
+        schools: [{}],
+        displayName: ''
     })
 
     useEffect(() => {
@@ -27,7 +28,8 @@ const ProfileSetting = () => {
             firstName: myProfile.user.firstName || '',
             surname: myProfile.user.surname || '',
             nickname: myProfile.nickname || '',
-            username: myProfile.username || ''
+            username: myProfile.username || '',
+            displayName: myProfile.displayName || ''
         })
 
     }, [myProfile])
@@ -42,7 +44,6 @@ const ProfileSetting = () => {
     let handleSubmitSettings = useCallback(async (e) => {
         e.preventDefault();
         let res = await api.post('/profile/update', settings)
-        console.log('setings', settings)
         if (res.status === 200) {
             dispatch(getProfileSuccess(res.data))
 
@@ -55,7 +56,7 @@ const ProfileSetting = () => {
                     <div style={{ color: "blue", fontWeight: "bold" }}>
                         <div className="row d-flex align-items-center">
                             <div className="col-3">
-                                <img className="rounded-circle w-100" src={myProfile.profilePic} alt="ICS" />
+                                <img className="rounded-circle w-100" src={myProfile.profilePic} alt="Connect" />
                             </div>
 
                             <div className="col-9">
@@ -197,6 +198,12 @@ const ProfileSetting = () => {
                             <label for="nickname">Nickname</label>
 
                             <input type="text" onChange={handleInputChange.bind(this)} value={settings.nickname} className="form-control" id="nickname" name='nickname' placeholder="Enter Nickname" />
+
+                        </div>
+                        <div className="form-group mb-2">
+                            <label for="displayName">Display Name</label>
+
+                            <input type="text" onChange={handleInputChange.bind(this)} value={settings.displayName} className="form-control" id="displayName" name='displayName' placeholder="Enter Display Name" />
 
                         </div>
 

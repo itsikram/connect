@@ -6,7 +6,7 @@ import api from '../../api/api';
 
 import { sendMessage } from '../../services/actions/messageActions';
 
-const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAttachment,messageActionButtonContainer,setIsReplying,userId,messageInput,replyData,isPreview, setIsPreview }) => {
+const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAttachment,messageActionButtonContainer,setIsReplying,userId,messageInput,replyData,isPreview, setIsPreview,msgListRef }) => {
 
     const dispatch = useDispatch()
     const [mInputWith, setmInputWith] = useState(true);
@@ -14,7 +14,28 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
     const [attachmentUrl, setAttachmentUrl] = useState(false)
     const imageInput = useRef(null);
     const settings = useSelector(state => state.setting)
+    const scrollToLastMessage = e => {
+        if (msgListRef.current != null) {
+            let isLastMsg = setInterval(() => {
+                let lastMsg = document.querySelector('#chatMessageList .chat-message-container:last-child')
+                    lastMsg?.scrollIntoView({ behavior: "smooth" });
+            }, 500)
 
+            msgListRef.current.addEventListener('scroll',e => {
+                let scrollBottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
+                console.log('scrl', e.target.scrollHeight, e.target.scrollTop,scrollBottom)
+
+                if(scrollBottom <= 5) {
+                clearInterval(isLastMsg)
+
+                }
+
+            })
+
+        }
+
+
+    }
     useEffect(() => {
         console.log('rdt', isReplying,replyData)
     },[replyData])
@@ -35,10 +56,7 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
                 setIsTyping(false)
                 dispatch(sendMessage(data))
 
-                setTimeout(() => {
-                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
-
-                }, 500);
+                scrollToLastMessage();
             } else {
                 let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: false }
                 socket.emit('sendMessage', data);
@@ -46,9 +64,8 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
                 setIsTyping(false)
                 dispatch(sendMessage(data))
 
-                setTimeout(() => {
-                    document.querySelector('#chatMessageList .chat-message-container:last-child')?.scrollIntoView({ behavior: "smooth" });
-                }, 500);
+                scrollToLastMessage();
+
             }
 
             setIsReplying(false)

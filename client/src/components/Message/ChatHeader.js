@@ -8,11 +8,14 @@ import Peer from 'simple-peer';
 import ModalContainer from '../modal/ModalContainer';
 import useIsMobile from '../../utils/useIsMobile';
 import api from '../../api/api';
+import checkImgLoading from '../../utils/checkImgLoading';
+import isValidUrl from '../../utils/isValiUrl';
 const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic }) => {
     const [emotion, setEmotion] = useState(false);
     const [myEmotion, setMyEmotion] = useState(false)
     const [friendId, setFriendId] = useState(false)
     const [isLoaded, setIsLoaded] = useState(false)
+    const [isPpLoaded, setIsPpLoaded] = useState(false)
     const [friendPP, setFriendPP] = useState(friendProfilePic)
     const [isMicrophone, setIsMicrophone] = useState(true)
     const [isBackCamera, setIsBackCamera] = useState(false);
@@ -29,6 +32,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
     const userVideo = useRef();
     const connectionRef = useRef();
     const callEndBtn = useRef();
+    const callingBeepAudio = useRef();
     let settings = useSelector(state => state.setting)
     let profile = useSelector(state => state.profile)
     let profileId = profile._id
@@ -39,7 +43,6 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
 
 
     let handleMicrophoneClick = useCallback(() => {
-        alert(isMicrophone)
         setIsMicrophone(!isMicrophone)
     })
 
@@ -47,21 +50,13 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
         return;
     }
 
+    let playCallingBeep = () => {
+        callingBeepAudio?.current.play();
+    }
+    let stopCallingBeep = () => {
+        callingBeepAudio?.current.pause();
+    }
 
-
-    useEffect(() => {
-
-        socket.on('videoCallEnd', (friendId) => {
-            let mouseEevent = new MouseEvent('click', { bubbles: true, cancelable: false })
-            if (callEndBtn.current) {
-                callEndBtn.current.dispatchEvent(mouseEevent)
-            }
-        })
-
-        return () => {
-            socket.off('videoCallEnd')
-        }
-    }, [])
 
     const callUser = (id) => {
         if (stream) {
@@ -93,6 +88,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
     useEffect(() => {
         socket.on('call-accepted', (signal) => {
             setCallAccepted(true);
+            stopCallingBeep();
             if (connectionRef.current && !connectionRef.current.destroyed) {
                 try {
                     connectionRef.current.signal(signal);
@@ -102,9 +98,22 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
             }
         });
 
+        socket.on('videoCallEnd', (friendId) => {
+            let mouseEevent = new MouseEvent('click', { bubbles: true, cancelable: false })
+            if (callEndBtn.current) {
+                callEndBtn.current.dispatchEvent(mouseEevent)
+            }
+        })
+        setIsLoaded(friendProfile._id ? true : false)
+
+        callingBeepAudio?.current.setAttribute('src', 'https://programmerikram.com/wp-content/uploads/2025/05/calling-beep.mp3')
+
         return () => {
             socket.off('call-accepted');
+            socket.off('videoCallEnd')
+
         };
+
     }, []);
 
 
@@ -145,11 +154,11 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
         setIsVideoCalling(true)
         let receiverId = e.currentTarget.dataset.id
         setReceiverId(receiverId)
-
+        playCallingBeep();
     })
 
-
     let handleLeaveCall = useCallback(() => {
+        stopCallingBeep();
         socket.emit('leaveVideoCall', friendId)
         if (stream) {
             stream.getTracks().forEach((track) => track.stop());
@@ -254,12 +263,22 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
     }, [location])
 
 
+
     useEffect(() => {
         setFriendId(friendProfile._id)
         socket.emit('last_emotion', { friendId: friendProfile._id, profileId })
         setIsLoaded(friendProfile._id ? true : false)
         setFriendPP(friendProfile?.profilePic)
     }, [friendProfile])
+
+
+    useEffect(() => {
+        if (isValidUrl(friendPP)) {
+            checkImgLoading(friendPP, setIsPpLoaded)
+        } else {
+            setFriendPP('')
+        }
+    }, [friendPP])
 
     useEffect(() => {
         if (myEmotion && friendId) {
@@ -303,28 +322,36 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
         setIsChatOptionMenu(!isChatOptionMenu)
     })
 
-    let handleBlockUser = useCallback(async(e) => {
-        let blockRes = await api.post('friend/block',{friendId})
-        if(blockRes.status == 200) {
+    let handleBlockUser = useCallback(async (e) => {
+        let blockRes = await api.post('friend/block', { friendId })
+        if (blockRes.status == 200) {
             alert('User Blocked')
         }
     })
-    let handleUnBlockUser = useCallback(async(e) => {
-        let blockRes = await api.post('friend/unblock',{friendId})
-        if(blockRes.status == 200) {
+    let handleUnBlockUser = useCallback(async (e) => {
+        let blockRes = await api.post('friend/unblock', { friendId })
+        if (blockRes.status == 200) {
             alert('User unblocked')
         }
     })
-    let handleViewProfile = useCallback(async(e) => {
+    let handleViewProfile = useCallback(async (e) => {
         navigate(`/${friendId}`)
     })
 
     return (
         <>
 
-            <div className={`chat-header-user ${!isLoaded && 'skleton-card'}`}>
+            <div className={`chat-header-user ${'skleton-card'}`}>
                 <div className='chat-header-profilePic'>
-                    <UserPP profilePic={`${friendPP}`} hasStory={false} profile={friendProfile._id} active={isActive ? true : false}></UserPP>
+
+                    {
+
+                        !isLoaded ? <div className="skeleton-header">
+                            <div className="skeleton-avatar" />
+
+                        </div>
+                            : <UserPP profilePic={`${friendPP}`} hasStory={false} profile={friendProfile._id} active={isActive ? true : false}></UserPP>
+                    }
                 </div>
 
                 {
@@ -374,7 +401,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
                                 {
                                     profile?.blockedUsers.includes(friendId) ? <><li onClick={handleUnBlockUser.bind(this)}>Unblock {friendProfile.user.firstName}</li></> : <><li onClick={handleBlockUser.bind(this)}>Block {friendProfile.user.firstName}</li></>
                                 }
-                                
+
                                 <li>Report {friendProfile.user.firstName}</li>
                             </ul>
                         </div>
@@ -439,6 +466,8 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
                     <video style={{ display: 'none' }} ref={cameraVideoRef} autoPlay muted width="600" height="400" />
                 )
             }
+
+            <audio ref={callingBeepAudio} src='' loop />
 
         </>
     );

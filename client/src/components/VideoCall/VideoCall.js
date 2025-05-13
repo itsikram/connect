@@ -5,12 +5,15 @@ import Peer from 'simple-peer';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import useIsMobile from '../../utils/useIsMobile';
+// import getRingtoneSrc from '../../utils/getRingtoneSrc';
+
+import ringtones from '../../config/ringtones.json'
+
+
 const VideoCall = ({ myId }) => {
     let [isVideoCall, setIsVideoCall] = useState(false)
-    let myProfile = useSelector(state => state.profile)
-    let params = useParams();
+    const mySettings = useSelector(state => state.setting)
     const [stream, setStream] = useState();
-    const [me, setMe] = useState('');
     const [callerName, setCallerName] = useState('');
     const [receivingCall, setReceivingCall] = useState(false);
     const [caller, setCaller] = useState('');
@@ -19,27 +22,64 @@ const VideoCall = ({ myId }) => {
     const [isMicrophone, setIsMicrophone] = useState(true);
     const [isBackCamera, setIsBackCamera] = useState(false);
 
+
+
     const myVideo = useRef();
     const userVideo = useRef();
     const connectionRef = useRef();
     const callEndBtn = useRef();
+    const ringtoneAudio = useRef();
 
     const isMobile = useIsMobile();
+
+
+
+    let stopRingtone = () => {
+        ringtoneAudio?.current.pause();
+    }
+
+    let playRingtone = () => {
+        setTimeout(() => {
+            ringtoneAudio?.current.play();
+        }, 500)
+    }
+
 
     let closeVideoCall = e => {
         return;
     }
 
     useEffect(() => {
+        if (mySettings.ringtone) {
+            let ringtone = ringtones.filter(ringtone => ringtone.id == mySettings.ringtone)
+            let toneSrc = ringtone.length > 0 ? ringtone[0]?.src : "no ring tone"
+            ringtoneAudio?.current.setAttribute('src', toneSrc)
+        }
+    }, [mySettings])
+
+    useEffect(() => {
+
+        if (receivingCall) {
+
+        }
+
+    }, [receivingCall])
+
+
+
+    useEffect(() => {
+
         socket.on('receive-call', (data) => {
             setIsVideoCall(true)
             setReceivingCall(true);
             setCaller(data.from);
             setCallerSignal(data.signal);
             setCallerName(data.name)
+            playRingtone();
         });
 
         socket.on('videoCallEnd', (leaveVideoCall) => {
+            stopRingtone();
             let mouseEevent = new MouseEvent('click', { bubbles: true, cancelable: false })
             if (callEndBtn.current) {
                 callEndBtn.current.dispatchEvent(mouseEevent)
@@ -68,30 +108,14 @@ const VideoCall = ({ myId }) => {
                         }
                     });
                 })
-            // navigator.mediaDevices.getUserMedia({
-            //     video: {
-            //         facingMode: {
-            //             ideal: isBackCamera ? "environment" : 'environment'
-            //         }
-            //     },
-            //     audio: isMicrophone
-            // }).then((stream) => {
-            //     setStream(stream);
-            //     if (myVideo.current) {
-            //         myVideo.current.srcObject = stream;
-            //     }
-            // });
+
         }
     }, [isVideoCall])
 
 
 
-    useEffect(() => {
-        if (myProfile._id) return setMe(myProfile._id)
-
-    }, [myProfile])
-
     const answerCall = () => {
+        stopRingtone();
         if (!callerSignal) {
             console.warn("No caller signal to answer");
             return;
@@ -136,11 +160,12 @@ const VideoCall = ({ myId }) => {
             }
         })
 
-        // return socket.off('leaveVideoCall')
     }, [])
 
 
     let endCall = useCallback(() => {
+        stopRingtone();
+
         socket.emit('leaveVideoCall', caller)
         if (stream) {
             stream.getTracks().forEach((track) => track.stop());
@@ -232,6 +257,7 @@ const VideoCall = ({ myId }) => {
 
                 </div>
             </ModalContainer>
+            <audio ref={ringtoneAudio} loop />
         </div>
     );
 }

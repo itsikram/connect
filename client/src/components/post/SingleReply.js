@@ -7,7 +7,7 @@ import $ from 'jquery'
 const SingleReply = ({item,myProfile,setReplies,comment,replies}) => {
     let myId = myProfile._id
     let [isReplyOption, setIsReplyOption] = useState(false)
-    let [totalReacts, setTotalReacts] = useState(item.reacts.length)
+    let [totalReacts, setTotalReacts] = useState(item?.reacts.length)
     let [isReply, setIsReply] = useState(false)
     // let [replyList, setReplyList] = 
     let handleReplyOptionClick = e => {

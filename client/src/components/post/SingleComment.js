@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useMemo } from "react";
 import Moment from 'react-moment';
 import { Link } from 'react-router-dom';
 import SingleReply from "./singleReply";
@@ -7,29 +7,25 @@ import $ from 'jquery'
 import api from '../../api/api';
 
 
-const SingleComment = (props) => {
+const SingleComment = ({ comment, postData, myProfile }) => {
 
-    let post = props.post || {}
-    let myProfile = props.myProfile ? props.myProfile : {}
-    let [comment, setComment] = useState(props.comment)
     let myId = myProfile._id
     let [totalComment, setTotalComment] = useState(0)
     let [isReacted, setIsReacted] = useState(false);
     let [isReply, setIsReply] = useState(false)
-    let [replies, setReplies] = useState(props.comment?.replies)
+    let [replies, setReplies] = useState(comment?.replies)
+    const post = postData // useMemo((postData) => postData,[])
 
 
     useEffect(() => {
-        setComment(props.comment)
-        setTotalComment(props.comment.reacts.length || 0)
-        setIsReacted(props.comment.reacts.includes(myId))
-        // setReplies(props.comment.replies)
-    },[props])
+        setTotalComment(comment.reacts.length || 0)
+        setIsReacted(comment.reacts.includes(myId))
+    }, [comment])
 
     let handleCommentReplyBtnClick = async (e) => {
         setIsReply(!isReply)
     }
-    
+
     let [replyData, setReplyData] = useState({
         body: null,
         attachment: null
@@ -41,10 +37,14 @@ const SingleComment = (props) => {
             let postId = post._id;
 
             $(e.currentTarget).parents('.comment-container').remove();
+
             let dltRes = await api.post('/comment/deleteComment', { commentId, postId })
             if (dltRes.status === 200) {
-                let data = dltRes.data
-                data.author = myProfile
+
+                // let data = dltRes.data
+                // data.author = myProfile
+                // return commentState(state => state - 1)
+
             }
         } catch (error) {
             console.log(error)
@@ -67,12 +67,12 @@ const SingleComment = (props) => {
             let commentId = e.currentTarget.dataset.comment
             if (replyData) {
                 let uploadReplyRes = await api.post('/comment/addReply', { replyMsg: replyData.body, authorId: myProfile._id, commentId })
-                if(uploadReplyRes.status == 200) {
+                if (uploadReplyRes.status == 200) {
                     setIsReply(false)
                     let newReplyData = uploadReplyRes.data;
-                    setReplies(replies => [...replies,newReplyData])
+                    setReplies(replies => [...replies, newReplyData])
                 }
-                
+
             }
         }
 
@@ -83,12 +83,12 @@ const SingleComment = (props) => {
         let commentId = e.currentTarget.dataset.comment
         if (replyData) {
             let uploadReplyRes = await api.post('/comment/addReply', { replyMsg: replyData.body, authorId: myProfile._id, commentId })
-            if(uploadReplyRes.status == 200) {
+            if (uploadReplyRes.status == 200) {
                 setIsReply(false)
                 let newReplyData = uploadReplyRes.data;
-                setReplies(replies => [...replies,newReplyData])
+                setReplies(replies => [...replies, newReplyData])
             }
-            
+
         }
     }
 
@@ -164,7 +164,7 @@ const SingleComment = (props) => {
 
                     </div>
 
-                    
+
 
                     <div className="comment-react">
                         <div className={`like button ${isReacted ? 'reacted' : ''}`} onClick={handleCommentLikeBtnClick.bind(this)} data-id={comment._id}>Like {`${totalComment > 0 ? '(' + totalComment + ')' : ''}`}</div>

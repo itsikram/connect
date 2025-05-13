@@ -13,16 +13,26 @@ import { setLoading } from "../services/actions/optionAction";
 let Profile = (props) => {
     let params = useParams()
     let dispatch = useDispatch()
-    let isLoading = useSelector(state => state.option.isLoading)
-
     let myProfileData = useSelector(state => state.profile) || {}
     let myProfileId = myProfileData._id
-    let [profileData, setProfileData] = useState({ ...myProfileData })
-    let [isAuth, setIsAuth] = useState(false)
+    let [isAuth, setIsAuth] = useState(params.profile === myProfileId || params.profile == myProfileData.username? true : false)
+    let [profileData, setProfileData] = useState(isAuth ? {  ...myProfileData  }: {})
+
+    useEffect(() => {
+        setIsAuth(params.profile === myProfileId? true : false)
+        
+        myProfileData.friends && myProfileData.friends.filter(friendData => {
+            if (friendData._id === params.profile) {
+                setIsFriend(true)
+            }
+        })
+    },[myProfileData])
+
     let [isFriend, setIsFriend] = useState(false)
 
     // setting effects
     useEffect(() => {
+        if(isAuth) return;
         dispatch(setLoading(true))
 
         try {
@@ -30,7 +40,6 @@ let Profile = (props) => {
             api.post('/profile', { profile: params.profile }).then(res => {
                 if (res.status === 200) {
                     setProfileData(res.data)
-
                     dispatch(setLoading(false))
                 }
 
@@ -44,15 +53,7 @@ let Profile = (props) => {
 
     }, [params])
 
-    useEffect(() => {
-        setIsAuth(params.profile === myProfileId? true : false)
-        
-        myProfileData.friends && myProfileData.friends.filter(friendData => {
-            if (friendData._id === params.profile) {
-                setIsFriend(true)
-            }
-        })
-    },[myProfileData])
+
     let profilePath = "/" + profileData._id + "/"
 
     const SkeletonLoader = () => (
@@ -106,8 +107,8 @@ let Profile = (props) => {
                                 <NavLink to={profilePath} onClick={profileTabItemClick} className="header-nav-menu-item">Posts</NavLink>
                                 <NavLink to={profilePath + "about"} onClick={profileTabItemClick} className="header-nav-menu-item">About</NavLink>
                                 <NavLink to={profilePath + "friends"} onClick={profileTabItemClick} className="header-nav-menu-item"> Friends</NavLink>
-                                <NavLink to="/profile/images" onClick={profileTabItemClick} className="header-nav-menu-item">Images</NavLink>
-                                <NavLink to="/profile/videos" onClick={profileTabItemClick} className="header-nav-menu-item">Videos</NavLink>
+                                <NavLink to={profilePath + "images"} onClick={profileTabItemClick} className="header-nav-menu-item">Images</NavLink>
+                                <NavLink to={profilePath + "videos"} onClick={profileTabItemClick} className="header-nav-menu-item">Videos</NavLink>
                                 <NavLink to="/profile/likes" onClick={profileTabItemClick} className="header-nav-menu-item">Likes</NavLink>
                                 <NavLink to="/profile/events" onClick={profileTabItemClick} className="header-nav-menu-item">Events</NavLink>
                             </div>

@@ -18,6 +18,7 @@ import Call from './Call.js'
 import ProfileAbout from "../components/Profile/ProfileAbout";
 import PorfilePosts from "../components/Profile/PorfilePosts";
 import ProfileFriends from "../components/Profile/ProfileFriends";
+import ProfileVideos from '../components/Profile/ProfileVideos.js'
 import VideoCall from "../components/VideoCall/VideoCall.js";
 import SinglePost from "../components/post/SinglePost.js";
 import PostComments from "../components/post/PostComments.js";
@@ -36,7 +37,9 @@ import { setBodyHeight, setHeaderHeight, setLoading } from "../services/actions/
 import Settings from "./Settings";
 import ProfileIkramul from "./ProfileIkramul";
 import socket from '../common/socket.js'
-import AudioCall from "../components/AudioCall/AudioCall.js";
+
+
+
 import { loadSettings } from "../services/actions/settingsActions.js";
 import ProfileSetting from "../components/setting/ProfileSetting.js";
 import AccountSetting from "../components/setting/AccountSetting.js";
@@ -44,6 +47,7 @@ import PrivacySetting from "../components/setting/PrivacySetting.js";
 import NotificationSetting from "../components/setting/NotificationSetting.js";
 import MessageSetting from "../components/setting/MessageSetting.js";
 import PreferenceSetting from "../components/setting/PreferenceSetting.js";
+import SoundSetting from "../components/setting/SoundSetting.js";
 
 function showNotification(msg, receiverId) {
     const notification = new Notification("New Message!", {
@@ -106,7 +110,7 @@ const Main = () => {
                 <div style={{ color: "blue", fontWeight: "bold" }}>
                     <div className="row d-flex align-items-center">
                         <div className="col-3">
-                            <img className="rounded-circle w-100" src={senderPP} alt="ICS" />
+                            <img className="rounded-circle w-100" src={senderPP} alt="connect" />
                         </div>
     
                         <div className="col-9">
@@ -148,7 +152,7 @@ const Main = () => {
 
         socket.on('bumpUser',((friend, profile) => {
 
-            notify(`${friend.fullName} Bumped you`,friend.fullName, friend.profilePic,'/message/'+profile._id)
+            notify(`${profile.fullName} Bumped you`,friend.fullName, profile.profilePic,'/message/'+profile._id)
 
         })) 
 
@@ -256,6 +260,7 @@ const Main = () => {
                                 <Route index element={<PorfilePosts />} />
                                 <Route path="about" element={<ProfileAbout />} />
                                 <Route path="friends" element={<ProfileFriends />}></Route>
+                                <Route path="videos" element={<ProfileVideos />}></Route>
                             </Route>
                             <Route path="/story/" element={<Story />}> </Route>
 
@@ -292,11 +297,12 @@ const Main = () => {
 
                             <Route path="/settings/" element={<Settings />}>
                                 <Route index element={<ProfileSetting/>} />
-                                <Route path="account/" element={<AccountSetting />} />
+                                <Route path="account" element={<AccountSetting />} />
                                 <Route path="privacy" element={<PrivacySetting />} />
                                 <Route path="notification" element={<NotificationSetting />} />
                                 <Route path="message" element={<MessageSetting />} />
                                 <Route path="preference" element={<PreferenceSetting />} />
+                                <Route path="sound" element={<SoundSetting />} />
                             </Route>
 
                         </Route>

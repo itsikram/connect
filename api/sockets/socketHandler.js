@@ -2,11 +2,17 @@ const messageSocket = require('./messageSocket')
 const {notificationSocket} = require('../controllers/notificationController')
 const Profile = require('../models/Profile')
 const User = require('../models/User')
+const Post = require('../models/Post')
 module.exports = function socketHandler(io){
 
     io.on('connection', (socket) => {
         console.log(`User connected: ${socket.id}`);
         let rooms = [socket.handshake.query.profile]
+
+
+        socket.on('viewPost', ({visitorId, postId})=> {
+            console.log('Visited By :', visitorId, postId)
+        })
 
 
         socket.on('bump', (friendProfile,myProfile) => {

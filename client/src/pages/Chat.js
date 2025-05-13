@@ -11,6 +11,7 @@ import { sendMessage } from "../services/actions/messageActions";
 import ChatHeader from '../components/Message/ChatHeader';
 import ChatFooter from '../components/Message/ChatFooter';
 import useIsMobile from '../utils/useIsMobile';
+import SingleMsgSkleton from '../skletons/message/SingleMsgSkleton';
 
 
 
@@ -303,14 +304,16 @@ const Chat = ({ socket }) => {
                     <div className='chat-message-list' style={cmlStyles} id='chatMessageList' ref={msgListRef} >
 
                         {
-                            messages.map((msg, index) => {
+                            messages.length > 0 ? messages.map((msg, index) => {
 
                                 return (
                                     <SingleMessage key={index} msg={msg} friendProfile={friendProfile} messages={messages} isActive={isActive} setIsReplying={setIsReplying} setReplyData={setReplyData} isPreview={isPreview} setIsPreview={setIsPreview} msgListRef={msgListRef} isMsgLoading={isMsgLoading}/>
                                 )
-                            })
+                            }): <SingleMsgSkleton count={10} />
 
-                        }
+                        } 
+
+                       
 
                         {
                             isTyping && (

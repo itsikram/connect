@@ -17,6 +17,9 @@ let profileSchema = new Schema({
     fullName: {
         type: String,
     },
+    displayName: {
+        type: String,
+    },
     coverPic: {
         type: String,
         default: 'https://programmerikram.com/wp-content/uploads/2025/03/default-cover.png'

@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import UserPP from '../../components/UserPP';
 import socket from '../../common/socket';
+import RsMenuItemSkleton from '../../skletons/rs/RsMenuItemSkleton';
 
 let RightSidebar = () => {
     let params = useParams();
@@ -62,7 +63,7 @@ let RightSidebar = () => {
                 <h3 className="rs-nav-title">Contacts</h3>
                 <ul className="rs-nav-menu">
                     {
-                        friendsData && friendsData.length > 1 && friendsData.map((data, index) => {
+                        friendsData && friendsData.length > 1 ? friendsData.map((data, index) => {
 
                             let isFrndActive = activeFriends.includes(data._id)
 
@@ -79,7 +80,8 @@ let RightSidebar = () => {
                                     <div className='rs-text user-name'>{data.fullName ? data.fullName : data.user.firstName + ' ' + data.user.surname}</div>
                                 </div>
                             </li>
-                        })
+                        }) :
+                        <RsMenuItemSkleton count={10} />
                     }
 
                 </ul>

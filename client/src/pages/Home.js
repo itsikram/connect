@@ -53,7 +53,6 @@ let Home = () => {
             setStories(strRes.data)
         }
         dispatch(setLoading(false))
-
     }
 
 
@@ -99,6 +98,10 @@ let Home = () => {
         loadData()
         // fetching newsfeed posts
     }, [])
+
+    let handlePostEnter = (postId) => {
+        console.log(postId)
+    }
 
     return (
         <Fragment>
@@ -162,7 +165,7 @@ let Home = () => {
                                     {
                                         newsFeeds.length > 0 ?
                                             newsFeeds.map((newsFeed,index) => {
-                                                return <Post key={index} data={newsFeed}></Post>
+                                                return <Post key={index} data={newsFeed} handlePostEnter={handlePostEnter.bind(this)}></Post>
                                             })
 
                                             : <PostSkeleton count={3} />

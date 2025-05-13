@@ -12,11 +12,17 @@ import socket from "../../common/socket";
 import ImageSkleton from "../../skletons/post/ImageSkleton";
 import ModalContainer from "../modal/ModalContainer";
 import useIsMobile from "../../utils/useIsMobile"
-import { NavItem } from "react-bootstrap";
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
 const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
 const Rhaha = 'https://programmerikram.com/wp-content/uploads/2025/03/haha-icon.svg';
 const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
+
+let getLastPostId = () => {
+    localStorage.getItem('lastPostId')
+}
+let setVisitedPost = (id) => {
+    localStorage.setItem('lastPostId', id)
+}
 
 
 let Post = (props) => {
@@ -26,7 +32,10 @@ let Post = (props) => {
     let postAuthorProfileId = post?.author._id
     let [totalReacts, setTotalReacts] = useState(post.reacts.length)
     let [totalShares, setTotalShares] = useState(post.shares.length)
+
     let [totalComments, setTotalComments] = useState(post.comments.length)
+    let [allComments, setAllComments] = useState(post.comments)
+
     let [isActive, setIsActive] = useState(false)
     let [reactType, setReactType] = useState(false);
     let [shareCap, setShareCap] = useState('');
@@ -37,6 +46,29 @@ let Post = (props) => {
     const [thumbExists, setThumbExists] = useState(null);
     let isMobile = useIsMobile();
     let navigate = useNavigate()
+    let nfPosts = useRef();
+    let displayedPost = useRef();
+
+    // useEffect(() => {
+    //     const observer = new IntersectionObserver(
+    //         entries => {
+    //             entries.forEach(entry => {
+    //                 if (entry.isIntersecting) {
+    //                     const id = entry.target.dataset.id;
+    //                     props.handlePostEnter(id);
+    //                 }
+    //             });
+    //         },
+    //         { threshold: 0.5 } // Trigger when 50% of the element is visible
+    //     );
+
+    //     nfPosts?.current.forEach(el => {
+    //         if (el) observer.observe(el);
+    //     });
+
+    //     return () => observer.disconnect();
+    // }, [props.handlePostEnter]);
+
 
     useEffect(() => {
 
@@ -51,6 +83,7 @@ let Post = (props) => {
         return () => socket.off('is_active');
 
     }, [myProfile])
+
 
 
     var isAuth = myProfileId === postAuthorProfileId ? true : false;
@@ -155,29 +188,29 @@ let Post = (props) => {
 
     let removeReact = async (postType = 'post', target = null) => {
         setTotalReacts(state => state - 1)
-
         let res = await api.post('/react/removeReact', { id: post._id, postType: 'post' })
         if (res.status === 200) {
-            setTotalReacts(res.data.reacts.length)
-
             setReactType('')
             return true;
         } else {
-            return false;
+            setTotalReacts(state => state - 1)
         }
     }
     let placeReact = async (reactType, postType = 'post', target = null) => {
         setTotalReacts(state => state + 1)
+        setTotalReacts(state => state + 1)
+        setPlacedReacts([...placedReacts, reactType])
+        setReactType(reactType)
 
         let placeRes = await api.post('/react/addReact', { id: post._id, postType, reactType })
         if (placeRes.status === 200) {
-            setTotalReacts(placeRes.data.reacts.length)
-            setPlacedReacts([...placedReacts, reactType])
-            setReactType(reactType)
+
 
             return true;
         } else {
-            return false;
+            setTotalReacts(post.reacts)
+            setPlacedReacts([...placedReacts])
+            setReactType('')
         }
 
     }
@@ -274,19 +307,13 @@ let Post = (props) => {
     let onCloseShareReq = () => {
         setIsShareModal(false)
     }
-    let onChareCapChange = useCallback((e) => {
-        let focusEvent = new CustomEvent('focus', { bubbles: true, cancelable: true })
-        let newCaption = e.currentTarget.value
-        setShareCap(newCaption)
-        // this.dispatchEvent(focusEvent)
-        // return setShareCap(newCaption)
-        // alert(newCaption)
-    })
+
     let onClickShareNow = useCallback(async (e) => {
         e.preventDefault();
         let res = await api.post('post/share', { postId: post._id, caption: shareCap })
 
         if (res.status == 200) {
+            setTotalShares(state => state + 1)
             setIsShareModal(false)
         }
     })
@@ -320,11 +347,43 @@ let Post = (props) => {
         setIsPostOption(!isPostOption)
     })
 
+    // function isElementNearTop(el, offset = 10) {
+    //     if (el == null) return;
+    //     const rect = el.getBoundingClientRect();
+    //     return rect.top <= offset;
+    // }
+
+    useEffect(() => {
+
+
+        // window.addEventListener('scroll', () => {
+        //     if (isElementNearTop(nfPosts?.current)) {
+        //         document.querySelectorAll('.nf-post').forEach((element => {
+        //             // element.pause();
+        //         }))
+        //         // displayedPost.current.style.display = 'none'
+        //         let postId = post._id;
+        //         let lastId = getLastPostId()
+        //         if (lastId == postId) {
+        //             return
+
+        //         } else {
+        //             socket.emit('viewPost', {
+        //                 visitorId: myProfileId,
+        //                 postId: post._id,
+        //             })
+        //             setVisitedPost(postId)
+        //         }
+
+        //     }
+        // });
+    }, [])
+
     let PostContent = () => {
         switch (type) {
             case 'share':
                 return (
-                    <div className="share-nf-post nf-post">
+                    <div data-id={post._id} className="share-nf-post nf-post">
                         <div className="header">
                             <div className="reason">
                                 <span className="">
@@ -367,7 +426,7 @@ let Post = (props) => {
                                 </div>
                             </div>
                         </div>
-                        <div className="body">
+                        <div ref={displayedPost} className="body">
                             <p className="caption">
                                 {post.caption}
                             </p>
@@ -519,61 +578,68 @@ let Post = (props) => {
                                         </span>
                                         <span className="text">Comment</span>
                                     </div>
-                                    <div onClick={shareOnClick} className="share button">
-                                        <span className="icon">
-                                            <i className="far fa-share"></i>
-                                        </span>
-                                        <span className="text">Share</span>
 
-                                    </div>
-                                    <ModalContainer
-                                        title="Share Post"
-                                        style={{ width: isMobile ? '95%' : "600px", top: "50%" }}
-                                        isOpen={isShareModal}
-                                        onRequestClose={onCloseShareReq}
-                                        id="cp-view-modal"
-                                    >
-                                        <div className="modal-header">
-                                            <div></div>
-                                            <div onClick={onCloseShareReq} className="modal-close-btn text-danger"><i className="far fa-times"></i></div>
-                                        </div>
-                                        <div className="modal-body">
-                                            <div className="share-post-container">
-                                                <div className="share-post-header">
-                                                    <div className="row">
-                                                        <div className="col-1">
-                                                            <UserPP profilePic={myProfile.profilePic}></UserPP>
-
-                                                        </div>
-                                                        <div className="col-3">
-                                                            <h3>{myProfile.fullName}</h3>
-                                                        </div>
-                                                    </div>
-                                                    <div className="row">
-                                                        <div className="col">
-                                                            You're Sharing {post.author.fullName || 'Someone'}'s Post
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="share-post-body my-3">
-                                                    <textarea className="form-control" rows="3" placeholder="What's On Your Mind?" onChange={(e) => setShareCap(e.target.value)} value={shareCap}></textarea>
-                                                    <div className="share-post-button text-end mt-2">
-                                                        <button className="btn btn-primary" onClick={onClickShareNow.bind(this)}>Share Now</button>
-                                                    </div>
-                                                </div>
-
-                                                <div className="share-post-footer">
-                                                    {/* <button className="btn btn-primary">Share Now</button> */}
-                                                </div>
+                                    {
+                                        !isAuth && <>
+                                            <div onClick={shareOnClick} className="share button">
+                                                <span className="icon">
+                                                    <i className="far fa-share"></i>
+                                                </span>
+                                                <span className="text">Share</span>
 
                                             </div>
-                                        </div>
+                                            <ModalContainer
+                                                title="Share Post"
+                                                style={{ width: isMobile ? '95%' : "600px", top: "50%" }}
+                                                isOpen={isShareModal}
+                                                onRequestClose={onCloseShareReq}
+                                                id="cp-view-modal"
+                                            >
+                                                <div className="modal-header">
+                                                    <div></div>
+                                                    <div onClick={onCloseShareReq} className="modal-close-btn text-danger"><i className="far fa-times"></i></div>
+                                                </div>
+                                                <div className="modal-body">
+                                                    <div className="share-post-container">
+                                                        <div className="share-post-header">
+                                                            <div className="row">
+                                                                <div className="col-1">
+                                                                    <UserPP profilePic={myProfile.profilePic}></UserPP>
+
+                                                                </div>
+                                                                <div className="col-3">
+                                                                    <h3>{myProfile.fullName}</h3>
+                                                                </div>
+                                                            </div>
+                                                            <div className="row">
+                                                                <div className="col">
+                                                                    You're Sharing {post.author.fullName || 'Someone'}'s Post
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="share-post-body my-3">
+                                                            <textarea className="form-control" rows="3" placeholder="What's On Your Mind?" onChange={(e) => setShareCap(e.target.value)} value={shareCap}></textarea>
+                                                            <div className="share-post-button text-end mt-2">
+                                                                <button className="btn btn-primary" onClick={onClickShareNow.bind(this)}>Share Now</button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="share-post-footer">
+                                                            {/* <button className="btn btn-primary">Share Now</button> */}
+                                                        </div>
+
+                                                    </div>
+                                                </div>
 
 
-                                    </ModalContainer>
+                                            </ModalContainer>
+                                        </>
+                                    }
+
+
                                 </div>
                             </div>
-                            <PostComment post={post} commentState={setTotalComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>
+                            <PostComment post={post} commentState={setTotalComments} allComments={allComments} setAllComments={setAllComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>
 
 
 
@@ -585,7 +651,7 @@ let Post = (props) => {
 
             default:
                 return (
-                    <div className={`nf-post ${type}`}>
+                    <div data-id={post._id}  className={`nf-post ${type}`}>
                         <div className="header">
                             {
                                 type === 'profilePic' &&
@@ -642,7 +708,7 @@ let Post = (props) => {
                             </div>
 
                         </div>
-                        <div className="body">
+                        <div ref={displayedPost} className="body">
                             <p className="caption">
                                 {post.caption}
                             </p>
@@ -800,7 +866,7 @@ let Post = (props) => {
                                     </ModalContainer>
                                 </div>
                             </div>
-                            <PostComment post={post} commentState={setTotalComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>
+                            <PostComment post={post} commentState={setTotalComments} allComments={allComments} setAllComments={setAllComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>
 
 
 

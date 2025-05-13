@@ -6515,6 +6515,23 @@ body {
 
 // Animations
 
+
+.sm-skleton.message-sent {
+    float: right;
+    margin: 0;
+    margin-top: 5px !important;
+    .skeleton-line {
+        margin-left: auto;;
+    }
+    background-color: rgba(41, 177, 169, 0.25);
+}
+.sm-skleton.message-received {
+        margin: 0;
+    margin-top: 5px !important;
+    padding: 0;
+
+}
+
 @keyframes pulseSkeleton {
 
     0%,

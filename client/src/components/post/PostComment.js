@@ -1,4 +1,4 @@
-import React, { useState, Fragment, useEffect } from 'react';
+import React, { useState, Fragment, useEffect , useRef } from 'react';
 import $ from 'jquery'
 import UserPP from '../UserPP';
 import api from '../../api/api';
@@ -16,41 +16,35 @@ function isValidUrl(str) {
     return !!pattern.test(str);
 }
 
-const PostComment = (props) => {
-    let authProfilePicture = props.authProfilePicture
-    let authProfileId = props.authProfile;
-    let myProfile = props.myProfile ? props.myProfile : {}
-    let isAuth = myProfile._id === authProfileId
+const PostComment = ({ post, authProfilePicture, authProfile, myProfile, setAllComments, allComments = [], commentState }) => {
+    let isAuth = myProfile._id === authProfile
     const location = useLocation();
-
-    let [isSingle, setIsSingle] = useState(location.pathname.includes(`/${(props?.post?._id || '').toString()}`));
+    let [isSingle, setIsSingle] = useState(location.pathname.includes(`/${(post?._id || '').toString()}`));
 
     useEffect(() => {
         setIsSingle(location.pathname.includes(`/${(post?._id || '').toString()}`))
-    }, [[],location])
+    }, [[], location])
 
-    let [post,setPost] = useState({})
-    let [allComments, setAllComments] = useState(isSingle ? props.post.comments : props.post.comments.slice(-2))
+    // let [post, setPost] = useState({})
+    // let [allComments, setAllComments] = useState([])
     let [uploadedImageUrl, setUploadedImageUrl] = useState(null);
-    let [isNewCmnt, setIsNewCmnt] = useState(2);
-
 
     // handle all comment state 
 
 
-    useEffect(() => {
-        setPost(props.post || {})
-        // setAllComments(props.post.comments && props.post.comments.reverse())
-    },[props])
+    // useEffect(() => {
+    //     setAllComments(props.post.comments)
+    //     // setAllComments(props.post.comments && props.post.comments.reverse())
+    // }, [props])
 
 
-    useEffect(() => {
-        // setAllComments((post.comments || []).reverse())
-    },[post]) 
+    // useEffect(() => {
+    //     setAllComments(props.post.comments)
+    // }, [post])
 
 
 
-    
+
     let [commentData, setCommentData] = useState({
         body: null,
         attachment: null
@@ -116,29 +110,37 @@ const PostComment = (props) => {
                 commentFormData.append('body', commentData.body == null ? '' : commentData.body)
                 commentFormData.append('attachment', uploadedImageUrl == null ? '' : uploadedImageUrl)
                 commentFormData.append('post', post._id)
-
                 let res = await api.post('/comment/addComment', {
                     body: commentData.body,
                     attachment: uploadedImageUrl,
                     post: (post._id).toString()
                 })
 
+                let newComment = {
+                    body: commentData.body,
+                    author: myProfile,
+                    post: post._id,
+                    reacts: [],
+                    replies: []
+                }
+
+                setAllComments(state => {
+                    let cr = [
+                        ...state,
+                        ...[newComment],
+
+                    ]
+                    return cr;
+
+                })
+
                 if (res.status === 200) {
                     let data = res.data
                     data.author = myProfile
-                    let newComment = data
-                    setAllComments(state => {
-                        let cr = [
-                            ...allComments,
-                            ...[newComment],
 
-                        ]
 
-                        setCommentData([])
-                        props.commentState(state => state + 1);
-                        return cr;
-
-                    })
+                    setCommentData([])
+                    commentState(state => state + 1);
                 }
             } catch (error) {
                 console.log(error)
@@ -160,20 +162,21 @@ const PostComment = (props) => {
             <div className="comments">
 
                 {
-                   allComments.length > 0 && (allComments).map((comment, index) => {
-                        
-                        return comment && <SingleComment comment={comment} post={post} key={index} myProfile={myProfile}></SingleComment>
+                    (allComments).slice(isSingle ? -allComments.length -1 : -3).map((comment, index) => {
+
+                        return comment && <SingleComment comment={comment} postData={post} key={index} myProfile={myProfile}></SingleComment>
                     })
+
                 }
 
                 {
-                     (props.post?.comments.length > 2 && !isSingle)  &&  (<div className="more-comment-button"> <Link to={`/post/${post._id}`} >View more comments</Link></div>)
+                    (post?.comments.length > 3 && !isSingle) && (<div className="more-comment-button"> <Link to={`/post/${post._id}`} >View more comments</Link></div>)
 
                 }
             </div>
             <div className="new-comment">
                 <div className="user-pp">
-                    <UserPP profilePic={authProfilePicture} profile={authProfileId}></UserPP>
+                    <UserPP profilePic={authProfilePicture} profile={authProfile}></UserPP>
                 </div>
                 <div className="comment-field">
                     <input onKeyUp={handleCommentKeyUp} onChange={handleCommentBodyChange} className="field-comment-text" type="text" placeholder="Write a Public Comment" />

@@ -7,6 +7,7 @@ exports.postAddReact = async (req, res, next) => {
     try {
 
         let profile = (req.profile._id).toString()
+        let myProfileData = req.profile
         let { reactType, id, postType } = req.body
         let io = req.app.get('io')
 
@@ -43,7 +44,7 @@ exports.postAddReact = async (req, res, next) => {
                     console.log((friendProfile._id).toString() , profile)
                     let postReactNotification = {
                         receiverId: friendProfile._id,
-                        text: `${friendProfile.fullName} Reacted your post`,
+                        text: `${myProfileData.fullName} Reacted your post`,
                         link: '/post/' + addPostReact._id,
                         type: 'postCommentReply',
                         icon: friendProfile.profilePic
@@ -83,7 +84,7 @@ exports.postAddReact = async (req, res, next) => {
                 if ((friendProfile._id).toString() !== profile) {
                     let postStoryNotification = {
                         receiverId: friendProfile._id,
-                        text: `${friendProfile.fullName} Reacted your Story`,
+                        text: `${myProfileData.fullName} Reacted your Story`,
                         link: '/story/' + addStoryReact._id,
                         type: 'postCommentReply',
                         icon: friendProfile.profilePic

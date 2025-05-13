@@ -54,6 +54,12 @@ const SinglePost = () => {
     const [imageExists, setImageExists] = useState(null);
     const [thumbExists, setThumbExists] = useState(null);
 
+    useEffect(() => {
+        setTotalReacts(postData && postData.reacts.length)
+        setTotalShares(postData && postData.shares.length)
+        setTotalComments(postData && postData.comments.length)
+    },[postData])
+
 
     var isAuth = myProfileId === postAuthorProfileId ? true : false;
     var pp_url = postData && postData?.author.profilePic
@@ -279,9 +285,11 @@ const SinglePost = () => {
     let onClickShareNow = async (e) => {
         e.preventDefault();
         let res = await api.post('post/share', { postId: postData._id, caption: shareCap })
-
+        setTotalShares(state => state + 1)
         if (res.status == 200) {
             setIsShareModal(false)
+        }else {
+            setTotalShares(postData && postData.shares.length)
         }
     }
 
@@ -808,7 +816,7 @@ const SinglePost = () => {
                     <Col md="3">
                         <div className='sp-comments-container'>
                             <h4 className='section-title'>Comments {postData?.comments && `(${postData?.comments.length})`}</h4>
-                            {postData?.comments && (<PostComment post={postData} commentState={setTotalComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>)}
+                            {postData?.comments && (<PostComment post={postData} commentState={setTotalComments} allComments={postData.comments || []} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>)}
                         </div>
 
 

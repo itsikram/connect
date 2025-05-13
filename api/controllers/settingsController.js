@@ -19,7 +19,6 @@ exports.addSetting = async(req,res,next) => {
 exports.updateSetting = async(req,res,next) => {
     let settingObejct = req.body
     let profileId = req.profile._id
-
     let isSettings = await Setting.exists({profile: profileId})
     if(!isSettings) {
         let newSetting = new Setting({
@@ -33,11 +32,9 @@ exports.updateSetting = async(req,res,next) => {
         }
     }
 
-    let updatedSetting = await Setting.findOneAndUpdate({profile: profileId},settingObejct, {new: true});
-    console.log('uset',settingObejct,updatedSetting)
-
+let updatedSetting = await Setting.findOneAndUpdate({profile: profileId},{...settingObejct}, {new: true});
     if(updatedSetting) {
         return res.json(updatedSetting).status(200)
     }
 
-}
+} 
