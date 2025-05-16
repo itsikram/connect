@@ -3,17 +3,27 @@ import SignUP from "./SignUp";
 import $ from 'jquery'
 import api from '../api/api'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link } from "react-router-dom";
+import { useCallback } from "react";
+import { setLogin } from "../services/actions/authActions";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 let Login = (props) => {
 
+    let dispatch = useDispatch();
+    let navigate = useNavigate();
+    let {token} = useSelector(state => state.auth)
+
+    useEffect(() => {
+        if(token) navigate('/')
+    },[token])
     let showSignup = (e) => {
+        return navigate('/signup')
         let target = e.currentTarget;
         $(target).parents('.login-container').siblings('.signup-container').fadeIn('fast')
 
     }
 
     let [inputs, setInputs] = useState({})
-
     let handleChange = (e) => {
         let name = e.target.name;
         let value = e.target.value;
@@ -29,27 +39,29 @@ let Login = (props) => {
 
     let [error, setError] = useState({})
 
-    let handleSubmit = async (e) => {
+    let handleSubmit = useCallback(async (e) => {
         try {
-
-            let res = await api.post('/auth/login', inputs)
+            let res = await api.post('auth/login', inputs)
 
             if (res.status === 202) {
-                let user = JSON.stringify(res.data);
-                localStorage.setItem('user', user)
+                let userData = JSON.stringify(res.data);
+                dispatch(setLogin(res.data.accessToken))
+                localStorage.setItem('user', userData)
+                navigate('/')
                 window.location.reload()
-
             } else {
-                alert(res.data.message)
+                // alert(res.data.message)
+                setError({message: res.data.message})
             }
 
         } catch (error) {
             console.log(error)
         }
+    })
 
-
-
-    }
+    let handlePortfolioClick = useCallback(e => {
+        navigate('/ikramul-islam')
+    })
 
 
 
@@ -81,7 +93,13 @@ let Login = (props) => {
                     </div>
                 </div>
 
-                <SignUP></SignUP>
+                <div className="text-center">
+                    <div onClick={handlePortfolioClick.bind(this)} className="btn btn-primary mt-2 text-center">
+                        View Ikram's Portfolio <i className="fa fa-arrow-alt-circle-right"></i>
+
+                    </div>
+                </div>
+
             </div>
         </Fragment>
     )

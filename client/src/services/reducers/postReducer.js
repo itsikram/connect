@@ -1,0 +1,30 @@
+import { GET_POSTS, ADD_POST, REMOVE_POST } from "../constants/postConsts";
+
+// initial state
+const initialPostState = {
+
+}
+
+
+const postReducer = (state = initialPostState, action) => {
+    switch (action.type) {
+        case GET_POSTS:
+            return [
+                ...state,
+                ...action.payload
+            ];
+        case ADD_POST:
+            return [
+                ...state,
+                ...action.payload
+            ]
+        case REMOVE_POST:
+            let postId = action.payload.postId
+            let updatedPosts = state.filter( post => !post._id == postId)
+            return updatedPosts
+        default:
+            return state
+    }
+}
+
+export default postReducer

@@ -1,30 +1,37 @@
-import React, {Fragment,useEffect} from 'react'
+import React, { Fragment, useEffect } from 'react'
 import Main from './pages/Main'
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './assets/fontawesome/css/all.min.css'
 import './assets/css/style.scss'
-import Login from './pages/Login';
-import { useSelector,useDispatch } from 'react-redux';
-import {useJwt} from 'react-jwt'
 import process from 'process';
+import { useDispatch } from 'react-redux';
+import { setLogin } from './services/actions/authActions';
+import { useJwt } from 'react-jwt';
 window.process = process;
 
-function App() {
 
-  const dispatch = useDispatch()
-  // let myProfile = useSelector(state => state.profile)
-  
+function App() {
+  let dispatch = useDispatch()
   const user = localStorage.getItem("user") || '{}'
   const userJson = JSON.parse(user)
-  const {isExpired} = useJwt(userJson.accessToken)
+  const { isExpired } = useJwt(userJson.accessToken)
+  dispatch(setLogin(userJson.accessToken))
 
+  useEffect(() => {
+
+    if (isExpired) {
+      dispatch(setLogin(undefined))
+
+    }
+  }, [isExpired])
 
   return (
-      <Fragment>
-        {!isExpired && (<Main/>)}
-        {isExpired && (<Login/>)}
-      </Fragment>
+    <Fragment>
+      <Main />
+      {/* {!isExpired && (<Main/>)}
+        {isExpired && (<Login/>)} */}
+    </Fragment>
 
   );
 }

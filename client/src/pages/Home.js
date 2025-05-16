@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect, useRef } from "react";
 import { Container, Col, Row } from 'react-bootstrap';
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Ls from '../partials/sidebar/Ls';
 import Rs from '../partials/sidebar/Rs';
 import CreatePost from "../components/post/CreatePost";
@@ -11,6 +11,7 @@ import $ from 'jquery'
 import { setLoading } from "../services/actions/optionAction";
 import PostSkeleton from "../skletons/post/PostSkeleton";
 import StoryListSkleton from "../skletons/story/StoryListSkleton";
+import socket from "../common/socket";
 
 
 let Home = () => {
@@ -33,7 +34,9 @@ let Home = () => {
 
     let [newsFeeds, setNewsFeed] = useState([])
     let [stories, setStories] = useState([])
+    let [lastVisitPost, setLastVisitPost] = useState(false)
     let [pageNumber, setPageNumber] = useState(0)
+    let myProfile = useSelector(state => state.profile)
 
     let loadData = async () => {
         let nfRes = await api.get('/post/newsFeed/', {
@@ -99,10 +102,6 @@ let Home = () => {
         // fetching newsfeed posts
     }, [])
 
-    let handlePostEnter = (postId) => {
-        console.log(postId)
-    }
-
     return (
         <Fragment>
             <div id="home" className="home-page">
@@ -123,7 +122,7 @@ let Home = () => {
                                             <div ref={storyContainer} className="nf-story-overflow-container">
 
                                                 {
-                                                    stories.map((story,index) => {
+                                                    stories.map((story, index) => {
                                                         return <StoryCard key={index} data={story}></StoryCard>
                                                     })
                                                 }
@@ -147,12 +146,12 @@ let Home = () => {
 
                                                 </div>
                                                 <div className="nf-story-arrow-left" onClick={scrollLeft.bind(this)} >
-                                                <i className="fa fa-chevron-left"></i>
-                                            </div>
-                                            <div className="nf-story-arrow-right" onClick={scrollRight.bind(this)} >
-                                                <i className="fa fa-chevron-right"></i>
-                                            </div>
-                                            
+                                                    <i className="fa fa-chevron-left"></i>
+                                                </div>
+                                                <div className="nf-story-arrow-right" onClick={scrollRight.bind(this)} >
+                                                    <i className="fa fa-chevron-right"></i>
+                                                </div>
+
 
                                             </div>
                                         )
@@ -164,8 +163,8 @@ let Home = () => {
 
                                     {
                                         newsFeeds.length > 0 ?
-                                            newsFeeds.map((newsFeed,index) => {
-                                                return <Post key={index} data={newsFeed} handlePostEnter={handlePostEnter.bind(this)}></Post>
+                                            newsFeeds.map((newsFeed, index) => {
+                                                return <Post key={index} data={newsFeed}></Post>
                                             })
 
                                             : <PostSkeleton count={3} />

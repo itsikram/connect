@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect, useRef } from "react";
 import { Container, Row, Col } from "react-bootstrap";
-import { Link, Outlet, NavLink,useParams,useLocation } from 'react-router-dom';
+import { Link, Outlet, NavLink, useParams, useLocation } from 'react-router-dom';
 import MegaMC from "../../components/MegaMC";
 import HeaderLeft from "./HeaderLeft";
 import HeaderNav from "./HeaderNav";
@@ -8,19 +8,17 @@ import HeaderRight from "./HeaderRight";
 import Ls from "../sidebar/Ls";
 import $ from 'jquery'
 import { setHeaderHeight } from "../../services/actions/optionAction.js";
-import api from "../../api/api.js";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const Header = () => {
     const dispatch = useDispatch();
-    let [isMegaMenu, setIsMegaMenu] = useState(false);
     let localtion = useLocation();
     let myProfile = useSelector(state => state.profile)
     let params = useParams();
     let headerRef = useRef(null);
     const [height, setHeight] = useState(null);
 
-    const hrProps = {dispatch, useSelector}
+    const hrProps = { dispatch, useSelector }
 
     dispatch(setHeaderHeight(height))
 
@@ -32,7 +30,7 @@ const Header = () => {
                 $('#header').addClass('sticky-header')
                 let headerHeight = $('#header').height()
                 $('#main-container').css('padding-top', headerHeight)
-    
+
             } else {
                 $('#header').removeClass('sticky-header')
                 $('#main-container').css('padding-top', 0)
@@ -44,25 +42,8 @@ const Header = () => {
         window.matchMedia("(max-width:768px)").addEventListener('change', (e) => {
             setMatch(e.matches)
         })
-        setIsMegaMenu(false)
     }, [])
 
-    useEffect(() => {
-        setIsMegaMenu(false)
-    },[localtion])
-
-    let headerMMClick = (e) => {
-        setIsMegaMenu(!isMegaMenu)
-    }
-    let MenuButton = () => {
-        return (
-            <Fragment>
-                <div onClick={headerMMClick} className="header-mm-button">
-                    <i className="fa fa-bars"></i>
-                </div>
-            </Fragment>
-        )
-    }
 
     return (
         <Fragment>
@@ -70,23 +51,15 @@ const Header = () => {
                 <Container className="header-container" fluid="xxl">
                     <Row>
                         <Col className="d-flex align-items-center">
-
                             <HeaderLeft />
-
                         </Col>
-                        <Col className="header-middle" md={6} xs={2}>
-                            {!match && <HeaderNav />}
+                        {!match && <>
+                            <Col className="header-middle" md={6} xs={2}>
 
-                            {match && <MenuButton />}
+                                <HeaderNav />
+                            </Col>
+                        </>}
 
-                            {
-                                isMegaMenu && (
-                                    <MegaMC className="header-mm-dropdown" style={{ top: '100%', left: 0, width: '300px', zIndex: '999999', display: 'block' }}>
-                                        <Ls />
-                                    </MegaMC>)
-                            }
-
-                        </Col>
 
                         <Col className="header-right d-flex justify-content-end align-items-center" >
                             <HeaderRight {...hrProps} />

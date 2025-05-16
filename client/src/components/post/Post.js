@@ -38,6 +38,7 @@ let Post = (props) => {
 
     let [isActive, setIsActive] = useState(false)
     let [reactType, setReactType] = useState(false);
+    let [isReacted, setIsReacted] = useState(false)
     let [shareCap, setShareCap] = useState('');
     let [placedReacts, setPlacedReacts] = useState([]);
     let [isShareModal, setIsShareModal] = useState(false);
@@ -123,6 +124,7 @@ let Post = (props) => {
                 }
                 if (react.profile === myProfileId) {
                     setReactType(react.type)
+                    setIsReacted(true)
                 }
             }
 
@@ -187,30 +189,39 @@ let Post = (props) => {
     }
 
     let removeReact = async (postType = 'post', target = null) => {
+
         setTotalReacts(state => state - 1)
+
         let res = await api.post('/react/removeReact', { id: post._id, postType: 'post' })
         if (res.status === 200) {
-            setReactType('')
+            setIsReacted(false)
+            setReactType(false)
             return true;
         } else {
-            setTotalReacts(state => state - 1)
+            setTotalReacts(state => state + 1)
         }
     }
     let placeReact = async (reactType, postType = 'post', target = null) => {
-        setTotalReacts(state => state + 1)
-        setTotalReacts(state => state + 1)
+
+        if (!isReacted) {
+            setTotalReacts(state => state + 1)
+
+        }
+        // setTotalReacts(state => state + 1)
+
+
         setPlacedReacts([...placedReacts, reactType])
         setReactType(reactType)
 
         let placeRes = await api.post('/react/addReact', { id: post._id, postType, reactType })
         if (placeRes.status === 200) {
-
+            setIsReacted(true)
 
             return true;
         } else {
             setTotalReacts(post.reacts)
             setPlacedReacts([...placedReacts])
-            setReactType('')
+            setReactType(false)
         }
 
     }
@@ -347,37 +358,13 @@ let Post = (props) => {
         setIsPostOption(!isPostOption)
     })
 
-    // function isElementNearTop(el, offset = 10) {
-    //     if (el == null) return;
-    //     const rect = el.getBoundingClientRect();
-    //     return rect.top <= offset;
-    // }
-
-    useEffect(() => {
+    function isElementNearTop(el, offset = 10) {
+        if (el == null) return;
+        const rect = el.getBoundingClientRect();
+        return rect.top <= offset;
+    }
 
 
-        // window.addEventListener('scroll', () => {
-        //     if (isElementNearTop(nfPosts?.current)) {
-        //         document.querySelectorAll('.nf-post').forEach((element => {
-        //             // element.pause();
-        //         }))
-        //         // displayedPost.current.style.display = 'none'
-        //         let postId = post._id;
-        //         let lastId = getLastPostId()
-        //         if (lastId == postId) {
-        //             return
-
-        //         } else {
-        //             socket.emit('viewPost', {
-        //                 visitorId: myProfileId,
-        //                 postId: post._id,
-        //             })
-        //             setVisitedPost(postId)
-        //         }
-
-        //     }
-        // });
-    }, [])
 
     let PostContent = () => {
         switch (type) {
@@ -651,7 +638,7 @@ let Post = (props) => {
 
             default:
                 return (
-                    <div data-id={post._id}  className={`nf-post ${type}`}>
+                    <div data-id={post._id} className={`nf-post ${type}`}>
                         <div className="header">
                             {
                                 type === 'profilePic' &&

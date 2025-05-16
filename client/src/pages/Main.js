@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useState, useRef } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import { BrowserRouter as BR, Routes, Route, Link, useParams, useLocation } from 'react-router-dom'
 import Header from '../partials/header/Header';
+import ProtectedRoute from "../components/ProtectedRoute.js";
 import Home from "./Home";
 import Profile from "./Profile";
 import Friends from "./Friends";
@@ -18,12 +19,15 @@ import Call from './Call.js'
 import ProfileAbout from "../components/Profile/ProfileAbout";
 import PorfilePosts from "../components/Profile/PorfilePosts";
 import ProfileFriends from "../components/Profile/ProfileFriends";
+import ProfileImages from "../components/Profile/ProfileImages.js";
 import ProfileVideos from '../components/Profile/ProfileVideos.js'
 import VideoCall from "../components/VideoCall/VideoCall.js";
 import SinglePost from "../components/post/SinglePost.js";
 import PostComments from "../components/post/PostComments.js";
 import PostReacts from "../components/post/PostReacts.js";
- 
+import Login from "./Login.js";
+import SignUP from "./SignUp.js";
+
 import FriendRequests from "../components/friend/FriendRequests";
 import FriendSuggest from "../components/friend/FriendSuggest"
 import FriendHome from "../components/friend/FriendHome";
@@ -32,7 +36,6 @@ import api from "../api/api";
 import { getPorfileReq, getProfileFailed, getProfileSuccess } from '../services/actions/profileActions'
 import { addNotification, addNotifications } from "../services/actions/notificationActions.js";
 import { addMessage, addMessages, newMessage } from "../services/actions/messageActions.js";
-import { setLogin } from "../services/actions/authActions";
 import { setBodyHeight, setHeaderHeight, setLoading } from "../services/actions/optionAction";
 import Settings from "./Settings";
 import ProfileIkramul from "./ProfileIkramul";
@@ -74,7 +77,7 @@ const speakText = (text) => {
 
 const Main = () => {
     const dispatch = useDispatch();
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    let { token } = useSelector(state => state.auth)
     const isLoading = useSelector(state => state.option.isLoading);
     const settings = useSelector(state => state.setting)
     const params = useParams();
@@ -86,24 +89,24 @@ const Main = () => {
     const profileId = userInfo.profile
 
     useEffect(() => {
-        api.get('setting',{params: {
-            profileId
-        }}).then(res => {
-            if(res.status == 200) {
-                console.log('lod data',res.data)
+        if (!token) return
+        api.get('setting', {
+            params: {
+                profileId
+            }
+        }).then(res => {
+            if (res.status == 200) {
                 dispatch(loadSettings(res.data))
             }
         })
-
-        
-    },[])
+    }, [token])
 
 
     const playSound = (data) => {
         audioElement?.current.play();
 
     }
-    const notify = (text, senderName, senderPP,link) => {
+    const notify = (text, senderName, senderPP, link) => {
         playSound();
         toast(
             <Link className="text-decoration-none text-secondary" to={`${link}`}>
@@ -112,7 +115,7 @@ const Main = () => {
                         <div className="col-3">
                             <img className="rounded-circle w-100" src={senderPP} alt="connect" />
                         </div>
-    
+
                         <div className="col-9">
                             {senderName && (<h3 className="text-success mb-0">{senderName}</h3>)}
                             <p className="text-small text-secondary text-muted mb-0">{text}</p>
@@ -120,41 +123,39 @@ const Main = () => {
                     </div>
                 </div>
             </Link>
-    
+
         );
     }
 
-
-
     useEffect(() => {
-        socket.emit('fetchNotifications',profileId)
-        
+        socket.emit('fetchNotifications', profileId)
+
         socket.on('oldNotifications', data => {
-            dispatch(addNotifications(data.reverse(),true))
+            dispatch(addNotifications(data.reverse(), true))
         })
         socket.on('newNotification', data => {
             dispatch(addNotification(data))
-            notify(data.text,false,data.icon,data.link)
+            notify(data.text, false, data.icon, data.link)
         })
 
 
-        socket.emit('fetchMessages',profileId)
+        socket.emit('fetchMessages', profileId)
 
 
         socket.on('oldMessages', data => {
-            dispatch(addMessages(data.reverse(),true))
+            dispatch(addMessages(data.reverse(), true))
         })
 
         socket.on('newMessage', data => {
             dispatch(addMessage(data))
-            notify(data.text,false,data.icon,data.link)
+            notify(data.text, false, data.icon, data.link)
         })
 
-        socket.on('bumpUser',((friend, profile) => {
+        socket.on('bumpUser', ((friend, profile) => {
 
-            notify(`${profile.fullName} Bumped you`,friend.fullName, profile.profilePic,'/message/'+profile._id)
+            notify(`${profile.fullName} Bumped you`, friend.fullName, profile.profilePic, '/message/' + profile._id)
 
-        })) 
+        }))
 
 
 
@@ -166,7 +167,7 @@ const Main = () => {
             socket.off('bumpUser')
         }
     }, [socket])
-    
+
 
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -183,7 +184,7 @@ const Main = () => {
     useEffect(() => {
         socket.on('notification', (msg, senderName, senderPP) => {
             if (isTabActive == true) {
-                notify(msg.message, senderName, senderPP,'/message/' + msg.senderId)
+                notify(msg.message, senderName, senderPP, '/message/' + msg.senderId)
                 dispatch(newMessage(msg))
             } else {
                 if (Notification && Notification.permission === "granted") {
@@ -211,10 +212,13 @@ const Main = () => {
 
     useEffect(() => {
         dispatch(setBodyHeight(window.innerHeight));
+        dispatch(setLoading(false))
+
+        if (!token) return
+
         api.post(`/profile`, { profile: profileId }).then(res => {
             dispatch(getPorfileReq())
             if (res.status === 200) {
-                dispatch(setLogin({ isLoggedIn: true }))
                 dispatch(getProfileSuccess(res.data));
             }
 
@@ -224,20 +228,20 @@ const Main = () => {
 
         if (window.location.pathname == '/') {
         } else {
-            dispatch(setLoading(false))
+            // dispatch(setLoading(false))
         }
 
         setTimeout(() => {
             socket.emit('update_last_login', userInfo.user_id)
         }, 5000)
 
-    }, [params])
+    }, [params, token])
 
 
 
     return (
         <Fragment>
-            <audio ref={audioElement} src="https://programmerikram.com/wp-content/uploads/2025/02/fiverr_old_client_sound.mp3"></audio>
+            <audio ref={audioElement} src="https://programmerikram.com/wp-content/uploads/2025/05/connect-message-sound.wav"></audio>
             <BR>
                 {
                     isLoading && (<div id="site-loader">
@@ -252,51 +256,59 @@ const Main = () => {
                 <div id="main-container" className={isLoading ? 'loading' : ''}>
                     <Routes>
                         <Route path="/">
-                            <Route index element={<Home />}></Route>
+                            <Route path="login" element={<Login />}></Route>
+                            <Route path="signup" element={<SignUP />}></Route>
+
+                            <Route index element={<ProtectedRoute><Home /></ProtectedRoute>}></Route>
 
                             <Route path="/ikramul-islam/" element={<ProfileIkramul />}></Route>
 
-                            <Route path="/:profile/" element={<Profile />}>
+
+
+                            <Route path="/:profile/" element={<ProtectedRoute><Profile /></ProtectedRoute>}>
                                 <Route index element={<PorfilePosts />} />
                                 <Route path="about" element={<ProfileAbout />} />
                                 <Route path="friends" element={<ProfileFriends />}></Route>
+                                <Route path="images" element={<ProfileImages />}></Route>
                                 <Route path="videos" element={<ProfileVideos />}></Route>
                             </Route>
-                            <Route path="/story/" element={<Story />}> </Route>
+                            <Route path="/story/" element={<ProtectedRoute><Story /></ProtectedRoute>}> </Route>
 
                             <Route path="/story/:storyId">
-                            <Route index element={<SingleStory/>}></Route>
-                            <Route path="comments/" element={<StoryComments/>}></Route>
-                            <Route path="reacts/" element={<StoryReacts/>}></Route>
+                                
+                                    <Route index element={<ProtectedRoute><SingleStory /></ProtectedRoute>}></Route>
+                                    <Route path="comments/" element={<ProtectedRoute><StoryComments /></ProtectedRoute>}></Route>
+                                    <Route path="reacts/" element={<ProtectedRoute><StoryReacts /></ProtectedRoute>}></Route>
+
                             </Route>
 
 
                             <Route path="/post/" >
-                                <Route path=":postId" element={<SinglePost/>} />
+                                <Route path=":postId" element={<ProtectedRoute><SinglePost /></ProtectedRoute>} />
                                 <Route path=":postId/comments" element={<PostComments />} />
                                 <Route path=":postId/reacts" element={<PostReacts />} />
                             </Route>
-                            
-                            <Route path="/friends/" element={<Friends />}>
+
+                            <Route path="/friends/" element={<ProtectedRoute><Friends /></ProtectedRoute>}>
                                 <Route index element={<FriendHome />}></Route>
                                 <Route path="requests" element={<FriendRequests />}></Route>
                                 <Route path="suggestions" element={<FriendSuggest />}></Route>
 
                             </Route>
-                            <Route path="/watch" element={<Video />}> </Route>
+                            <Route path="/watch" element={<ProtectedRoute><Video /></ProtectedRoute>}> </Route>
                             <Route path="/message" element={<Message />}>
                                 <Route path=":profile/" element={<Profile />}></Route>
 
                             </Route>
-                            <Route path="/call" element={<Call />}> </Route>
-                            <Route path="/marketplace" element={<Marketplace />}> </Route>
+                            {/* <Route path="/call" element={<Call />}> </Route> */}
+                            <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>}> </Route>
 
                             <Route path="/groups" element={<Groups />}> </Route>
                             <Route path="/yt-download" element={<YtDownload />}> </Route>
-                            <Route path="/settings" element={<Settings/>}></Route>
+                            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>}></Route>
 
-                            <Route path="/settings/" element={<Settings />}>
-                                <Route index element={<ProfileSetting/>} />
+                            <Route path="/settings/" element={<ProtectedRoute><Settings /></ProtectedRoute>}>
+                                <Route index element={<ProfileSetting />} />
                                 <Route path="account" element={<AccountSetting />} />
                                 <Route path="privacy" element={<PrivacySetting />} />
                                 <Route path="notification" element={<NotificationSetting />} />
@@ -305,15 +317,14 @@ const Main = () => {
                                 <Route path="sound" element={<SoundSetting />} />
                             </Route>
 
-                        </Route>
 
+                        </Route>
                     </Routes>
-                    
                 </div>
 
                 {
-                <VideoCall myId={profileId}></VideoCall>
-                //<AudioCall></AudioCall> 
+                    <VideoCall myId={profileId}></VideoCall>
+                    //<AudioCall></AudioCall> 
                 }
                 <ToastContainer />
             </BR>

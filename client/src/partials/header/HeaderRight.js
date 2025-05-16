@@ -1,12 +1,12 @@
 import React, { Fragment, useEffect, useState, useRef, useCallback } from "react";
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Moment from "react-moment";
 import MegaMC from "../../components/MegaMC";
 import UserPP from "../../components/UserPP";
-import { logOut } from "../../store(unused)/authReducer";
+import { logOut } from "../../services/actions/authActions";
 import MessageList from "../../components/Message/MessageList";
 import api from "../../api/api";
-import { addNotification, addNotifications, viewNotification,viewNotifications,deleteNotifications } from "../../services/actions/notificationActions";
+import { addNotification, addNotifications, viewNotification, viewNotifications, deleteNotifications } from "../../services/actions/notificationActions";
 let userInfo = JSON.parse((localStorage.getItem('user') || '{}'))
 const profilePath = "/" + userInfo.profile + "/"
 
@@ -23,11 +23,11 @@ let HeaderRight = ({ dispatch, useSelector }) => {
     let location = useLocation();
     const [imageExists, setImageExists] = useState(null);
     let [ppUrl, setPpUrl] = useState('https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png')
-
+    let navigate = useNavigate()
 
     const [notificationOption, setNotificationOption] = useState(false);
     const notficationOptionMenuRef = useRef(null);
-  
+
 
     let notificationMenuHeight = optionData.bodyHeight - optionData.headerHeight - 100
     let notificationMenuStyle = { maxHeight: notificationMenuHeight + 'px', overflowY: 'scroll' }
@@ -41,7 +41,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
 
     useEffect(() => {
 
-        if(profileData?.profilePic) {
+        if (profileData?.profilePic) {
             setPpUrl(profileData.profilePic)
         }
     }, [profileData])
@@ -87,37 +87,37 @@ let HeaderRight = ({ dispatch, useSelector }) => {
         }
     })
 
-    let handleNotificationToggleClick = useCallback(async() => {
-        if(notificationOption == true) {
+    let handleNotificationToggleClick = useCallback(async () => {
+        if (notificationOption == true) {
             setNotificationOption(false)
 
-        }else {
+        } else {
             setNotificationOption(true)
 
         }
     })
 
-    let markAllAsRead = useCallback(async(e) => {
+    let markAllAsRead = useCallback(async (e) => {
 
         let unseenNotifications = notificaitonData.filter(noti => noti.isSeen == false);
-    
+
         console.log(unseenNotifications)
 
-        unseenNotifications.map(async(notification,index) => {
+        unseenNotifications.map(async (notification, index) => {
 
-          let updatedNotification = await api.post('/notification/viewall', { profile: profileData._id })
-          if (updatedNotification.status == 200) {
-              dispatch(viewNotifications(notification))
-          }
-      })
-    
+            let updatedNotification = await api.post('/notification/viewall', { profile: profileData._id })
+            if (updatedNotification.status == 200) {
+                dispatch(viewNotifications(notification))
+            }
+        })
+
 
     })
 
-    let handleNotiDelete = useCallback(async(e) => {
+    let handleNotiDelete = useCallback(async (e) => {
         let deletedNotification = await api.post('/notification/deleteall', { profile: profileData._id })
-        if(deletedNotification.status == 200) {
-            dispatch(addNotifications([],true))
+        if (deletedNotification.status == 200) {
+            dispatch(addNotifications([], true))
             setIsNotificationMenu(false)
         }
 
@@ -126,46 +126,48 @@ let HeaderRight = ({ dispatch, useSelector }) => {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-          if (notficationOptionMenuRef.current && !notficationOptionMenuRef.current.contains(event.target)) {
-            setNotificationOption(false);
-          }
+            if (notficationOptionMenuRef.current && !notficationOptionMenuRef.current.contains(event.target)) {
+                setNotificationOption(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
-          document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         };
-      }, []);
+    }, []);
 
 
-      let NoficationOptionMenu = () => {
+    let NoficationOptionMenu = () => {
         return (
             <div className="header-notification-option-menu" style={{ position: 'relative', display: 'inline-block' }} ref={notficationOptionMenuRef}>
-        
-              {notificationOption && (
-                <div style={{
-                  position: 'absolute',
-                  top: '20px',
-                  right: '0',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                  zIndex: 99999999999999999,
-                  width: '200px'
-                }}>
-                  <ul className="notification-option-menu" style={{ listStyle: 'none', margin: 0, padding: '8px 0' }}>
-                    <li onClick={markAllAsRead} style={{ padding: '8px 16px', cursor: 'pointer' }}>Mark All As Read</li>
-                    <li onClick={handleNotiDelete} style={{ padding: '8px 16px', cursor: 'pointer' }}>Delete All</li>
-                    <li style={{ padding: '8px 16px', cursor: 'pointer' }}><Link to={'/settings/notification'}>Notification Setting</Link></li>
 
-                  </ul>
-                </div>
-              )}
+                {notificationOption && (
+                    <div style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '0',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        zIndex: 99999999999999999,
+                        width: '200px'
+                    }}>
+                        <ul className="notification-option-menu" style={{ listStyle: 'none', margin: 0, padding: '8px 0' }}>
+                            <li onClick={markAllAsRead} style={{ padding: '8px 16px', cursor: 'pointer' }}>Mark All As Read</li>
+                            <li onClick={handleNotiDelete} style={{ padding: '8px 16px', cursor: 'pointer' }}>Delete All</li>
+                            <li style={{ padding: '8px 16px', cursor: 'pointer' }}><Link to={'/settings/notification'}>Notification Setting</Link></li>
+
+                        </ul>
+                    </div>
+                )}
             </div>
-          );
-      }
+        );
+    }
 
 
-      
+
 
     let logOutBtn = (e) => {
+        // navigate('/login')
+
         dispatch(logOut())
         localStorage.removeItem('user')
         window.location.reload();
@@ -182,7 +184,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
                     </li>
                     {
                         isMsgMenu && (
-                            <MegaMC style={{ right: '50%',zIndex: 9999999999999, transform: 'translateX(50%)', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
+                            <MegaMC style={{ right: '50%', zIndex: 9999999999999, transform: 'translateX(50%)', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
                                 <MessageList />
                             </MegaMC>
                         )
@@ -194,7 +196,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
                         </div>
                     </li>
                     {isNotificationMenu && (
-                        <MegaMC style={{ right: '50%',zIndex: 999999999999, transform: 'translateX(50%)', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
+                        <MegaMC style={{ right: '50%', zIndex: 999999999999, transform: 'translateX(50%)', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
                             <div className="hr-mm-container">
                                 {
                                     notificaitonData.length > 0 ? (

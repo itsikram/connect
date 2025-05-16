@@ -187,22 +187,16 @@ let CreatePost = ({ setNewsFeed }) => {
             console.log(error)
         }
 
-
     }
-
-
-
-
 
     let handlePostSubmit = useCallback(async (e) => {
         e.preventDefault()
+        if(e.target.classList.contains('added')) return;
         try {
-
             switch (postData.type) {
 
-
-
                 case 'image':
+                    e.target.classList.add('added')
                     let postFormData = new FormData()
                     postFormData.append('caption', postData.caption)
                     postFormData.append('urls', postData.urls)
@@ -221,6 +215,7 @@ let CreatePost = ({ setNewsFeed }) => {
 
                     break;
                 case 'video':
+                    e.target.classList.add('added')
 
                     let watchRes = await api.post('/watch/create', { caption: postData.caption, videoUrl: postData.urls, location: postData.location, feelings: postData.feelings }, {
                         headers: {

@@ -161,10 +161,7 @@ const SingleComment = ({ comment, postData, myProfile }) => {
                                 : ''
                         }
 
-
                     </div>
-
-
 
                     <div className="comment-react">
                         <div className={`like button ${isReacted ? 'reacted' : ''}`} onClick={handleCommentLikeBtnClick.bind(this)} data-id={comment._id}>Like {`${totalComment > 0 ? '(' + totalComment + ')' : ''}`}</div>
@@ -177,7 +174,7 @@ const SingleComment = ({ comment, postData, myProfile }) => {
                         (
                             <div className="new-reply">
                                 <div className="comment-field">
-                                    <input onKeyUp={handleReplyKeyUp} onChange={handleReplyBodyChange.bind(this)} className="field-comment-text" type="text" data-comment={comment._id} placeholder={`Reply to ${comment.author.fullName}`} />
+                                    <input onKeyUp={handleReplyKeyUp} onChange={handleReplyBodyChange.bind(this)} className="field-comment-text" type="text" data-comment={comment._id} placeholder={`Reply to ${comment.author.displayName || comment.author.user.surname}`} />
                                     <div onClick={clickReplySendBtn.bind(this)} data-comment={comment._id} className="comment-attachment">
                                         {/* <input onChange={handleReplyAttachChange} className="attachment" type="file" /> */}
                                         <span className="icon">

@@ -1,9 +1,11 @@
 import React, { Fragment, useState, useEffect } from "react";
-import logo from '../../assets/images/logo.png';
-import { Link, Outlet, NavLink } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import $ from 'jquery';
 import api from "../../api/api";
 import UserPP from "../../components/UserPP";
+import Ls from "../sidebar/Ls";
+import useIsMobile from "../../utils/useIsMobile";
+import MegaMC from "../../components/MegaMC";
 const logo_src = 'https://programmerikram.com/wp-content/uploads/2025/05/ics_logo.png';
 
 
@@ -11,8 +13,26 @@ let HeaderLeft = () => {
   let [searchedUsers, setSearchedUsers] = useState([])
   let [hasSearchResult, setHasSearchResult] = useState(false)
   let [mobileSearchMenu, setMobileSearchMenu] = useState(false)
+  let [isMegaMenu, setIsMegaMenu] = useState(false);
   let [searchQuery, setSearchQuery] = useState('')
+  let location = useLocation();
+  let isMobile = useIsMobile();
+  useEffect(() => {
+    setIsMegaMenu(false)
+  }, [location])
 
+  let headerMMClick = (e) => {
+    setIsMegaMenu(!isMegaMenu)
+  }
+  let MenuButton = () => {
+    return (
+      <Fragment>
+        <div onClick={headerMMClick} className="header-mm-button" style={{ lineHeight: 1 }}>
+          <i className="fa fa-bars"></i>
+        </div>
+      </Fragment>
+    )
+  }
 
   const useMediaQuery = (query) => {
     const [matches, setMatches] = useState(window.matchMedia(query).matches);
@@ -26,8 +46,6 @@ let HeaderLeft = () => {
 
     return matches;
   };
-  const isMobile = useMediaQuery("(max-width: 768px)");
-
 
   let onSearchFocus = () => {
 
@@ -110,7 +128,16 @@ let HeaderLeft = () => {
             <img className="header-logo" src={logo_src} alt="logo"></img>
           </Link>
 
+        </div>
 
+        <div className="header-mobile-menu-button-container">
+          {isMobile && <MenuButton />}
+          {
+            isMegaMenu && (
+              <MegaMC className="header-mm-dropdown" style={{ top: '100%', left: 0, width: '300px', zIndex: '999999', display: 'block' }}>
+                <Ls />
+              </MegaMC>)
+          }
 
         </div>
         <div className="header-search-back-container">
@@ -148,6 +175,7 @@ let HeaderLeft = () => {
           )}
 
         </div>
+
       </div>
     </Fragment>
   )

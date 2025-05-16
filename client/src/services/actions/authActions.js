@@ -1,10 +1,16 @@
-import {SET_LOGIN,GET_PROFILE,GET_USER} from '../constants/authConsts'
+import {SET_LOGIN,LOGOUT,GET_PROFILE,GET_USER} from '../constants/authConsts'
 
-export const setLogin = (isLoggedIn) => {
+export const setLogin = (token) => {
 
     return {
         type: SET_LOGIN,
-        payload: isLoggedIn
+        payload: token
+    }
+} 
+export const logOut = (token) => {
+
+    return {
+        type: LOGOUT,
     }
 } 
 export const getUser = (userData) => {

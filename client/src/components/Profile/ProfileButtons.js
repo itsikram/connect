@@ -134,9 +134,10 @@ const ProfileButtons = (props) => {
     }
     let handleStorySubmit = async (e) => {
         e.preventDefault()
+        if(e.target.classList.containers('added') ) return;
         if(storyData.uploadedUrl != false && storyBgColors != false) {
             try {
-
+                e.target.classList.add('added')
                 let res = await api.post('/story/create/', {image: storyData.uploadedUrl,storyBg: storyBgColors})
                 if (res.status === 200) {
                     setIsStoryModal(false)

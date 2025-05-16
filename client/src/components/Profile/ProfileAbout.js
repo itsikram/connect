@@ -17,14 +17,14 @@ let ProfileAbout = () => {
         <Fragment>
             <div id="profile-about-content">
                 
-                <div className="tab-navigator">
+                {/* <div className="tab-navigator">
                     <h4 className="section-title">
                         About
                     </h4>
                     <Link to="/profile/about" onClick={aboutTabNavItemClick}  className="tab-navigator-item active">Overview</Link>
                     <Link to="/profile/about" onClick={aboutTabNavItemClick}    className="tab-navigator-item">Work and Education</Link>
                     <Link to="/profile/about" onClick={aboutTabNavItemClick}  className="tab-navigator-item">OverView</Link>
-                </div>
+                </div> */}
                 <div className="tab-content">
                     <ProfileDetails></ProfileDetails>
                 </div>

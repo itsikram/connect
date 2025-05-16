@@ -267,7 +267,9 @@ body {
         }
 
         .call-button-switch {
-            i,svg {
+
+            i,
+            svg {
                 color: $pc;
             }
         }
@@ -1241,9 +1243,11 @@ body {
                             transition: 0.3s;
                             cursor: pointer;
                         }
+
                         li:last-child {
                             border-bottom: 0;
                         }
+
                         li:hover {
                             border-radius: 5px;
 
@@ -4508,6 +4512,44 @@ body {
         }
     }
 
+    #profile-images-container {
+        width: 70%;
+        margin: auto;
+        min-height: 100px;
+        background-color: $profilebg;
+        padding: 15px;
+        border-radius: 10px;
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: $tc
+        }
+
+
+        .image-items-container {
+            display: block;
+            overflow-y: auto;
+
+            .image-item {
+                width: 49%;
+                float: left;
+                margin: 10px 0.50%;
+
+                img {
+                    width: 100%;
+                }
+
+
+            }
+
+            .image-item:last-child {
+                float: none;
+            }
+
+        }
+    }
+
     #profile-details-list.details-list {
 
         .details-list-item {
@@ -4684,7 +4726,7 @@ body {
 }
 
 #login {
-    background-color: #F0F2F5;
+    // background-color: #F0F2F5;
     height: 100vh;
     position: relative;
     padding-top: 60px;
@@ -4743,7 +4785,7 @@ body {
             .create-account-button {
                 background-color: $bbgc;
                 color: #fff;
-                width: 60%;
+                width: 250px;
                 border-radius: 10px;
                 text-align: center;
                 font-size: 18px;
@@ -4755,128 +4797,132 @@ body {
             }
         }
 
-        #signup-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100vh;
-            width: 100%;
-            z-index: 111111111111;
-            background-color: blue;
-        }
+
     }
 
-    .signup-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100vh;
-        width: 100%;
-        z-index: 111111111111;
-        background-color: rgba(0, 0, 0, 0.5);
-        padding-top: 50px;
-        display: none;
-
-        #signup-form {
-            width: 500px;
-            background-color: #fff;
-            border: 1px solid $pc;
-            margin: auto;
-            border-radius: 10px;
-            padding: 20px;
-
-            .forms-container {
-                text-align: center;
-                padding-bottom: 30px;
-                border-bottom: 1px solid $pc;
-
-                a {
-                    cursor: pointer;
-                }
+    //     #signup-container {
+    //     position: absolute;
+    //     left: 0;
+    //     top: 0;
+    //     height: 100vh;
+    //     width: 100%;
+    //     z-index: 111111111111;
+    //     background-color: blue;
+    // }
 
 
-                .full-name {
-                    input.field {
-                        width: 49%;
-                        float: left;
-                        margin-right: 2%;
-                    }
+}
 
-                    input:last-child {
-                        margin-right: 0;
-                    }
-                }
+.signup-container {
+    // position: absolute;
+    // left: 0;
+    // top: 0;
+    // height: 100vh;
+    // width: 100%;
+    // z-index: 111111111111;
+    // background-color: rgba(0, 0, 0, 0.5);
+    padding-top: 50px;
+    // display: none;
 
+    #signup-form {
+        width: 500px;
+        background-color: #fff;
+        border: 1px solid $pc;
+        margin: auto;
+        border-radius: 10px;
+        padding: 20px;
+
+        .forms-container {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 1px solid $pc;
+
+            a {
+                cursor: pointer;
+            }
+
+
+            .full-name {
                 input.field {
-                    display: block;
-                    width: 100%;
-                    border: 1px solid $pc;
-                    outline: 0;
-                    margin-bottom: 10px;
-                    padding: 10px;
-                    border-radius: 10px;
-                    background-color: transparent;
+                    width: 49%;
+                    float: left;
+                    margin-right: 2%;
                 }
 
-                .email,
-                .password {}
-
-                .gender-container {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    color: #888;
-                    border: 1px solid $pc;
-                    border-radius: 10px;
-                    padding: 5px;
-                    margin-bottom: 10px;
-
-                    .field-title {
-                        font-size: 20px;
-                        font-weight: bold;
-                    }
-
-                    .radio-container {
-
-                        label {
-                            margin-right: 5px;
-                            margin-left: 5px;
-                            cursor: pointer;
-                        }
-
-                        input {
-                            color: $pc;
-                        }
-                    }
+                input:last-child {
+                    margin-right: 0;
                 }
-
-                .field.submit-button {
-                    background-color: $pc;
-                    color: #fff;
-                    font-weight: 600;
-                    font-size: 18px;
-                }
-
-
             }
 
-            .login-button {
-                background-color: $bbgc;
-                color: #fff;
-                width: 60%;
+            input.field {
+                display: block;
+                width: 100%;
+                border: 1px solid $pc;
+                outline: 0;
+                margin-bottom: 10px;
+                padding: 10px;
                 border-radius: 10px;
-                text-align: center;
-                font-size: 18px;
-                font-weight: 600;
-                padding: 5px;
-                margin: auto;
-                margin-top: 10px;
-                cursor: pointer;
+                background-color: transparent;
             }
+
+            .email,
+            .password {}
+
+            .gender-container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                color: #888;
+                border: 1px solid $pc;
+                border-radius: 10px;
+                padding: 5px;
+                margin-bottom: 10px;
+
+                .field-title {
+                    font-size: 20px;
+                    font-weight: bold;
+                }
+
+                .radio-container {
+
+                    label {
+                        margin-right: 5px;
+                        margin-left: 5px;
+                        cursor: pointer;
+                    }
+
+                    input {
+                        color: $pc;
+                    }
+                }
+            }
+
+            .field.submit-button {
+                background-color: $pc;
+                color: #fff;
+                font-weight: 600;
+                font-size: 18px;
+            }
+
+
         }
 
-
+        .login-button {
+            background-color: $bbgc;
+            color: #fff;
+            width: 60%;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 5px;
+            margin: auto;
+            margin-top: 10px;
+            cursor: pointer;
+        }
     }
+
+
 }
 
 .profile-pic+.hr-mega-menu {
@@ -5285,9 +5331,11 @@ body {
                             cursor: pointer;
                             line-height: 1;
                         }
+
                         li:last-child {
                             border-bottom: 0;
                         }
+
                         li:hover {
                             border-radius: 5px;
 
@@ -5862,6 +5910,7 @@ body {
                 align-items: center;
                 justify-content: start;
                 flex-direction: row;
+
                 .cpm-profilePic {
                     transform: scale(0.7);
                 }
@@ -6036,6 +6085,7 @@ body {
         border: 1px solid $bc;
         outline: 0;
     }
+
     textarea:focus {
         background-color: $profilebg;
         color: $tc;
@@ -6334,6 +6384,7 @@ body {
                 align-items: center;
                 justify-content: center;
                 transition: 0.3s;
+                margin-left: 5px !important;
 
                 .header-search-results {
                     display: none;
@@ -6381,6 +6432,24 @@ body {
                 }
             }
         }
+
+        .header-mobile-menu-button-container {
+            padding: 10px;
+            border-radius: 50px;
+            height: 40px;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            background-color: #3A3B3C;
+            margin-left: 5px;
+
+            i {
+                font-size: 20px;
+            }
+        }
+
     }
 
 
@@ -6520,13 +6589,17 @@ body {
     float: right;
     margin: 0;
     margin-top: 5px !important;
+
     .skeleton-line {
-        margin-left: auto;;
+        margin-left: auto;
+        ;
     }
+
     background-color: rgba(41, 177, 169, 0.25);
 }
+
 .sm-skleton.message-received {
-        margin: 0;
+    margin: 0;
     margin-top: 5px !important;
     padding: 0;
 

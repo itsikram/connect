@@ -25,6 +25,32 @@ exports.prefileHasStory = async function (req, res, next) {
 
     return next()
 }
+exports.getProfileImages = async function (req, res, next) {
+    let { profileId } = req.query
+    try {
+        if (!mongoose.isValidObjectId(profileId)) return
+        let profileImages = await Post.find({
+
+            author: profileId,
+            photos: {
+                $ne: 'null'
+            }
+        })
+
+        if(profileImages) {
+            return res.json(profileImages).status(200)
+        }
+
+        return next()
+
+
+    } catch (error) {
+        next(error)
+    }
+
+
+    return next()
+}
 
 exports.profileGet = async function (req, res, next) {
     let profileId = req.query.profileId

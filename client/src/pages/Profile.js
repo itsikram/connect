@@ -109,8 +109,8 @@ let Profile = (props) => {
                                 <NavLink to={profilePath + "friends"} onClick={profileTabItemClick} className="header-nav-menu-item"> Friends</NavLink>
                                 <NavLink to={profilePath + "images"} onClick={profileTabItemClick} className="header-nav-menu-item">Images</NavLink>
                                 <NavLink to={profilePath + "videos"} onClick={profileTabItemClick} className="header-nav-menu-item">Videos</NavLink>
-                                <NavLink to="/profile/likes" onClick={profileTabItemClick} className="header-nav-menu-item">Likes</NavLink>
-                                <NavLink to="/profile/events" onClick={profileTabItemClick} className="header-nav-menu-item">Events</NavLink>
+                                {/* <NavLink to="/profile/likes" onClick={profileTabItemClick} className="header-nav-menu-item">Likes</NavLink>
+                                <NavLink to="/profile/events" onClick={profileTabItemClick} className="header-nav-menu-item">Events</NavLink> */}
                             </div>
                         </div>
                         <div className="options-menu">
