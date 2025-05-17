@@ -10,6 +10,8 @@ import useIsMobile from '../../utils/useIsMobile';
 import api from '../../api/api';
 import checkImgLoading from '../../utils/checkImgLoading';
 import isValidUrl from '../../utils/isValiUrl';
+import Webcam from 'react-webcam';
+
 const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic }) => {
     const [emotion, setEmotion] = useState(false);
     const [myEmotion, setMyEmotion] = useState(false)
@@ -26,6 +28,8 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
     const [isChatOptionMenu, setIsChatOptionMenu] = useState(false)
     const [receiverId, setReceiverId] = useState();
     const [isVideoCalling, setIsVideoCalling] = useState(false)
+    const [modalHeight, setModalHeight] = useState('auto')
+
     const cameraVideoRef = useRef(null)
     const location = useLocation();
     const myVideo = useRef();
@@ -77,6 +81,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
             });
 
             peerA.on('stream', (currentStream) => {
+                setModalHeight(userVideo.current.height + 100)
                 userVideo.current.srcObject = currentStream;
             });
 
@@ -410,7 +415,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
 
                 <ModalContainer
                     title="Video Call"
-                    style={{ width: isMobile ? '95%' : "600px", top: "50%", borderRadius: '10px' }}
+                    style={{ width: isMobile ? '95%' : "600px", top: "50%", borderRadius: '10px', height: modalHeight }}
                     isOpen={isVideoCalling || callAccepted}
                     onRequestClose={closeVideoCall}
                     id="videoCallModal"
@@ -422,7 +427,8 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
                         </p>
                         <div className={`video-call-container ${isMobile ? 'mobile' : ''}`}>
                             {<video playsInline ref={userVideo} className='friends-video' autoPlay style={{ width: '100%', display: callAccepted ? 'block' : 'none' }} />}
-                            <video playsInline muted ref={myVideo} autoPlay className='my-video' style={{ width: '150px' }} />
+                            <Webcam playsInline muted ref={myVideo} autoPlay className='my-video' style={{ width: '150px' }} />
+                            {/* <video playsInline muted ref={myVideo} autoPlay className='my-video' style={{ width: '150px' }} /> */}
                         </div>
                         <div className='call-buttons'>
 

@@ -1,9 +1,9 @@
-import { GET_POSTS,REMOVE_POST,ADD_POST } from "../constants/postConsts";
+import { LOAD_POSTS,REMOVE_POST,ADD_POST } from "../constants/postConsts";
 
-export const getPosts = (posts) => {
+export const loadPosts = (posts) => {
 
     return {
-        type: GET_POSTS,
+        type: LOAD_POSTS,
         payload: posts
     }
 

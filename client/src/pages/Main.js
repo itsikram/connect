@@ -52,6 +52,8 @@ import MessageSetting from "../components/setting/MessageSetting.js";
 import PreferenceSetting from "../components/setting/PreferenceSetting.js";
 import SoundSetting from "../components/setting/SoundSetting.js";
 
+import Face from "../components/faceDetection/Face.js";
+
 function showNotification(msg, receiverId) {
     const notification = new Notification("New Message!", {
         body: msg.message,
@@ -254,10 +256,13 @@ const Main = () => {
                 <Header />
 
                 <div id="main-container" className={isLoading ? 'loading' : ''}>
+                                                {/* <Face /> */}
+
                     <Routes>
                         <Route path="/">
                             <Route path="login" element={<Login />}></Route>
                             <Route path="signup" element={<SignUP />}></Route>
+                            {/* <Route path="face" element={<ProtectedRoute><Face /></ProtectedRoute>}></Route> */}
 
                             <Route index element={<ProtectedRoute><Home /></ProtectedRoute>}></Route>
 

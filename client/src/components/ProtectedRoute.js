@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useJwt } from 'react-jwt'
-import { setLogin } from '../services/actions/authActions';
 import { useNavigate, useLocation } from 'react-router-dom';
 const ProtectedRoute = ({ children }) => {
     let { token } = useSelector(state => state.auth)
@@ -12,11 +11,11 @@ const ProtectedRoute = ({ children }) => {
 
     useEffect(() => {
 
-        if(!token) {
+        if(!token || isExpired) {
             navigate('/login')
         }
 
-    }, [token])
+    }, [token,location])
     return (
         <>
             {children}

@@ -33,6 +33,7 @@
     "react-modal": "^3.16.1",
     "react-moment": "^1.1.3",
     "react-redux": "^8.1.3",
+    "react-responsive-masonry": "^2.7.1",
     "react-router-guarded-routes": "^0.4.5",
     "react-scripts": "^5.0.1",
     "react-scroll-to-bottom": "^4.2.0",

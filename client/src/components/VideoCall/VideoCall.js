@@ -21,6 +21,7 @@ const VideoCall = ({ myId }) => {
     const [callAccepted, setCallAccepted] = useState();
     const [isMicrophone, setIsMicrophone] = useState(true);
     const [isBackCamera, setIsBackCamera] = useState(false);
+    const [modalHeight, setModalHeight] = useState('auto')
 
 
 
@@ -57,14 +58,6 @@ const VideoCall = ({ myId }) => {
         }
     }, [mySettings])
 
-    useEffect(() => {
-
-        if (receivingCall) {
-
-        }
-
-    }, [receivingCall])
-
 
 
     useEffect(() => {
@@ -76,6 +69,7 @@ const VideoCall = ({ myId }) => {
             setCallerSignal(data.signal);
             setCallerName(data.name)
             playRingtone();
+            setModalHeight(userVideo?.current.height + 100)
         });
 
         socket.on('videoCallEnd', (leaveVideoCall) => {
@@ -132,6 +126,8 @@ const VideoCall = ({ myId }) => {
         });
 
         peerB.on('stream', (currentStream) => {
+                            setModalHeight(userVideo.current.height +100)
+
             userVideo.current.srcObject = currentStream;
         });
 
@@ -202,7 +198,7 @@ const VideoCall = ({ myId }) => {
         <div>
             <ModalContainer
                 title="Video Call"
-                style={{ width: isMobile ? '95%' : "600px", top: "50%" }}
+                style={{ width: isMobile ? '95%' : "600px", top: "50%", height: modalHeight }}
                 isOpen={isVideoCall}
                 onRequestClose={closeVideoCall}
                 id="videoCallModal"

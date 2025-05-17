@@ -12,7 +12,7 @@ import { setLoading } from "../services/actions/optionAction";
 import PostSkeleton from "../skletons/post/PostSkeleton";
 import StoryListSkleton from "../skletons/story/StoryListSkleton";
 import socket from "../common/socket";
-
+import {loadPosts} from "../services/actions/postActions"
 
 let Home = () => {
 
@@ -37,16 +37,23 @@ let Home = () => {
     let [lastVisitPost, setLastVisitPost] = useState(false)
     let [pageNumber, setPageNumber] = useState(0)
     let myProfile = useSelector(state => state.profile)
+    let newsFeedPosts = useSelector(state => state.post)
 
     let loadData = async () => {
+
+        if (hasNewPosts === false) return;
+
         let nfRes = await api.get('/post/newsFeed/', {
             params: {
                 pageNumber: pageNumber + 1
             }
         })
         if (nfRes.status === 200) {
+
+            // let loaded
+            dispatch(loadPosts([...nfRes.data.posts] || []))
             setPageNumber(pageNumber + 1)
-            setNewsFeed(state => [...state, ...nfRes.data.posts])
+            // setNewsFeed(state => [...state, ...nfRes.data.posts])
             let hasPosts = nfRes.data.hasNewPost
             setHasNewPosts(hasPosts)
             setLoadNewPosts(false)
@@ -60,6 +67,7 @@ let Home = () => {
 
 
     useEffect(() => {
+        // setHasNewPosts(true)
         const handleScroll = () => {
             const scrollTop = window.scrollY;
             const windowHeight = window.innerHeight;
@@ -98,9 +106,17 @@ let Home = () => {
         window.matchMedia("(max-width:768px)").addEventListener('change', (e) => {
             setMatch(e.matches)
         })
-        loadData()
-        // fetching newsfeed posts
+        setHasNewPosts(true)
+        setLoadNewPosts(true)
     }, [])
+
+    useEffect(() => {
+        if(newsFeedPosts.length > 0) {
+            let pageNumber = Math.floor(newsFeedPosts.length / 3)
+            setPageNumber(pageNumber)
+            // alert(pageNumber)
+        }
+    },[newsFeedPosts])
 
     return (
         <Fragment>
@@ -162,8 +178,8 @@ let Home = () => {
                                 <div id="nf-post-container">
 
                                     {
-                                        newsFeeds.length > 0 ?
-                                            newsFeeds.map((newsFeed, index) => {
+                                        newsFeedPosts.length > 0 ?
+                                            newsFeedPosts.map((newsFeed, index) => {
                                                 return <Post key={index} data={newsFeed}></Post>
                                             })
 

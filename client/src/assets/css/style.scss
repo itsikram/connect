@@ -38,6 +38,10 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.emotion-video {
+    visibility: hidden;
+    height: 0;
+}
 
 
 /* Width of the scrollbar */
@@ -4528,16 +4532,23 @@ body {
 
 
         .image-items-container {
-            display: block;
-            overflow-y: auto;
-
+            // display: block;
+            // overflow-y: auto;
+            width: 100%;
             .image-item {
-                width: 49%;
-                float: left;
-                margin: 10px 0.50%;
+                border-radius: 20px;
+                border: 1px solid $pc;
+                overflow: hidden;
+                // width: 49%;
+                // float: left;
+                // margin: 10px 0.50%;
 
                 img {
                     width: 100%;
+                    transition: 0.3s;
+                }
+                img:hover {
+                    transform: scale(1.2);
                 }
 
 

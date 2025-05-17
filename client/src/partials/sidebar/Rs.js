@@ -7,7 +7,7 @@ import RsMenuItemSkleton from '../../skletons/rs/RsMenuItemSkleton';
 
 let RightSidebar = () => {
     let params = useParams();
-    let navigate = useNavigate()
+    let navigate = useNavigate();
     let userJson = localStorage.getItem('user') ? localStorage.getItem('user') : '{}'
     let { profile } = JSON.parse(userJson)
     let myProfile = useSelector(state => state.profile)
@@ -50,7 +50,7 @@ let RightSidebar = () => {
         // }).catch(e => {
         //     console.log(e)
         // })
-    }, [params])
+    }, [myProfile])
 
     let redirectToMessage = (e) => {
         let profileId = e.currentTarget.dataset.profile

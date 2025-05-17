@@ -14,8 +14,9 @@ const routes = require('./Routes/routes')
 let app = express();
 const socketHandler = require('./sockets/socketHandler')
 const httpServer = createServer(app)
-const fs = require('fs');
+
 app.use(cors());
+
 
 const io = socketIo(httpServer, {
   cors: {
