@@ -8,17 +8,21 @@ const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.
 const Rhaha = 'https://programmerikram.com/wp-content/uploads/2025/03/haha-icon.svg';
 
 
-const SingleReactor = ({ reactor }) => {
+const SingleReactor = ({ viewer,reacts }) => {
 
     let [profileData, setProfileData] = useState(false);
     let [reactImg, setReactImg] = useState('')
 
     let loadProfileData = async (id) => {
 
-        let res = await api.get('profile', { params: { profileId: reactor.profile } })
+        let res = await api.get('profile', { params: { profileId: viewer } })
         if (res.status == 200) {
             setProfileData(res.data)
-            switch (reactor.type) {
+
+            let isReacted = reacts.filter(react => react.profile == viewer)
+            if(isReacted.length == 0) return;
+            
+            switch (isReacted[0].type) {
                 case 'like':
                     setReactImg(Rlike)
                     break;
@@ -32,9 +36,10 @@ const SingleReactor = ({ reactor }) => {
                     break;
                 default:
                     setReactImg(Rlike)
-
                     break;
             }
+
+
         }
 
     }
@@ -57,7 +62,8 @@ const SingleReactor = ({ reactor }) => {
                     </div>
                     <span className='reactor-react'>
 
-                        <img src={reactImg} alt="love" />
+                        { reactImg ? <img src={reactImg} /> : <><img style={{visibility: 'hidden'}} src={''} /></>}
+
                     </span>
 
                 </li>

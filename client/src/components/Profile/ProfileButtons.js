@@ -134,6 +134,7 @@ const ProfileButtons = (props) => {
     }
     let handleStorySubmit = async (e) => {
         e.preventDefault()
+        setIsStoryModal(false)
         if(e.target.classList.containers('added') ) return;
         if(storyData.uploadedUrl != false && storyBgColors != false) {
             try {

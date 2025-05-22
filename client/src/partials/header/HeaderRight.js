@@ -167,9 +167,8 @@ let HeaderRight = ({ dispatch, useSelector }) => {
 
     let logOutBtn = (e) => {
         // navigate('/login')
-
-        dispatch(logOut())
         localStorage.removeItem('user')
+        dispatch(logOut())
         window.location.reload();
     }
     return (

@@ -29,7 +29,7 @@ let postSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: Profile
     }],
-    visits: [{
+    viewers: [{
         type: Schema.Types.ObjectId,
         ref: Profile
     }],

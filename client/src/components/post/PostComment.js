@@ -16,7 +16,7 @@ function isValidUrl(str) {
     return !!pattern.test(str);
 }
 
-const PostComment = ({ post, authProfilePicture, authProfile, myProfile, setAllComments, allComments = [], commentState }) => {
+const PostComment = ({ post, authProfilePicture, authProfile, myProfile, setAllComments, allComments = [], commentState,isEditMode }) => {
     let isAuth = myProfile._id === authProfile
     const location = useLocation();
     let [isSingle, setIsSingle] = useState(location.pathname.includes(`/${(post?._id || '').toString()}`));
@@ -164,7 +164,7 @@ const PostComment = ({ post, authProfilePicture, authProfile, myProfile, setAllC
                 {
                     (allComments).slice(isSingle ? -allComments.length -1 : -3).map((comment, index) => {
 
-                        return comment && <SingleComment comment={comment} postData={post} key={index} myProfile={myProfile}></SingleComment>
+                        return comment && <SingleComment isEditMode={isEditMode} comment={comment} postData={post} key={index} myProfile={myProfile}></SingleComment>
                     })
 
                 }

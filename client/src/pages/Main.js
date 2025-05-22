@@ -290,6 +290,7 @@ const Main = () => {
 
                             <Route path="/post/" >
                                 <Route path=":postId" element={<ProtectedRoute><SinglePost /></ProtectedRoute>} />
+                                <Route path=":postId/edit" element={<ProtectedRoute><SinglePost /></ProtectedRoute>} />
                                 <Route path=":postId/comments" element={<PostComments />} />
                                 <Route path=":postId/reacts" element={<PostReacts />} />
                             </Route>

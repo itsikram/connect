@@ -6,11 +6,11 @@ import api from '../../api/api';
 
 import { sendMessage } from '../../services/actions/messageActions';
 
-const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAttachment,messageActionButtonContainer,setIsReplying,userId,messageInput,replyData,isPreview, setIsPreview,msgListRef }) => {
+const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatNewAttachment, messageActionButtonContainer, setIsReplying, userId, messageInput, replyData, setReplyData, isPreview, setIsPreview, msgListRef }) => {
 
     const dispatch = useDispatch()
     const [mInputWith, setmInputWith] = useState(true);
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState();
     const [attachmentUrl, setAttachmentUrl] = useState(false)
     const imageInput = useRef(null);
     const settings = useSelector(state => state.setting)
@@ -18,15 +18,15 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
         if (msgListRef.current != null) {
             let isLastMsg = setInterval(() => {
                 let lastMsg = document.querySelector('#chatMessageList .chat-message-container:last-child')
-                    lastMsg?.scrollIntoView({ behavior: "smooth" });
+                lastMsg?.scrollIntoView({ behavior: "smooth" });
             }, 500)
 
-            msgListRef.current.addEventListener('scroll',e => {
+            msgListRef.current.addEventListener('scroll', e => {
                 let scrollBottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
-                console.log('scrl', e.target.scrollHeight, e.target.scrollTop,scrollBottom)
+                console.log('scrl', e.target.scrollHeight, e.target.scrollTop, scrollBottom)
 
-                if(scrollBottom <= 5) {
-                clearInterval(isLastMsg)
+                if (scrollBottom <= 5) {
+                    clearInterval(isLastMsg)
 
                 }
 
@@ -36,9 +36,7 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
 
 
     }
-    useEffect(() => {
-        console.log('rdt', isReplying,replyData)
-    },[replyData])
+
 
     const handleSendMessage = useCallback((e) => {
         e.preventDefault();
@@ -52,28 +50,25 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
             if (isReplying) {
                 let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: replyData.messageId }
                 socket.emit('sendMessage', data);
-                setInputValue('')
                 setIsTyping(false)
                 dispatch(sendMessage(data))
-
                 scrollToLastMessage();
             } else {
                 let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: false }
                 socket.emit('sendMessage', data);
-                setInputValue('')
                 setIsTyping(false)
                 dispatch(sendMessage(data))
-
                 scrollToLastMessage();
 
             }
+            setInputValue('')
 
             setIsReplying(false)
             setIsPreview(false)
-            setAttachmentUrl(false)
-
-
+            setAttachmentUrl('')
+            setReplyData({ messageId: null, body: null })
         }
+        setIsPreview(false)
     })
 
 
@@ -117,7 +112,7 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
     let handleInputChange = (e) => {
         setInputValue(e.target.value)
 
-        if(settings.showIsTyping) {
+        if (settings.showIsTyping) {
             socket.emit('update_type', { room, type: e.target.value })
         }
     }
@@ -175,7 +170,7 @@ const ChatFooter = ({ chatFooter,room,isReplying,friendId,setIsTyping,chatNewAtt
                 {
                     isPreview && (<div className='new-message-preview-container'>
                         {
-                            isReplying  && (
+                            isReplying && (
                                 <div className='reply-message-preview-form'>
                                     <p className='text-small'>
                                         {replyData.body}

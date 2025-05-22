@@ -69,7 +69,7 @@ const VideoCall = ({ myId }) => {
             setCallerSignal(data.signal);
             setCallerName(data.name)
             playRingtone();
-            setModalHeight(userVideo?.current.height + 100)
+            // setModalHeight(userVideo?.current.height + 100)
         });
 
         socket.on('videoCallEnd', (leaveVideoCall) => {
@@ -126,7 +126,7 @@ const VideoCall = ({ myId }) => {
         });
 
         peerB.on('stream', (currentStream) => {
-                            setModalHeight(userVideo.current.height +100)
+                            // setModalHeight(userVideo.current.height +100)
 
             userVideo.current.srcObject = currentStream;
         });

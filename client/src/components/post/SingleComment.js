@@ -7,7 +7,7 @@ import $ from 'jquery'
 import api from '../../api/api';
 
 
-const SingleComment = ({ comment, postData, myProfile }) => {
+const SingleComment = ({ comment, postData, myProfile,isEditMode }) => {
 
     let myId = myProfile._id
     let [totalComment, setTotalComment] = useState(0)
@@ -149,7 +149,7 @@ const SingleComment = ({ comment, postData, myProfile }) => {
 
                         {
 
-                            comment.author._id == myProfile._id ?
+                            comment.author._id == myProfile._id || isEditMode ?
                                 <div onClick={clickCommentOption} className="options-icon">
                                     <i className="far fa-ellipsis-h"></i>
                                     <div className='options-container'>
@@ -191,7 +191,7 @@ const SingleComment = ({ comment, postData, myProfile }) => {
                         replies.map((item, index) => {
 
                             return (
-                                <SingleReply setReplies={setReplies} replies={replies} comment={comment} item={item} key={index} myProfile={myProfile}></SingleReply>
+                                <SingleReply isEditMode={isEditMode} setReplies={setReplies} replies={replies} comment={comment} item={item} key={index} myProfile={myProfile}></SingleReply>
                             )
 
                         })

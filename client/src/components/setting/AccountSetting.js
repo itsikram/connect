@@ -32,6 +32,17 @@ const AccountSetting = () => {
         }
     })
 
+    let deleteAccount = useCallback(async (e) => {
+        e.preventDefault();
+        let userData = JSON.parse(localStorage.getItem('user'))
+        let deletedAccountRes = await api.post('auth/delete',{userData: userData})
+        if (deletedAccountRes.status == 200) {
+            localStorage.removeItem('user')
+            alert(deletedAccountRes.data.message)
+            window.location.reload();
+        }
+    })
+
     return (
         <>
             <div className='profile-setting'>
@@ -54,6 +65,10 @@ const AccountSetting = () => {
                         </div>
 
                         <button type="submit" onClick={handleSubmit.bind(this)} className="btn btn-primary">Save Settings</button>
+                        <br />
+
+                        <button onClick={deleteAccount.bind(this)} className='btn btn-danger mt-3'>Delete My Account</button>
+
                     </form>
                 </div>
             </div>

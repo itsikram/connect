@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
-import { useParams } from 'react-router-dom';
-import PostContainer from './PostContainer';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import api from '../../api/api';
 import $ from 'jquery'
 import { useSelector } from 'react-redux'
@@ -11,12 +10,14 @@ import { Container, Row, Col } from 'react-bootstrap';
 import ImageSkleton from '../../skletons/post/ImageSkleton';
 import ModalContainer from '../modal/ModalContainer';
 import useIsMobile from '../../utils/useIsMobile';
+import isValidUrl from '../../utils/isValiUrl';
 import Momemt from 'react-moment'
 import PostComment from "./PostComment";
 import SingleReactor from './SingleReactor';
 import { confirmAlert } from "react-confirm-alert";
-import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS
-
+import "react-confirm-alert/src/react-confirm-alert.css";
+import checkImgLoading from '../../utils/checkImgLoading'
+import { toast } from 'react-toastify';
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
 const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
 const Rhaha = 'https://programmerikram.com/wp-content/uploads/2025/03/haha-icon.svg';
@@ -28,7 +29,12 @@ const SinglePost = () => {
     let [postData, setPostData] = useState(false)
     let [isShareModal, setIsShareModal] = useState(false)
     let [shareCap, setShareCap] = useState(false)
+    let [isLoaded, setIsloaded] = useState(false)
     let isMobile = useIsMobile();
+    let navigate = useNavigate();
+    const location = useLocation();
+    const isEditMode = location.pathname.includes('edit');
+
     let loadData = async () => {
 
         let res = await api.get('post/single', { params: { postId } })
@@ -51,26 +57,26 @@ const SinglePost = () => {
     let [totalComments, setTotalComments] = useState(postData && postData.comments.length)
     let [reactType, setReactType] = useState(false);
     let [placedReacts, setPlacedReacts] = useState([]);
-    const [imageExists, setImageExists] = useState(null);
-    const [thumbExists, setThumbExists] = useState(null);
 
     useEffect(() => {
         setTotalReacts(postData && postData.reacts.length)
         setTotalShares(postData && postData.shares.length)
         setTotalComments(postData && postData.comments.length)
-    },[postData])
+    }, [postData])
 
 
     var isAuth = myProfileId === postAuthorProfileId ? true : false;
-    var pp_url = postData && postData?.author.profilePic
-    const checkImage = (url) => {
-        const img = new Image();
-        img.src = url;
+    let [ppUrl, setPpUrl] = useState(postData && postData?.author.profilePic || default_pp_src);
 
-        img.onload = () => setImageExists(true);
-        img.onerror = () => setImageExists(false);
-    };
 
+
+
+
+    let postPhoto = postData && postData.photos
+    useEffect(() => {
+        checkImgLoading(postPhoto, setIsloaded)
+        // checkImgLoading(postPhoto, setIsloaded)
+    }, [postPhoto])
 
 
     useEffect(() => {
@@ -106,22 +112,6 @@ const SinglePost = () => {
         setPlacedReacts(storedReacts);
 
     }, [])
-
-    let postPhoto = postData && postData.photos
-    const checkThumbImage = (url) => {
-        const img = new Image();
-        img.src = url;
-
-        img.onload = () => setThumbExists(true);
-        img.onerror = () => setThumbExists(false);
-    };
-
-    checkThumbImage(postPhoto)
-    checkImage(pp_url);
-
-    if (!imageExists) {
-        pp_url = default_pp_src;
-    }
     let type = postData && (postData.type || 'post')
 
 
@@ -288,9 +278,16 @@ const SinglePost = () => {
         setTotalShares(state => state + 1)
         if (res.status == 200) {
             setIsShareModal(false)
-        }else {
+        } else {
             setTotalShares(postData && postData.shares.length)
         }
+    }
+
+    let gotoEdit = () => {
+        navigate('edit')
+    }
+    let gotoBack = () => {
+        navigate(`/post/${postId}`)
     }
 
     let authProfilePicture = useSelector(state => state.profile.profilePic)
@@ -306,6 +303,33 @@ const SinglePost = () => {
         })
     }, [])
 
+    let [newCaption, setNewCaption] = useState('')
+
+    useEffect(() => {
+        if (postData.caption) {
+            setNewCaption(postData.caption)
+        }
+    }, [postData.caption])
+
+    let handleEditCaption = useCallback(async (e) => {
+        e.preventDefault();
+        setNewCaption(e.target.value)
+        return setPostData(postData => {
+            return {
+                ...postData,
+                caption: e.target.value
+            }
+        })
+    })
+
+    let updateCaption = useCallback(async (e) => {
+        let res = await api.post('/post/update', { postId, caption: postData.caption })
+
+        if (res.status == 200) {
+            toast('Caption Updated')
+        }
+
+    })
     let PostContent = () => {
         switch (postData.type) {
             case 'share':
@@ -390,22 +414,21 @@ const SinglePost = () => {
                                     {postData.parentPost.caption}
                                 </p>
                                 {
-                                    postPhoto == 'null' ? <></> : (thumbExists &&
+                                    isLoaded ? <>
                                         <div className="attachment">
                                             <Link to={`/post/${postData._id}`}>
                                                 <img src={postPhoto} alt="post" />
 
                                             </Link>
                                         </div>
-
-                                        ||
-
+                                    </> :
                                         <>
-                                            <ImageSkleton />
-                                            {/* <p className="fs-5 text-center text-danger">Post image not available</p> */}
+                                            {
+                                                isValidUrl(postPhoto) && <ImageSkleton />
+                                            }
                                         </>
 
-                                    )
+
                                 }
                             </div>
 
@@ -605,8 +628,17 @@ const SinglePost = () => {
                                 </div>
                                 <div className="right">
                                     {
-                                        isAuth && <button className="post-three-dot"><i className="far fa-ellipsis-h"></i></button>
+                                        isAuth && !isEditMode && <>
+
+                                            {/* <button className="post-three-dot"><i className="far fa-ellipsis-h"></i></button> */}
+                                            <button onClick={gotoEdit} className="post-three-dot"><i className="far fs-6 fa-pen"></i></button>
+                                        </>
                                     }
+                                    {
+                                isEditMode && <button onClick={gotoBack} className="post-three-dot"><i className="fas fa-arrow-left"></i></button>
+
+}
+
 
                                     <button onClick={hideThisPost.bind(this)} className="post-close"> <i className="far fa-times"></i></button>
                                 </div>
@@ -614,19 +646,42 @@ const SinglePost = () => {
 
                         </div>
                         <div className="body">
-                            <p className="caption">
-                                {postData.caption}
-                            </p>
-                            {
-                                postPhoto == 'null' ? <></> : (thumbExists &&
-                                    <div className="attachment">
-                                        <img src={postPhoto} alt="post" />
 
+                            {
+                                isAuth && isEditMode ? <>
+                                    <div className='input-group'>
+                                        <input
+                                            onChange={handleEditCaption.bind(this)}
+                                            className='caption-editor form-control mb-2'
+                                            placeholder='Enter Your Caption'
+                                            value={newCaption}
+                                        />
+                                        <div className='input-group-prepend'>
+                                            <button onClick={updateCaption} className='btn btn-primary'>Update</button>
+                                        </div>
                                     </div>
 
-                                    ||
+                                </> : <p className="caption">
+                                    {postData.caption}
+                                </p>
+                            }
 
-                                    <p className="fs-5 text-center text-danger">Post image not available</p>)
+                            {
+                                isLoaded ? <>
+                                    <div className="attachment">
+                                        <Link to={`/post/${postData._id}`}>
+                                            <img src={postPhoto} alt="post" />
+
+                                        </Link>
+                                    </div>
+                                </> :
+                                    <>
+                                        {
+                                            isValidUrl(postPhoto) && <ImageSkleton />
+                                        }
+                                    </>
+
+
                             }
 
                         </div>
@@ -729,35 +784,35 @@ const SinglePost = () => {
                                                 <div onClick={onCloseShareReq} className="modal-close-btn text-danger"><i className="far fa-times"></i></div>
                                             </div>
                                             <div className='modal-body'>
-                                            <div className="share-post-container">
-                                                <div className="share-post-header">
-                                                    <div className="row">
-                                                        <div className="col-1">
-                                                            <UserPP profilePic={myProfile.profilePic}></UserPP>
+                                                <div className="share-post-container">
+                                                    <div className="share-post-header">
+                                                        <div className="row">
+                                                            <div className="col-1">
+                                                                <UserPP profilePic={myProfile.profilePic}></UserPP>
 
+                                                            </div>
+                                                            <div className="col-3">
+                                                                <h3>{myProfile.fullName}</h3>
+                                                            </div>
                                                         </div>
-                                                        <div className="col-3">
-                                                            <h3>{myProfile.fullName}</h3>
+                                                        <div className="row">
+                                                            <div className="col">
+                                                                Your Sharing {postData.author.fullName || 'Someone'}'s Post
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className="row">
-                                                        <div className="col">
-                                                            Your Sharing {postData.author.fullName || 'Someone'}'s Post
+                                                    <div className="share-post-body my-3">
+                                                        <textarea className="form-control" onChange={(e) => setShareCap(e.target.value)} value={shareCap} ></textarea>
+                                                        <div className="share-post-button text-end mt-2">
+                                                            <button className="btn btn-primary" onClick={onClickShareNow}>Share Now</button>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="share-post-body my-3">
-                                                    <textarea className="form-control" onChange={(e) => setShareCap(e.target.value)} value={shareCap} ></textarea>
-                                                    <div className="share-post-button text-end mt-2">
-                                                        <button className="btn btn-primary" onClick={onClickShareNow}>Share Now</button>
+
+                                                    <div className="share-post-footer">
+                                                        {/* <button className="btn btn-primary">Share Now</button> */}
                                                     </div>
-                                                </div>
 
-                                                <div className="share-post-footer">
-                                                    {/* <button className="btn btn-primary">Share Now</button> */}
                                                 </div>
-
-                                            </div>
                                             </div>
 
 
@@ -795,15 +850,15 @@ const SinglePost = () => {
 
                     <Col md="3" className='br'>
                         <div className='sp-reacts-container'>
-                            <h4 className='section-title'>Reactors {postData.reacts && `(${postData.reacts.length})`}</h4>
+                            <h4 className='section-title'>Views {postData.viewers && `(${postData.viewers.length})`}</h4>
 
                             <ul className='sp-reacts'>
 
-                                {postData.reacts && postData.reacts.map((item, index) => {
+                                {postData.viewers && postData.viewers.map((item, index) => {
 
                                     return (
 
-                                        <SingleReactor key={index} reactor={item} />
+                                        <SingleReactor key={index} reacts={postData.reacts} viewer={item._id} />
 
                                     )
 
@@ -816,7 +871,7 @@ const SinglePost = () => {
                     <Col md="3">
                         <div className='sp-comments-container'>
                             <h4 className='section-title'>Comments {postData?.comments && `(${postData?.comments.length})`}</h4>
-                            {postData?.comments && (<PostComment post={postData} commentState={setTotalComments} allComments={postData.comments || []} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>)}
+                            {postData?.comments && (<PostComment post={postData} commentState={setTotalComments} allComments={postData.comments || []} myProfile={myProfile} authProfile={authProfileId} isEditMode={isEditMode} authProfilePicture={authProfilePicture}></PostComment>)}
                         </div>
 
 

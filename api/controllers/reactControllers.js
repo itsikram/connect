@@ -111,7 +111,7 @@ exports.postAddReact = async (req, res, next) => {
 exports.postRemoveReact = async (req, res, next) => {
     try {
         let profile = req.profile._id
-        let { id, postType } = req.body
+        let { id, postType,reactor } = req.body
         let io = req.app.get('io')
 
         switch (postType) {
@@ -121,7 +121,7 @@ exports.postRemoveReact = async (req, res, next) => {
                 }, {
                     $pull: {
                         reacts: {
-                            profile: profile,
+                            profile: reactor,
                         }
                     }
                 }, { new: true })

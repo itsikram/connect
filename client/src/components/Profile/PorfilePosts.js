@@ -1,4 +1,4 @@
-import React, {Fragment, useCallback, useEffect,useState} from "react";
+import React, {Fragment, useCallback, useEffect,useState,useRef} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import CreatePost from "../post/CreatePost";
@@ -17,6 +17,7 @@ let PorfilePosts = () => {
     const [posts,setPosts] = useState([])
     const [bio,setBio] = useState(myProfileData.bio)
     let navigate = useNavigate()
+    let postContainer = useRef(null)
 
     useEffect(() => {
         api.get('/post/myPosts',{
@@ -119,13 +120,13 @@ let PorfilePosts = () => {
                         }
                     </div>
                 </div>
-                <div className="posts-container">
+                <div ref={postContainer} className="posts-container">
                     {
                         isAuth && <CreatePost setNewsFeed={setPosts}></CreatePost>
                     }
                     
                     {posts.length > 0 ? posts.map((data,index) => {
-                        return <Post key={index} myProfile={myProfileData} data={data}></Post>
+                        return <Post key={index} myProfile={myProfileData} postContainer={postContainer} data={data}></Post>
                     })
                     :
                     <PostSkeleton  count={3}/>

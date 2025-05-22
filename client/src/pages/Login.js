@@ -18,8 +18,6 @@ let Login = (props) => {
     },[token])
     let showSignup = (e) => {
         return navigate('/signup')
-        let target = e.currentTarget;
-        $(target).parents('.login-container').siblings('.signup-container').fadeIn('fast')
 
     }
 

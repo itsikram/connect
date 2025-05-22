@@ -191,7 +191,8 @@ let CreatePost = ({ setNewsFeed }) => {
 
     let handlePostSubmit = useCallback(async (e) => {
         e.preventDefault()
-        if(e.target.classList.contains('added')) return;
+                        setPostModal(false)
+
         try {
             switch (postData.type) {
 

@@ -3417,6 +3417,12 @@ body {
         border-radius: 5px;
         margin-bottom: 15px;
 
+        .caption-editor {
+            background-color: $profilebg;
+            border-color: $pc;
+            color: $tc
+        }
+
         .header {
             padding: 0 12px;
 
@@ -4874,6 +4880,14 @@ body {
                 padding: 10px;
                 border-radius: 10px;
                 background-color: transparent;
+            }
+
+            input.field.is-invalid {
+                border-color: red !important;
+            }
+
+            .react-datepicker-wrapper {
+                width: 100%;
             }
 
             .email,

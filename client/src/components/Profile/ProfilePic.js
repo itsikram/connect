@@ -79,6 +79,7 @@ let ProfilePic = ({ profileData }) => {
 
     let handlePPUploadSubmit = async (e) => {
         e.preventDefault()
+        setIsPPModal(false)
         try {
 
 

@@ -46,8 +46,18 @@ module.exports = function socketHandler(io) {
 
 
 
-        socket.on('viewPost', ({ visitorId, postId }) => {
+        socket.on('viewPost', async({ visitorId, postId }) => {
             console.log('Visited By :', visitorId, postId)
+            let viewedPost = await Post.findOneAndUpdate({
+                _id: postId,
+                viewers: {$ne: visitorId}
+            },{
+                $push: {
+                    viewers: visitorId
+                }
+            })
+            return viewedPost
+
         })
 
 

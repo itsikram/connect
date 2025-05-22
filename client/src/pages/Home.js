@@ -18,6 +18,7 @@ let Home = () => {
 
     let dispatch = useDispatch()
     let storyContainer = useRef()
+    let postContainer = useRef()
     function scrollLeft(e) {
         storyContainer.current.scrollBy({ left: -300, behavior: 'smooth' })
 
@@ -175,12 +176,12 @@ let Home = () => {
 
 
 
-                                <div id="nf-post-container">
+                                <div id="nf-post-container" ref={postContainer}>
 
                                     {
                                         newsFeedPosts.length > 0 ?
                                             newsFeedPosts.map((newsFeed, index) => {
-                                                return <Post key={index} data={newsFeed}></Post>
+                                                return <Post key={index} index={newsFeedPosts.indexOf(newsFeed)} postContainer={postContainer} data={newsFeed}></Post>
                                             })
 
                                             : <PostSkeleton count={3} />

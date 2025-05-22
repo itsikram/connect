@@ -4,7 +4,7 @@ import Moment from 'react-moment';
 import { Link } from 'react-router-dom';
 import api from "../../api/api";
 import $ from 'jquery'
-const SingleReply = ({item,myProfile,setReplies,comment,replies}) => {
+const SingleReply = ({item,myProfile,setReplies,comment,replies,isEditMode}) => {
     let myId = myProfile._id
     let [isReplyOption, setIsReplyOption] = useState(false)
     let [totalReacts, setTotalReacts] = useState(item?.reacts.length)
@@ -107,7 +107,7 @@ const SingleReply = ({item,myProfile,setReplies,comment,replies}) => {
                     </div>
 
                     {
-                        item.author._id == myId && (
+                        (item.author._id == myId || isEditMode) && (
                             <div className="options-icon" onClick={handleReplyOptionClick.bind(this)}>
                                 <i className="far fa-ellipsis-h"></i>
                                 <div className={`options-container ${isReplyOption && 'open'}`}><button data-id={item._id} onClick={handleDeleteReplyBtn.bind(this)} className="comment-option text-danger">Delete Reply</button></div>

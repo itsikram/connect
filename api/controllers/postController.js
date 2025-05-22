@@ -107,13 +107,13 @@ exports.sharePost = async (req, res, next) => {
 
         let savedPost = await sharedPost.save();
 
-        if(savedPost) {
-            let updatePost = await Post.findOneAndUpdate({_id: postId}, {
+        if (savedPost) {
+            let updatePost = await Post.findOneAndUpdate({ _id: postId }, {
                 $push: {
                     shares: profileId
                 }
             })
-            if(updatePost) {
+            if (updatePost) {
                 return res.status(200).json({ message: 'Post Shared Succesfully', post: savedPost })
 
             }
@@ -133,7 +133,7 @@ exports.getMyPosts = async (req, res, next) => {
 
     try {
         let profile_id = req.query.profile;
-        if(req.profile.username == profile_id) {
+        if (req.profile.username == profile_id) {
             profile_id = req.profile._id
         }
 
@@ -147,16 +147,16 @@ exports.getMyPosts = async (req, res, next) => {
                     path: 'user'
                 }
             },
-                {
-                    path: 'parentPost',
-                    model: Post,
-                    populate: [{
-                        path: 'author',
-                        model: Profile
-                    }, {
-                        path: 'author.user'
-                    }]
-                },
+            {
+                path: 'parentPost',
+                model: Post,
+                populate: [{
+                    path: 'author',
+                    model: Profile
+                }, {
+                    path: 'author.user'
+                }]
+            },
             {
                 path: 'comments',
                 model: Comment,
@@ -220,7 +220,7 @@ exports.getSinglePost = async (req, res, next) => {
                         select: ['firstName', 'surname']
                     }
                 },
-                 {
+                {
                     path: 'replies',
                     Model: CmntReply,
                     populate: {
@@ -228,6 +228,11 @@ exports.getSinglePost = async (req, res, next) => {
                         model: Profile
                     }
                 }]
+            },
+            {
+                path: 'viewers',
+                Model: Profile
+
             }
 
         ])
@@ -238,6 +243,21 @@ exports.getSinglePost = async (req, res, next) => {
 
     } catch (error) {
         console.log(error)
+    }
+}
+
+exports.updatePost = async(req,res,next) => {
+    let {postId, caption} = req.body
+
+    console.log(postId,caption)
+    try {
+        let updatedPost = await Post.findOneAndUpdate({_id: postId}, {
+            caption
+        }, {new: true})
+
+        res.json({message: 'Caption Updated Successfully'}).status(200)
+    } catch (error) {
+        next(error)
     }
 }
 

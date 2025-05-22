@@ -5,16 +5,17 @@ const jwt = require('jsonwebtoken')
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 
-exports.signUp = async(req,res,next) => {
-    let {firstName,surname,email,password,DOB,gender} = req.body
+exports.signUp = async (req, res, next) => {
+    let { firstName, surname, password, DOB, gender } = req.body
+    let email = (req.body.email).toLowerCase();
 
     try {
-       
-        let isUser = await User.find({email});
-        if(isUser.length === 0) {
 
-            let hashPassword = await bcrypt.hash(password,10);
-    
+        let isUser = await User.find({ email });
+        if (isUser.length === 0) {
+
+            let hashPassword = await bcrypt.hash(password, 10);
+
             let saveUser = User({
                 firstName,
                 surname,
@@ -23,60 +24,80 @@ exports.signUp = async(req,res,next) => {
                 DOB,
                 gender
             })
-    
+
             let userData = await saveUser.save();
             let profileData = new Profile({
                 user: userData._id,
-                fullName: firstName +' ' + surname
+                fullName: firstName + ' ' + surname,
+                displayName: surname
             })
 
             let profile = await profileData.save()
 
-            await User.findOneAndUpdate({_id: profile.user},{profile: profile._id})
-            
+            if (profile) {
+
+                let updatedUser = await User.findOneAndUpdate({ _id: saveUser._id }, { profile: profile._id },{new: true})
+
+
+                if (updatedUser) {
+                    let accessToken = jwt.sign({ user_id: updatedUser._id }, SECRET_KEY, {
+                        expiresIn: '5d'
+                    })
+
+                    return res.status(201).json({
+                        firstName: updatedUser.firstName,
+                        user_id: updatedUser._id,
+                        surname: updatedUser.surname,
+                        profile: updatedUser.profile,
+                        accessToken
+                    })
+                }
+
+            }
+
 
             return res.status(201).json({
                 message: 'Account Created successfully'
             })
 
-        }else {
-            return res.status(200).json({message: `Already Created a account with ${email}`});
+        } else {
+            return res.status(200).json({ message: `Already Created a account with ${email}` });
         }
 
 
 
 
-    }catch(e) {
+    } catch (e) {
         next(e)
     }
-    
+
 }
-exports.changePass = async(req,res,next) => {
-    let {newPassword,currentPassword,confirmPassword} = req.body
+exports.changePass = async (req, res, next) => {
+    let { newPassword, currentPassword, confirmPassword } = req.body
     let myProfile = req.profile || ''
     let userId = req.profile.user._id || ''
-    if(newPassword !== confirmPassword) return res.status(400).json({message: 'Your New Password and confirm password is not same'})
+    if (newPassword !== confirmPassword) return res.status(400).json({ message: 'Your New Password and confirm password is not same' })
     try {
-        let user = await User.findOne({profile: myProfile._id});
+        let user = await User.findOne({ profile: myProfile._id });
 
-        let matchPassword = await bcrypt.compare(currentPassword,user.password)
-        if(!matchPassword) return res.status(400).json({message: 'Your Current Password Is Invalid'})
-        if( matchPassword == true) {
-            let newHashPassword = await bcrypt.hash(newPassword,10);
-            let updatedUser = await User.findOneAndUpdate({_id:userId },{
+        let matchPassword = await bcrypt.compare(currentPassword, user.password)
+        if (!matchPassword) return res.status(400).json({ message: 'Your Current Password Is Invalid' })
+        if (matchPassword == true) {
+            let newHashPassword = await bcrypt.hash(newPassword, 10);
+            let updatedUser = await User.findOneAndUpdate({ _id: userId }, {
                 password: newHashPassword
-            },{new: true})
+            }, { new: true })
 
-            if(updatedUser) {
-                let profile = await Profile.findOne({_id: myProfile._id}).populate('user')
-                let accessToken =  jwt.sign({user_id: userId.toString()},SECRET_KEY,{
+            if (updatedUser) {
+                let profile = await Profile.findOne({ _id: myProfile._id }).populate('user')
+                let accessToken = jwt.sign({ user_id: userId.toString() }, SECRET_KEY, {
                     expiresIn: '5d'
                 })
 
                 let resData = {
                     firstName: updatedUser.firstName,
                     user_id: updatedUser._id,
-                    surname:updatedUser.surname,
+                    surname: updatedUser.surname,
                     profile: profile._id,
                     accessToken
                 }
@@ -89,28 +110,29 @@ exports.changePass = async(req,res,next) => {
 
 
 
-    }catch(e) {
+    } catch (e) {
         next(e)
     }
-    
+
 }
 
-exports.login = async(req,res,next) => {
-    let {email,password } = req.body;
+exports.login = async (req, res, next) => {
+    let password = req.body.password;
+    let email = (req.body.email).toLowerCase();
 
-    try{
-        
-        let user = await User.findOne({email})
+    try {
 
-        if ( !user) {
+        let user = await User.findOne({ email })
+
+        if (!user) {
             return res.status(200).json({
                 'message': 'You Don\' Having An account'
             })
         }
 
-        let matchPassword = await bcrypt.compare(password,user.password)
+        let matchPassword = await bcrypt.compare(password, user.password)
 
-        if(!matchPassword) {
+        if (!matchPassword) {
             return res.json({
                 message: 'Invalid Password'
             }).status(200)
@@ -118,21 +140,37 @@ exports.login = async(req,res,next) => {
 
 
 
-        let accessToken =  jwt.sign({user_id: user._id},SECRET_KEY,{
+        let accessToken = jwt.sign({ user_id: user._id }, SECRET_KEY, {
             expiresIn: '5d'
         })
 
         return res.status(202).json({
             firstName: user.firstName,
             user_id: user._id,
-            surname:user.surname,
+            surname: user.surname,
             profile: user.profile,
             accessToken
         })
 
-    }catch(e){
+    } catch (e) {
         next(e)
     }
-    
 
+
+}
+
+exports.deleteAccount = async(req,res,next) => {
+    let userData = req.body.userData
+    let profileId = userData.profile;
+    let userId = userData.user_id
+
+    if(userId) {
+        await User.findByIdAndDelete(userId)
+    }
+
+    if(profileId) {
+        await Profile.findByIdAndDelete(profileId)
+    }
+
+    return res.json({message: 'Account Deleted Successfully'})
 }

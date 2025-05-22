@@ -81,7 +81,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
             });
 
             peerA.on('stream', (currentStream) => {
-                setModalHeight(userVideo.current.height + 100)
+                // setModalHeight(userVideo.current.innerHeight + 100)
                 userVideo.current.srcObject = currentStream;
             });
 

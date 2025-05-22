@@ -12,9 +12,12 @@ import socket from "../../common/socket";
 import ImageSkleton from "../../skletons/post/ImageSkleton";
 import ModalContainer from "../modal/ModalContainer";
 import useIsMobile from "../../utils/useIsMobile"
+import checkImgLoading from "../../utils/checkImgLoading";
+import isValidUrl from "../../utils/isValiUrl";
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
 const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
 const Rhaha = 'https://programmerikram.com/wp-content/uploads/2025/03/haha-icon.svg';
+
 const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
 let getLastPostId = () => {
@@ -25,8 +28,8 @@ let setVisitedPost = (id) => {
 }
 
 
-let Post = (props) => {
-    let post = props.data || {}
+let Post = ({ data, postContainer, index }) => {
+    let post = data || {}
     let myProfile = useSelector(state => state.profile)
     let myProfileId = myProfile._id;
     let postAuthorProfileId = post?.author._id
@@ -43,11 +46,11 @@ let Post = (props) => {
     let [placedReacts, setPlacedReacts] = useState([]);
     let [isShareModal, setIsShareModal] = useState(false);
     let [isPostOption, setIsPostOption] = useState(false);
-    const [imageExists, setImageExists] = useState(false);
-    const [thumbExists, setThumbExists] = useState(null);
+    let [visitedPosts, setVisitedPost] = useState([])
+    const [isLoaded, setIsloaded] = useState(false);
     let isMobile = useIsMobile();
     let navigate = useNavigate()
-    let nfPosts = useRef();
+    let nfPosts = useRef([]);
     let displayedPost = useRef();
 
     // useEffect(() => {
@@ -88,14 +91,7 @@ let Post = (props) => {
 
 
     var isAuth = myProfileId === postAuthorProfileId ? true : false;
-    var pp_url = props.profilePic;
-    const checkImage = (url) => {
-        const img = new Image();
-        img.src = url;
-
-        img.onload = () => setImageExists(true);
-        img.onerror = () => setImageExists(false);
-    };
+    var pp_url = post.author.profilePic;
 
 
 
@@ -135,21 +131,13 @@ let Post = (props) => {
     }, [])
 
     let postPhoto = post.photos
-    const checkThumbImage = (url) => {
-        const img = new Image();
-        img.src = url;
-
-        img.onload = () => setThumbExists(true);
-        img.onerror = () => setThumbExists(false);
-    };
-
-    checkThumbImage(postPhoto)
-    checkImage(pp_url);
-
-    if (!imageExists) {
-        pp_url = default_pp_src;
-    }
     let type = post.type || 'post'
+
+
+    useEffect(() => {
+        checkImgLoading(postPhoto, setIsloaded)
+    }, [postPhoto])
+
 
 
     let hideThisPost = async (e) => {
@@ -191,11 +179,11 @@ let Post = (props) => {
     let removeReact = async (postType = 'post', target = null) => {
 
         setTotalReacts(state => state - 1)
+            setReactType(false)
 
-        let res = await api.post('/react/removeReact', { id: post._id, postType: 'post' })
+        let res = await api.post('/react/removeReact', { id: post._id, postType: 'post', reactor: myProfileId })
         if (res.status === 200) {
             setIsReacted(false)
-            setReactType(false)
             return true;
         } else {
             setTotalReacts(state => state + 1)
@@ -358,11 +346,55 @@ let Post = (props) => {
         setIsPostOption(!isPostOption)
     })
 
-    function isElementNearTop(el, offset = 10) {
-        if (el == null) return;
-        const rect = el.getBoundingClientRect();
-        return rect.top <= offset;
-    }
+
+    // useEffect(() => {
+
+
+    //     window.addEventListener('scroll', () => {
+    //         if (isElementNearTop(nfwatch?.current)) {
+    //             document.querySelectorAll('.watch-video').forEach((element => {
+    //                 element.pause();
+    //             }))
+    //             displayedWatch.current.play()
+    //         }
+    //     });
+    // }, [])
+
+
+    const triggeredSet = useRef(new Set()); // Keeps track of already-triggered items
+    useEffect(() => {
+        const handleVisible = (postId) => {
+            console.log(`Post ${postId} is now visible — triggered once`);
+            socket.emit('viewPost',{visitorId: myProfileId, postId})
+            // Place your custom logic here (e.g. animation, API call, etc.)
+        };
+
+        const observer = new IntersectionObserver(
+            (entries, obs) => {
+                entries.forEach((entry) => {
+                    const index = Number(entry.target.dataset.index);
+                    if (entry.isIntersecting && !triggeredSet.current.has(index)) {
+                        triggeredSet.current.add(index);
+                        handleVisible(entry.target.dataset.id);
+                        obs.unobserve(entry.target); // Stop observing this element
+                    }
+                });
+            },
+            {
+                root: postContainer.current,
+                threshold: 0.5,
+            }
+        );
+
+        nfPosts.current.forEach((el) => el && observer.observe(el));
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
+
+
+
 
 
 
@@ -370,7 +402,7 @@ let Post = (props) => {
         switch (type) {
             case 'share':
                 return (
-                    <div data-id={post._id} className="share-nf-post nf-post">
+                    <div data-id={post._id} ref={(el) => (nfPosts.current[index] = el)} data-index={index} className="share-nf-post nf-post">
                         <div className="header">
                             <div className="reason">
                                 <span className="">
@@ -401,7 +433,7 @@ let Post = (props) => {
                                         {isPostOption && (
                                             <div className="post-option-menu" ref={postOptionMenu} >
                                                 <ul>
-                                                    {isAuth && (<><li>Edit Post</li><li>Edit Audience</li></>)}
+                                                    {isAuth && (<><li><Link to={`/post/${post._id}/edit`}>Edit Post</Link></li><li>Edit Audience</li></>)}
                                                     <li>Report This Post</li>
                                                 </ul>
                                             </div>
@@ -413,7 +445,7 @@ let Post = (props) => {
                                 </div>
                             </div>
                         </div>
-                        <div ref={displayedPost} className="body">
+                        <div ref={displayedPost} data-id={post._id} className="body">
                             <p className="caption">
                                 {post.caption}
                             </p>
@@ -460,22 +492,19 @@ let Post = (props) => {
                                         {post?.parentPost.caption}
                                     </p>
                                     {
-                                        postPhoto == 'null' ? <></> : (thumbExists &&
-                                            <div className="attachment">
-                                                <Link to={`/post/${post._id}`}>
-                                                    <img src={postPhoto} alt="post" />
+                                        isLoaded && isValidUrl(postPhoto) ? <> <div className="attachment">
+                                            <Link to={`/post/${post._id}`}>
+                                                <img src={postPhoto} alt="post" />
 
-                                                </Link>
-                                            </div>
-
-                                            ||
-
+                                            </Link>
+                                        </div></> :
                                             <>
-                                                <ImageSkleton />
-                                                {/* <p className="fs-5 text-center text-danger">Post image not available</p> */}
+                                                {
+                                                    isValidUrl(postPhoto) && <ImageSkleton />
+                                                }
                                             </>
 
-                                        )
+
                                     }
                                 </div>
 
@@ -638,7 +667,7 @@ let Post = (props) => {
 
             default:
                 return (
-                    <div data-id={post._id} className={`nf-post ${type}`}>
+                    <div data-id={post._id} ref={(el) => (nfPosts.current[index] = el)} data-index={index} className={`nf-post ${type}`}>
                         <div className="header">
                             {
                                 type === 'profilePic' &&
@@ -695,26 +724,24 @@ let Post = (props) => {
                             </div>
 
                         </div>
-                        <div ref={displayedPost} className="body">
+                        <div ref={displayedPost} data-id={post._id} className="body">
                             <p className="caption">
                                 {post.caption}
                             </p>
                             {
-                                postPhoto == 'null' ? <></> : (thumbExists &&
-                                    <div className="attachment">
-                                        <Link to={`/post/${post._id}`}>
-                                            <img src={postPhoto} alt="post" />
+                                isLoaded && isValidUrl(postPhoto) ? <> <div className="attachment">
+                                    <Link to={`/post/${post._id}`}>
+                                        <img src={postPhoto} alt="post" />
 
-                                        </Link>
-                                    </div>
-
-                                    ||
-
+                                    </Link>
+                                </div></> :
                                     <>
-                                        <ImageSkleton />
-                                        {/* <p className="fs-5 text-center text-danger">Post image not available</p> */}
+                                        {
+                                            isValidUrl(postPhoto) && <ImageSkleton />
+                                        }
                                     </>
-                                )
+
+
                             }
 
                         </div>
