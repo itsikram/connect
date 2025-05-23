@@ -4533,7 +4533,7 @@ body {
         .media-lightbox {
             position: fixed;
             left: 50%;
-            transform: translate(-50%,-50%);
+            transform: translate(-50%, -50%);
             top: 50%;
             width: fit-content;
             min-width: 70vw;
@@ -4544,13 +4544,15 @@ body {
 
 
             #lightbox-overlay {
-                background-color: rgba(0,0,0,0.3); 
+                background-color: rgba(0, 0, 0, 0.3);
                 overflow: hidden;
+
                 .lightbox-content {
                     width: 60%;
                     margin: auto;
                     position: relative;
                     overflow: hidden;
+
                     button {
                         position: absolute;
                         border: 0;
@@ -4575,6 +4577,7 @@ body {
                         z-index: 9999999999999999999999999;
                         line-height: 1;
                     }
+
                     .lightbox-next-button {
 
                         top: 50%;
@@ -4595,6 +4598,7 @@ body {
                         z-index: 9999999999999999999999999;
 
                     }
+
                     .lightbox-close-button {
                         right: 10px;
                         top: 40px;
@@ -4614,6 +4618,7 @@ body {
                         font-size: 25px;
 
                     }
+
                     img {
                         margin: 50px auto;
                         max-height: 80vh !important;
@@ -4624,7 +4629,7 @@ body {
                 }
             }
 
-           
+
         }
 
         .section-title {
@@ -4638,6 +4643,7 @@ body {
             // display: block;
             // overflow-y: auto;
             width: 100%;
+
             .image-item {
                 border-radius: 20px;
                 border: 1px solid $pc;
@@ -4650,6 +4656,7 @@ body {
                     width: 100%;
                     transition: 0.3s;
                 }
+
                 img:hover {
                     transform: scale(1.2);
                 }
@@ -5057,6 +5064,70 @@ body {
     }
 }
 
+.portfolio-page-container {
+    // padding: 50px 0;
+
+    display: flex;
+    flex-direction: row;
+    align-items: stretch; /* This is default */
+    justify-content: stretch;
+     .left-sidebar{
+        background-color: #191D2B;
+        border-right: 1px solid $profilebg;
+        padding: 20px;
+        width: 25%;
+
+        .my-name {
+            text-align: center;
+            color: $pc;
+        }
+    
+        .image-container {
+            border-radius: 50%;
+            overflow: hidden;
+            margin: auto;
+            height: 250px;
+            width: 250px;
+            border: 1px solid $pc;
+            
+    
+            .avatar-image {
+                width: 100%;
+            }
+        }
+        .portfolio-menu-container{
+            .portfolio-menu {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+    
+                li {
+                    padding: 5px 10px;
+                    background-color: $bbgc;
+                    margin: 5px 0;
+                    text-align: center;
+                    transition: 0.3s;
+    
+                    a {
+                        color: $pc;
+                        text-decoration: none;
+                    }
+                }
+    
+                li:hover {
+                    background-color: rgba(0, 0, 0, 0.3);
+                }
+            }
+        }
+
+
+        .content-container {
+            width: 75%;
+
+        }
+    }
+}
+
 .header-quick-menu-item .hr-mega-menu {
     right: 50% !important;
     transform: translateX(50%);
@@ -5279,6 +5350,7 @@ body {
                 .message-list-item.message-unseen {
                     background: $bc;
                 }
+
                 .message-list-item.active {
                     background-color: $pc;
                 }
@@ -5300,7 +5372,7 @@ body {
         .media-lightbox {
             position: absolute;
             left: 50%;
-            transform: translate(-50%,-50%);
+            transform: translate(-50%, -50%);
             top: 50%;
             width: fit-content;
             min-width: 70vw;
@@ -5310,13 +5382,15 @@ body {
 
 
             #lightbox-overlay {
-                background-color: rgba(0,0,0,0.3); 
+                background-color: rgba(0, 0, 0, 0.3);
                 overflow: hidden;
+
                 .lightbox-content {
                     width: 60%;
                     margin: auto;
                     position: relative;
                     overflow: hidden;
+
                     button {
                         position: absolute;
                         border: 0;
@@ -5341,6 +5415,7 @@ body {
                         z-index: 9999999999999999999999999;
                         line-height: 1;
                     }
+
                     .lightbox-next-button {
 
                         top: 50%;
@@ -5361,6 +5436,7 @@ body {
                         z-index: 9999999999999999999999999;
 
                     }
+
                     .lightbox-close-button {
                         right: 10px;
                         top: 40px;
@@ -5380,6 +5456,7 @@ body {
                         font-size: 25px;
 
                     }
+
                     img {
                         margin: 50px auto;
 
@@ -5391,7 +5468,7 @@ body {
                 }
             }
 
-           
+
         }
 
         .msg-media-container {
@@ -5399,13 +5476,14 @@ body {
 
             .msg-media-item {
                 border-radius: 10px;
-                border:2px solid $pc;
+                border: 2px solid $pc;
                 overflow: hidden;
                 max-height: 80vh;
 
                 img {
                     transition: 0.3s;
                 }
+
                 img:hover {
                     transform: scale(1.2);
                 }
@@ -5820,7 +5898,7 @@ body {
                     cursor: pointer;
                 }
 
-                .parent-message-container + .message-container {
+                .parent-message-container+.message-container {
                     margin-top: 5px;
                 }
 
@@ -5966,6 +6044,7 @@ body {
 
                     .message-action-emoji-container {
                         position: relative;
+
                         i {
                             background-color: $bbgc;
                             border-radius: 50%;
@@ -6027,6 +6106,7 @@ body {
 
                     .message-action-emoji-container {
                         position: relative;
+
                         i {
                             background-color: $bbgc;
                             border-radius: 50%;

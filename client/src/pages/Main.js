@@ -29,6 +29,15 @@ import PostReacts from "../components/post/PostReacts.js";
 import Login from "./Login.js";
 import SignUP from "./SignUp.js";
 
+
+// portoflio
+import PortfolioContainer from "./portfolio/PortfolioContainer.js";
+import PortfolioContact from "./portfolio/PortfolioContact.js";
+import PortfolioHome from "./portfolio/PortfolioHome.js";
+import PortfolioAbout from "./portfolio/PortfolioAbout.js";
+import PortfolioBlog from "./portfolio/PortfolioBlog.js";
+import PortfolioResume from "./portfolio/PortfolioResume.js";
+
 import FriendRequests from "../components/friend/FriendRequests";
 import FriendSuggest from "../components/friend/FriendSuggest"
 import FriendHome from "../components/friend/FriendHome";
@@ -155,7 +164,6 @@ const Main = () => {
 
         })
 
-
         socket.on('bumpUser', ((friend, profile) => {
 
             notify(`${profile.fullName} Bumped you`, friend.fullName, profile.profilePic, '/message/' + profile._id)
@@ -269,8 +277,13 @@ const Main = () => {
 
                             <Route index element={<ProtectedRoute><Home /></ProtectedRoute>}></Route>
 
-                            <Route path="/ikramul-islam/" element={<ProfileIkramul />}></Route>
-
+                            <Route path="/portfolio/" element={<PortfolioContainer />}>
+                                <Route index element={<PortfolioHome />} />
+                                <Route path="about" element={<PortfolioAbout />} />
+                                <Route path="resume" element={<PortfolioResume />}></Route>
+                                <Route path="blogs" element={<PortfolioBlog />}></Route>
+                                <Route path="contact" element={<PortfolioContact />}></Route>
+                            </Route>
 
 
                             <Route path="/:profile/" element={<ProtectedRoute><Profile /></ProtectedRoute>}>

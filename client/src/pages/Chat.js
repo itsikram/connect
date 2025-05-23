@@ -226,14 +226,14 @@ const Chat = ({ socket }) => {
             setMessages(msgs);
             setHasMoreMessages(true)
         });
-        socket.on('newMessage', (msg) => {
-            if (msg.receiverId == userId && msg.senderId == friendId) {
-                setMessages((prevMessages) => [...prevMessages, msg]);
+        socket.on('newMessage', ({updatedMessage, senderName, senderPP}) => {
+            if (updatedMessage.receiverId == userId && updatedMessage.senderId == friendId) {
+                setMessages((prevMessages) => [...prevMessages, updatedMessage]);
 
                 scrollToLastMessage()
             }
-            if (msg.senderId == userId && msg.receiverId == friendId) {
-                setMessages((prevMessages) => [...prevMessages, msg]);
+            if (updatedMessage.senderId == userId && updatedMessage.receiverId == friendId) {
+                setMessages((prevMessages) => [...prevMessages, updatedMessage]);
 
                 scrollToLastMessage()
             }

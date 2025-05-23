@@ -101,7 +101,7 @@ let SignUP = () => {
     })
 
     let handlePortfolioClick = useCallback(e => {
-        navigate('/ikramul-islam')
+        navigate('/portfolio')
     })
 
 
