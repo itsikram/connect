@@ -3,25 +3,33 @@ import socket from '../../common/socket';
 import $ from 'jquery'
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../../api/api';
-
+import { loadSettings } from '../../services/actions/settingsActions';
 import { sendMessage } from '../../services/actions/messageActions';
+import EmojiPicker from 'emoji-picker-react';
 
 const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatNewAttachment, messageActionButtonContainer, setIsReplying, userId, messageInput, replyData, setReplyData, isPreview, setIsPreview, msgListRef }) => {
 
     const dispatch = useDispatch()
     const [mInputWith, setmInputWith] = useState(true);
-    const [inputValue, setInputValue] = useState();
+    const [inputValue, setInputValue] = useState('');
     const [attachmentUrl, setAttachmentUrl] = useState(false)
+    const [isImojiContainer, setIsEmojiContainer] = useState(false)
+    const [isImojiChangeContainer, setIsEmojiChangeContainer] = useState(false)
+    const [actionEmoji, setActionEmoji] = useState('👍')
     const imageInput = useRef(null);
     const settings = useSelector(state => state.setting)
+
+    useEffect(() => {
+        setActionEmoji(settings.actionEmoji || '👍')
+    },[settings])
     const scrollToLastMessage = e => {
-        if (msgListRef.current != null) {
+        if (msgListRef?.current != null || msgListRef?.current != undefined) {
             let isLastMsg = setInterval(() => {
                 let lastMsg = document.querySelector('#chatMessageList .chat-message-container:last-child')
                 lastMsg?.scrollIntoView({ behavior: "smooth" });
             }, 500)
 
-            msgListRef.current.addEventListener('scroll', e => {
+            msgListRef?.current.addEventListener('scroll', e => {
                 let scrollBottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
                 console.log('scrl', e.target.scrollHeight, e.target.scrollTop, scrollBottom)
 
@@ -40,7 +48,6 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
 
     const handleSendMessage = useCallback((e) => {
         e.preventDefault();
-        e.target.value = ''
 
         let isDisabled = $(e.target).hasClass('button-disabled') || false
         if (isDisabled) return;
@@ -61,13 +68,14 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
                 scrollToLastMessage();
 
             }
-            setInputValue('')
 
-            setIsReplying(false)
-            setIsPreview(false)
-            setAttachmentUrl('')
-            setReplyData({ messageId: null, body: null })
         }
+        setInputValue('')
+
+        setIsReplying(false)
+        setIsPreview(false)
+        setAttachmentUrl('')
+        setReplyData({ messageId: null, body: null })
         setIsPreview(false)
     })
 
@@ -103,7 +111,7 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
     };
 
     let likeButtonClick = (e) => {
-        setInputValue('👍')
+        setInputValue(actionEmoji)
         setTimeout(() => {
             messageInput.current.dispatchEvent(enterEvent);
         }, 200)
@@ -162,6 +170,63 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
 
     }
 
+    let handleEmojiBtnClick = useCallback(() => {
+        setIsEmojiContainer(true)
+    })
+
+    let emojiChangeClick = useCallback(() => {
+        setIsEmojiChangeContainer(true)
+    })
+
+    let handleEmojiClick = useCallback(emojiObj => {
+
+        setInputValue(inputValue + emojiObj.emoji)
+    })
+
+    let handleEmojiChangeClick = useCallback(emojiObj => {
+
+        setActionEmoji(emojiObj.emoji)
+        setIsEmojiChangeContainer(false)
+        setIsEmojiContainer(false)
+        updateActionEmojiChange(emojiObj.emoji)
+        // setInputValue(inputValue + emojiObj.emoji)
+    })
+
+    let emogiListContainer = useRef(null)
+    let emogiChangeContainer = useRef(null)
+    useEffect(() => {
+        let handleClickOutside = (event) => {
+            if (emogiListContainer.current && !emogiListContainer.current.contains(event.target)) {
+                setIsEmojiContainer(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+
+    useEffect(() => {
+        let handleClickOutside = (event) => {
+            if (emogiChangeContainer.current && !emogiChangeContainer.current.contains(event.target)) {
+                setIsEmojiChangeContainer(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+
+    let updateActionEmojiChange = useCallback(async(emoji) => {
+        let updateSetting = await api.post('setting/update', { actionEmoji: emoji })
+        if (updateSetting.status == 200) {
+            dispatch(loadSettings(updateSetting.data))
+        }
+    })
+
 
     return (
         <>
@@ -206,8 +271,22 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
                                 <input type='file' style={{ display: 'none' }} ref={imageInput} onChange={handleMessageImageChange.bind(this)} />
                             </div>
 
-                            <div className='chat-attachment-button'>
+                            {/* <div className='chat-attachment-button'>
                                 <i className="fas fa-microphone"></i>
+                            </div> */}
+
+                            <div onClick={handleEmojiBtnClick.bind(this)} className='message-action-emoji-container chat-attachment-button'>
+                                <i style={{color: '#F4D52F'}} className="fas fa-smile-beam"></i>
+
+                                {
+                                    isImojiContainer && <>
+                                        <div ref={emogiListContainer} className='emoji-container'>
+                                            <EmojiPicker theme='dark' onEmojiClick={handleEmojiClick} />
+
+                                        </div>
+                                    </>
+                                }
+
                             </div>
                         </div>
                     </div>
@@ -222,9 +301,26 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
                                     <i className="fas fa-paper-plane"></i>
                                 </div>
 
-                                    : <div onClick={likeButtonClick} className='message-action-button send-like'>
-                                        <i className="fas fa-thumbs-up"></i>
-                                    </div>
+                                    : <>
+                                        <div onClick={likeButtonClick} className='message-action-button send-like'>
+                                            <span className="">{actionEmoji}</span>
+                                        </div>
+
+
+                                        <div onClick={emojiChangeClick.bind(this)} className='message-action-emoji-container chat-attachment-button'>
+                                            <i className="fas fa-chevron-up"></i>
+
+                                            {
+                                                isImojiChangeContainer && <>
+                                                    <div ref={emogiChangeContainer} className='emoji-container'>
+                                                        <EmojiPicker theme='dark' onEmojiClick={handleEmojiChangeClick} />
+
+                                                    </div>
+                                                </>
+                                            }
+
+                                        </div>
+                                    </>
                             }
 
                         </div>

@@ -1,16 +1,13 @@
-import React, { useEffect, useState } from 'react';
-
+import React, { useEffect, useRef, useState } from 'react';
+import ImageSkleton from '../../skletons/post/ImageSkleton';
 import { useParams } from 'react-router-dom';
-import PostContainer from './PostContainer';
 import api from '../../api/api';
 import $ from 'jquery'
 import { useSelector } from 'react-redux'
 import UserPP from "../UserPP";
 import { Link } from "react-router-dom";
 import { Container, Row, Col } from 'react-bootstrap';
-import LeftSidebar from '../../partials/sidebar/Ls';
 import Momemt from 'react-moment'
-import PostComment from "./PostComment";
 import SingleReactor from './SingleReactor';
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS
@@ -21,14 +18,18 @@ const Rhaha = 'https://programmerikram.com/wp-content/uploads/2025/03/haha-icon.
 const default_pp_src = 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
 
 
-const SinglePost = () => {
+const SinglePost = (watch) => {
     let { postId } = useParams()
-    let [postData, setPostData] = useState(false)
+    let [watchData, setWatchData] = useState(false)
+    const [watchUrl, setWatchUrl] = useState(watch.videoUrl)
+    let displayedWatch = useRef(null)
+    const {watchId} = useParams()
     let loadData = async () => {
 
-        let res = await api.get('post/single', { params: { postId } })
+        let res = await api.get('watch/single', { params: { watchId } })
         if (res.status == 200) {
-            setPostData(res.data)
+            setWatchData(res.data)
+            setWatchUrl(res.data.videoUrl)
         }
     }
 
@@ -40,10 +41,10 @@ const SinglePost = () => {
 
     let myProfile = useSelector(state => state.profile)
     let myProfileId = myProfile._id;
-    let postAuthorProfileId = postData && postData?.author._id
-    let [totalReacts, setTotalReacts] = useState(postData && postData.reacts.length)
-    let [totalShares, setTotalShares] = useState(postData && postData.shares.length)
-    let [totalComments, setTotalComments] = useState(postData && postData.comments.length)
+    let postAuthorProfileId = watchData && watchData?.author._id
+    let [totalReacts, setTotalReacts] = useState(watchData && watchData.reacts.length)
+    let [totalShares, setTotalShares] = useState(watchData && watchData.shares.length)
+    let [totalComments, setTotalComments] = useState(watchData && watchData.comments.length)
     let [reactType, setReactType] = useState(false);
     let [placedReacts, setPlacedReacts] = useState([]);
     const [imageExists, setImageExists] = useState(null);
@@ -51,7 +52,7 @@ const SinglePost = () => {
 
 
     var isAuth = myProfileId === postAuthorProfileId ? true : false;
-    var pp_url = postData && postData?.author.profilePic
+    var pp_url = watchData && watchData?.author.profilePic
     const checkImage = (url) => {
         const img = new Image();
         img.src = url;
@@ -64,7 +65,7 @@ const SinglePost = () => {
 
     useEffect(() => {
         let storedReacts = [];
-        postData && postData.reacts.map(react => {
+        watchData && watchData.reacts.map(react => {
             if (react.profile) {
 
                 switch (react.type) {
@@ -96,7 +97,7 @@ const SinglePost = () => {
 
     }, [])
 
-    let postPhoto = postData && postData.photos
+    let postPhoto = watchData && watchData.photos
     const checkThumbImage = (url) => {
         const img = new Image();
         img.src = url;
@@ -111,7 +112,7 @@ const SinglePost = () => {
     if (!imageExists) {
         pp_url = default_pp_src;
     }
-    let type = postData && (postData.type || 'post')
+    let type = watchData && (watchData.type || 'post')
 
 
     let hideThisPost = async (e) => {
@@ -125,7 +126,7 @@ const SinglePost = () => {
                     {
                         label: "Yes",
                         onClick: async () => {
-                            let deleteRes = await api.post('/post/delete', { postId: postData._id, authorId: postData.author._id })
+                            let deleteRes = await api.post('/post/delete', { postId: watchData._id, authorId: watchData.author._id })
                             if (deleteRes.status === 200) {
                                 $(target).parents('.nf-post').css({
                                     'min-height': '0px',
@@ -152,7 +153,7 @@ const SinglePost = () => {
     let removeReact = async (postType = 'post', target = null) => {
         setTotalReacts(state => state - 1)
 
-        let res = await api.post('/react/removeReact', { id: postData._id, postType: 'post' })
+        let res = await api.post('/react/removeReact', { id: watchData._id, postType: 'post' })
         if (res.status === 200) {
             setTotalReacts(res.data.reacts.length)
 
@@ -165,7 +166,7 @@ const SinglePost = () => {
     let placeReact = async (reactType, postType = 'post', target = null) => {
         setTotalReacts(state => state + 1)
 
-        let placeRes = await api.post('/react/addReact', { id: postData._id, postType, reactType })
+        let placeRes = await api.post('/react/addReact', { id: watchData._id, postType, reactType })
         if (placeRes.status === 200) {
             setTotalReacts(placeRes.data.reacts.length)
             setPlacedReacts([...placedReacts, reactType])
@@ -270,7 +271,7 @@ const SinglePost = () => {
     let authProfilePicture = useSelector(state => state.profile.profilePic)
     let authProfileId = useSelector(state => state.profile._id)
 
-    let postAuthorPP = `${postData && postData?.author.profilePic}`
+    let postAuthorPP = `${watchData && watchData?.author.profilePic}`
     let [match, setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)
 
     useEffect(() => {
@@ -291,10 +292,10 @@ const SinglePost = () => {
                 <Row>
 
 
-                    <Col md="6" className='br'>
+                    <Col md="6" className='offset-md-3'>
                         <div id="post-container">
                             <div>
-                                {postData && (
+                                {watchData && (
                                     <div className={`nf-post ${type}`}>
                                         <div className="header">
                                             {
@@ -312,16 +313,16 @@ const SinglePost = () => {
                                             <div className="author-info">
                                                 <div className="left">
                                                     <div className="author-pp">
-                                                        <UserPP profilePic={postAuthorPP} profile={postData.author._id} active={true}></UserPP>
+                                                        <UserPP profilePic={postAuthorPP} profile={watchData.author._id} active={true}></UserPP>
                                                     </div>
                                                     <div className="post-nd-container">
-                                                        <Link to={'/' + postData.author._id}>
+                                                        <Link to={'/' + watchData.author._id}>
                                                             <h4 className="author-name">
-                                                                {postData.author.user.firstName + ' ' + postData.author.user.surname}
+                                                                {watchData.author.user.firstName + ' ' + watchData.author.user.surname}
                                                             </h4>
                                                         </Link>
                                                         <span className="post-time">
-                                                            <Momemt fromNow >{postData.createdAt}</Momemt>
+                                                            <Momemt fromNow >{watchData.createdAt}</Momemt>
                                                         </span>
                                                     </div>
 
@@ -338,15 +339,26 @@ const SinglePost = () => {
                                         </div>
                                         <div className="body">
                                             <p className="caption">
-                                                {postData.caption}
+                                                {watchData.caption}
                                             </p>
                                             {
-                                                (thumbExists &&
+                                                (watchUrl &&
                                                     <div className="attachment">
-                                                        <img src={postPhoto} alt="post" />
+                                                        <Link to={`/watch/${watch._id}`}>
+                                                            <video id={`watch-${watch._id}`} ref={displayedWatch} className="w-100 watch-video" controls src={`${watchUrl}`}></video>
+                                                            {/* <img src={watchPhoto} alt="watch" /> */}
 
-                                                    </div>)
-                                            }
+                                                        </Link>
+                                                    </div>
+
+                                                    ||
+
+                                                    <>
+                                                        <ImageSkleton />
+                                                    </>
+
+                                                )
+                                            }ß
 
                                         </div>
                                         <div className="footer">
@@ -369,12 +381,12 @@ const SinglePost = () => {
 
 
                                                     <span className="text">
-                                                        {postData.reacts && totalReacts} {totalReacts > 1 ? 'Reacts' : 'React'}
+                                                        {watchData.reacts && totalReacts} {totalReacts > 1 ? 'Reacts' : 'React'}
                                                     </span>
                                                 </div>
                                                 <div className="comment-share">
                                                     <div className="comment">
-                                                        <div className="text">{postData.comments && totalComments}
+                                                        <div className="text">{watchData.comments && totalComments}
 
                                                         </div>
                                                         <div className="icon">
@@ -384,7 +396,7 @@ const SinglePost = () => {
                                                     </div>
                                                     <div className="shares">
                                                         <div className="text">
-                                                            {postData.shares && totalShares}
+                                                            {watchData.shares && totalShares}
                                                         </div>
                                                         <div className="icon">
                                                             <i className="fa fa-share"></i>
@@ -449,17 +461,17 @@ const SinglePost = () => {
 
                     </Col>
 
-                    <Col md="3" className='br'>
+                    {/* <Col md="3" className='br'>
                         <div className='sp-reacts-container'>
-                            <h4 className='section-title'>Reactors {postData.reacts && `(${postData.reacts.length})`}</h4>
+                            <h4 className='section-title'>Reactors {watchData.reacts && `(${watchData.reacts.length})`}</h4>
 
                             <ul className='sp-reacts'>
 
-                                {postData.reacts && postData.reacts.map((item, index) => {
+                                {watchData.reacts && watchData.reacts.map((item, index) => {
 
                                     return (
 
-                                        <SingleReactor key={index} reactor={item}/>
+                                        <SingleReactor key={index} reactor={item} />
 
                                     )
 
@@ -471,12 +483,12 @@ const SinglePost = () => {
                     </Col>
                     <Col md="3">
                         <div className='sp-comments-container'>
-                            <h4 className='section-title'>Comments { postData?.comments && `(${postData?.comments.length})`}</h4>
-                            {postData?.comments && (<PostComment post={postData} commentState={setTotalComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>)}
+                            <h4 className='section-title'>Comments {watchData?.comments && `(${watchData?.comments.length})`}</h4>
+                            { {watchData?.comments && (<PostComment post={watchData} commentState={setTotalComments} myProfile={myProfile} authProfile={authProfileId} authProfilePicture={authProfilePicture}></PostComment>)} }
                         </div>
 
 
-                    </Col>
+                    </Col> */}
 
                 </Row>
 

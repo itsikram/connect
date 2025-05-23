@@ -67,6 +67,26 @@ exports.addMessageReact = async (req, res, next) => {
 
 }
 
+exports.getMedia = async(req,res,next) => {
+
+    try {
+        const fileUrlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
+        let getMessages = await Message.find({
+            $or: [
+                { senderId: req.profile._id, receiverId: req.query.profileId },
+                { senderId: req.query.profileId, receiverId: req.profile._id }
+            ],
+            attachment: { $regex: fileUrlRegex }
+        }).sort({ createdAt: -1 }).limit(10)
+
+        res.json(getMessages).status(200)
+        
+    } catch (error) {
+        next(error)
+        
+    }
+}
+
 
 
 // Generate a unique room ID using user IDs

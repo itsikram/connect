@@ -2,24 +2,45 @@ const { isValidObjectId } = require('mongoose');
 const Message = require('../models/Message')
 const Profile = require('../models/Profile')
 const User = require('../models/User')
+const axios = require('axios');
+
+let sendEmailNotification = async(email, message, senderName, senderPP) => {
+
+    try {
+        const response = await axios.post('https://programmerikram.com/wp-json/connect/v1/send-mail', {
+          name: senderName,
+          email,
+          message,
+          subject: `New message from ${senderName} On Connect`,
+        }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+    
+        console.log(response.data);
+      } catch (err) {
+        console.error('Error sending mail:', err.response?.data || err.message);
+      }
+}
 module.exports = function messageSocket(io, socket) {
 
     socket.on('fetchMessages', async (profileId) => {
 
 
         let profileContacts = []
-        let myProfile = await Profile.findOne({_id: profileId}).populate('friends')
+        let myProfile = await Profile.findOne({ _id: profileId }).populate('friends')
 
-        if(!myProfile) return;
+        if (!myProfile) return;
 
 
-        if(myProfile?.friends  !== null) {
+        if (myProfile?.friends !== null) {
             for (const friendProfile of myProfile.friends) {
                 const messages = await Message.find({
                     senderId: profileId,
                     receiverId: friendProfile._id
                 }).limit(1).sort({ timestamp: -1 })
-            
+
                 profileContacts.push({ person: friendProfile, messages })
             }
             io.to(profileId).emit('oldMessages', profileContacts)
@@ -114,12 +135,32 @@ module.exports = function messageSocket(io, socket) {
         if (!profileData) return;
         let senderName = profileData.user?.firstName + ' ' + profileData.user?.surname;
         let senderPP = profileData.profilePic || 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
-        io.to(receiverId).emit('notification', updatedMessage, senderName, senderPP);
-        io.to(room).emit('newMessage', updatedMessage);
+        io.to([receiverId,room]).emit('newMessage', {updatedMessage, senderName, senderPP});
+
+        let isActive = false
+
+        let profile;
+        if (receiverId) {
+            profile = await Profile.findById(receiverId).populate('user');
+
+            if (profile.user.lastLogin) {
+                userLastLogin = new Date(profile.user.lastLogin).getTime();
+            }
+        }
+        let currentTime = Date.now()
+
+        const diff = Math.abs(userLastLogin - currentTime);
+        const fiveMinutes = 5 * 60 * 1000;
+        if (diff > fiveMinutes) {
+            let receiverEmail = profile.user.email;
+            sendEmailNotification(receiverEmail, updatedMessage.message, senderName, senderPP);
+        } else {
+            isActive = true;
+        }
     });
 
-    socket.on('emotion_change', async({ profileId, emotion, friendId }) => {
-        let updateProfile = await Profile.findOneAndUpdate({_id: profileId}, {lastEmotion: emotion},{new: true})
+    socket.on('emotion_change', async ({ profileId, emotion, friendId }) => {
+        let updateProfile = await Profile.findOneAndUpdate({ _id: profileId }, { lastEmotion: emotion }, { new: true })
         io.to(friendId).emit('emotion_change', updateProfile.lastEmotion);
     })
 
@@ -148,12 +189,12 @@ module.exports = function messageSocket(io, socket) {
         }
     });
 
-    socket.on('last_emotion', async({friendId, profileId}) => {
+    socket.on('last_emotion', async ({ friendId, profileId }) => {
 
-        if(!isValidObjectId(friendId) && ! isValidObjectId(profileId)) return;
+        if (!isValidObjectId(friendId) && !isValidObjectId(profileId)) return;
 
-        let profileData = await Profile.findOne({_id: friendId}).select('lastEmotion')
-        if(profileData) {
+        let profileData = await Profile.findOne({ _id: friendId }).select('lastEmotion')
+        if (profileData) {
             io.to(profileId).emit('last_emotion', profileData)
         }
 

@@ -1,11 +1,11 @@
-import React from 'react';
+import React,{Fragment} from 'react';
 import UserPP from '../../components/UserPP';
 
 const SingleMsgSkleton = ({ count = 1 }) => {
     return Array(count).fill(0).map((_, index) => (
 
-        <>
-            <div key={index} className={`chat-message-container message-receive skeleton-card border-0 p-1 my-2 w-75 sm-skleton px-3`} data-toggle="tooltip">
+        <Fragment key={index}>
+            <div  className={`chat-message-container message-receive skeleton-card border-0 p-1 my-2 w-75 sm-skleton px-3`} data-toggle="tooltip">
                 <div className='chat-message-profilePic'>
                     <div className="skeleton-avatar" />
 
@@ -16,7 +16,7 @@ const SingleMsgSkleton = ({ count = 1 }) => {
                 </div>
 
             </div>
-            <div key={index} className={`chat-message-container message-sent skeleton-card border-0 p-1 my-2 w-75 sm-skleton px-3`} data-toggle="tooltip">
+            <div  className={`chat-message-container message-sent skeleton-card border-0 p-1 my-2 w-75 sm-skleton px-3`} data-toggle="tooltip">
 
 
                 <div className="skeleton-lines">
@@ -39,7 +39,7 @@ const SingleMsgSkleton = ({ count = 1 }) => {
 
                 </div>
             </li> */}
-        </>
+        </Fragment>
 
 
     ));

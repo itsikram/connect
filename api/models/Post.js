@@ -22,9 +22,6 @@ let postSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: Comment
     }],
-    feeling: {
-        type: String
-    },
     shares: [{
         type: Schema.Types.ObjectId,
         ref: Profile

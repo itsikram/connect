@@ -4530,6 +4530,103 @@ body {
         padding: 15px;
         border-radius: 10px;
 
+        .media-lightbox {
+            position: fixed;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            top: 50%;
+            width: fit-content;
+            min-width: 70vw;
+            z-index: 9999999999999999999999999;
+            min-height: 90vh;
+            overflow: hidden;
+            border-radius: 30px;
+
+
+            #lightbox-overlay {
+                background-color: rgba(0,0,0,0.3); 
+                overflow: hidden;
+                .lightbox-content {
+                    width: 60%;
+                    margin: auto;
+                    position: relative;
+                    overflow: hidden;
+                    button {
+                        position: absolute;
+                        border: 0;
+                        outline: 0;
+                    }
+
+                    .lightbox-prev-button {
+                        top: 50%;
+                        transform: translateY(-50%);
+                        left: 10px;
+                        background-color: $bc;
+                        color: $tc;
+                        border-radius: 50%;
+                        height: 40px;
+                        width: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        font-size: 30px;
+                        transition: 0.3s;
+                        z-index: 9999999999999999999999999;
+                        line-height: 1;
+                    }
+                    .lightbox-next-button {
+
+                        top: 50%;
+                        transform: translateY(-50%);
+                        right: 10px;
+                        background-color: $bc;
+                        color: $tc;
+                        border-radius: 50%;
+                        height: 40px;
+                        width: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        font-size: 30px;
+                        line-height: 1;
+                        transition: 0.3s;
+                        z-index: 9999999999999999999999999;
+
+                    }
+                    .lightbox-close-button {
+                        right: 10px;
+                        top: 40px;
+                        background-color: $bc;
+                        color: $tc;
+                        border-radius: 50%;
+                        height: 40px;
+                        width: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        line-height: 1;
+                        transition: 0.3s;
+                        z-index: 9999999999999999999999999;
+                        color: $tc;
+                        font-size: 25px;
+
+                    }
+                    img {
+                        margin: 50px auto;
+                        max-height: 80vh !important;
+                        border: 2px solid $pc;
+                        border-radius: 20px;
+                        max-width: 100%;
+                    }
+                }
+            }
+
+           
+        }
+
         .section-title {
             font-size: 20px;
             font-weight: 500;
@@ -5182,6 +5279,9 @@ body {
                 .message-list-item.message-unseen {
                     background: $bc;
                 }
+                .message-list-item.active {
+                    background-color: $pc;
+                }
             }
         }
     }
@@ -5195,6 +5295,122 @@ body {
     .right-sidebar-container {
         border-left: 1px solid $bc;
         min-height: 100%;
+
+
+        .media-lightbox {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            top: 50%;
+            width: fit-content;
+            min-width: 70vw;
+            z-index: 9999999999999999999999999;
+            min-height: 90vh;
+            overflow: hidden;
+
+
+            #lightbox-overlay {
+                background-color: rgba(0,0,0,0.3); 
+                overflow: hidden;
+                .lightbox-content {
+                    width: 60%;
+                    margin: auto;
+                    position: relative;
+                    overflow: hidden;
+                    button {
+                        position: absolute;
+                        border: 0;
+                        outline: 0;
+                    }
+
+                    .lightbox-prev-button {
+                        top: 50%;
+                        transform: translateY(-50%);
+                        left: 10px;
+                        background-color: $bc;
+                        color: $tc;
+                        border-radius: 50%;
+                        height: 40px;
+                        width: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        font-size: 30px;
+                        transition: 0.3s;
+                        z-index: 9999999999999999999999999;
+                        line-height: 1;
+                    }
+                    .lightbox-next-button {
+
+                        top: 50%;
+                        transform: translateY(-50%);
+                        right: 10px;
+                        background-color: $bc;
+                        color: $tc;
+                        border-radius: 50%;
+                        height: 40px;
+                        width: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        font-size: 30px;
+                        line-height: 1;
+                        transition: 0.3s;
+                        z-index: 9999999999999999999999999;
+
+                    }
+                    .lightbox-close-button {
+                        right: 10px;
+                        top: 40px;
+                        background-color: $bc;
+                        color: $tc;
+                        border-radius: 50%;
+                        height: 40px;
+                        width: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        line-height: 1;
+                        transition: 0.3s;
+                        z-index: 9999999999999999999999999;
+                        color: $tc;
+                        font-size: 25px;
+
+                    }
+                    img {
+                        margin: 50px auto;
+
+                        max-height: 80vh !important;
+                        border: 2px solid $pc;
+                        border-radius: 20px;
+                        max-width: 100%;
+                    }
+                }
+            }
+
+           
+        }
+
+        .msg-media-container {
+            padding: 10px;
+
+            .msg-media-item {
+                border-radius: 10px;
+                border:2px solid $pc;
+                overflow: hidden;
+                max-height: 80vh;
+
+                img {
+                    transition: 0.3s;
+                }
+                img:hover {
+                    transform: scale(1.2);
+                }
+            }
+        }
     }
 }
 
@@ -5414,7 +5630,7 @@ body {
                     align-items: center;
 
                     span {
-                        margin-top: -5px;
+                        margin-top: 0px;
                         line-height: 1;
                         padding: 5px 0;
                     }
@@ -5551,7 +5767,6 @@ body {
                     line-height: 1;
                     border-radius: 10px;
                     text-align: left;
-                    text-indent: 5px;
                     margin-bottom: 10px;
                     cursor: pointer;
                 }
@@ -5603,6 +5818,10 @@ body {
                     border-radius: 10px;
                     text-align: left;
                     cursor: pointer;
+                }
+
+                .parent-message-container + .message-container {
+                    margin-top: 5px;
                 }
 
                 .parent-message-container.has-attachment {
@@ -5745,6 +5964,23 @@ body {
 
                     display: flex;
 
+                    .message-action-emoji-container {
+                        position: relative;
+                        i {
+                            background-color: $bbgc;
+                            border-radius: 50%;
+                            cursor: pointer;
+                            color: $tc;
+                            padding: 5px
+                        }
+
+                        .emoji-container {
+                            position: absolute;
+                            bottom: 100%;
+                            left: 0;
+                        }
+                    }
+
                     .chat-attachment-button {
                         height: 30px;
                         width: 30px;
@@ -5788,6 +6024,23 @@ body {
                 .message-action-button-container {
                     display: flex;
                     align-items: center;
+
+                    .message-action-emoji-container {
+                        position: relative;
+                        i {
+                            background-color: $bbgc;
+                            border-radius: 50%;
+                            cursor: pointer;
+                            color: $tc;
+                            padding: 5px
+                        }
+
+                        .emoji-container {
+                            position: absolute;
+                            bottom: 100%;
+                            right: 0;
+                        }
+                    }
 
                     .message-action-button {
                         height: 30px;

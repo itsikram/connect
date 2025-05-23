@@ -7,7 +7,7 @@ import UserPP from '../components/UserPP';
 import moment from "moment";
 import SingleMessage from '../components/Message/SingleMessage';
 import $ from 'jquery'
-import { sendMessage } from "../services/actions/messageActions";
+import { seenMessage } from "../services/actions/messageActions";
 import ChatHeader from '../components/Message/ChatHeader';
 import ChatFooter from '../components/Message/ChatFooter';
 import useIsMobile from '../utils/useIsMobile';
@@ -55,7 +55,6 @@ const Chat = ({ socket }) => {
     const newAttachmentWidth = chatNewAttachment.current?.offsetWidth;
     const messageActionButtonContainerWidth = messageActionButtonContainer.current?.offsetWidth;
     const messageInputWidth = chatFooterWidth - newAttachmentWidth - messageActionButtonContainerWidth
-    let isLoading = useSelector(state => state.option.isLoading);
 
     const scrollToLastMessage = e => {
         if (msgListRef.current != null) {
@@ -90,6 +89,10 @@ const Chat = ({ socket }) => {
     const chatBoxHeight = bodyHeight - headerHeight
     let params = useParams()
     let friendId = params.profile;
+
+    useEffect(()=> {
+        dispatch(seenMessage(params.profile))
+    },[params])
 
     const [listContainerHeight, setListContainerHeight] = useState(chatBoxHeight - chatHeaderHeight - chatFooterHeight);
     const [cmlStyles, setCmlStyles] = useState({

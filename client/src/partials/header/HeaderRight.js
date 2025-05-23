@@ -57,7 +57,17 @@ let HeaderRight = ({ dispatch, useSelector }) => {
         setTotalNotifications(unseenNotifications.length)
     }, [notificaitonData])
     useEffect(() => {
-        let unseenMessages = messageData.filter(data => data.messages.length > 0 && data.messages[0].senderId !== profileData._id && data.messages[0]?.isSeen === false)
+        let unseenMessages = messageData.filter(data => {
+            if (data.messages.length > 0) {
+
+                if(  data.messages[0].isSeen == false) {
+                    if(data.messages[0].receiverId == data.person._id) {
+                        return true
+                    }
+                }
+            }
+            return;
+        })
         setTotalMessages(unseenMessages.length)
     }, [messageData])
 

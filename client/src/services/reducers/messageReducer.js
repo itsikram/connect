@@ -1,4 +1,4 @@
-import { ADD_MESSAGE, ADD_MESSAGES, NEW_MESSAGE,SEND_MESSAGE } from "../constants/messageConsts";
+import { ADD_MESSAGE, ADD_MESSAGES, NEW_MESSAGE,SEND_MESSAGE,SEEN_MESSAGE } from "../constants/messageConsts";
 let initialState = []
 const messageReducer = (state = initialState, action) => {
     switch (action.type) {
@@ -13,8 +13,8 @@ const messageReducer = (state = initialState, action) => {
             let isMsgExits = state.filter(noti => noti._id === action.payload._id)
             if (isMsgExits.length > 0) return state;
             return [
+                newMessage,
                 ...state,
-                newMessage
             ];
             break;
 
@@ -44,12 +44,30 @@ const messageReducer = (state = initialState, action) => {
 
             let updatedContact = state.filter(state => state.person._id === contactId)
             updatedContact.messages = [newMsg]
-
+            console.log(updatedContact)
             return [
                 ...updatedContact,
                 ...otherContacts,
             ];
             
+            break;
+
+            case SEEN_MESSAGE: 
+
+            let seenContactId = action.payload.contactId
+
+            let usOtherContacts = state.filter(state => state?.person?._id !== seenContactId)
+
+            let seenContact = state.filter(state => state.person._id === seenContactId)
+            if(seenContact.messages) {
+                seenContact.messages[0].isSeen = true
+
+            }
+
+            return [
+                ...seenContact,
+                ...usOtherContacts,
+            ];
             break;
 
         case SEND_MESSAGE:
@@ -60,7 +78,7 @@ const messageReducer = (state = initialState, action) => {
 
             let newUpdatedContact = state.filter(state => state.person._id === newContactId)
 
-            newUpdatedContact.messages = [newMsgSent]
+            newUpdatedContact[0].messages = [newMsgSent]
 
             return [
                 ...newUpdatedContact,

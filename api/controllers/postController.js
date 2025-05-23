@@ -14,6 +14,7 @@ exports.createPost = async (req, res, next) => {
         let thumbnail_url = req.body.urls
         let feelings = req.body.feelings
         let location = req.body.location
+        // return console.log(req.body)
         let post = new Post({
             caption,
             photos: thumbnail_url,

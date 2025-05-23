@@ -57,6 +57,25 @@ exports.postAddComment = async (req, res, next) => {
         next(error)
     }
 }
+
+exports.updateComment = async(req,res,next) => {
+
+    let {commentId, body} = req.body
+    try {
+
+        let UpdatedComment = await Comment.findOneAndUpdate({ _id: commentId }, {
+            body
+        }, { new: true })
+        if (UpdatedComment) {
+            return res.json(UpdatedComment).status(200)
+        }
+        return res.json({ message: 'Comment Update Failed' }).status(400)
+        
+    } catch (error) {
+        next(error)
+        
+    }
+}
 exports.storyAddComment = async (req, res, next) => {
     try {
         let body = req.body.body

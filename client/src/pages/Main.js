@@ -15,6 +15,7 @@ import Story from "./Story";
 import StoryReacts from "../components/story/StoryReacts.js";
 import StoryComments from "../components/story/StoryComments.js";
 import SingleStory from "../components/story/SingleStory";
+import SingleWatch from "../components/watch/SingleWatch.js";
 import Call from './Call.js'
 import ProfileAbout from "../components/Profile/ProfileAbout";
 import PorfilePosts from "../components/Profile/PorfilePosts";
@@ -148,10 +149,12 @@ const Main = () => {
             dispatch(addMessages(data.reverse(), true))
         })
 
-        socket.on('newMessage', data => {
-            dispatch(addMessage(data))
-            notify(data.text, false, data.icon, data.link)
+        socket.on('newMessage', ({updatedMessage, senderName, senderPP}) => {
+            dispatch(newMessage(updatedMessage))
+            notify(updatedMessage.message, senderName, senderPP, '/message/' + updatedMessage.senderId)
+
         })
+
 
         socket.on('bumpUser', ((friend, profile) => {
 
@@ -302,6 +305,16 @@ const Main = () => {
 
                             </Route>
                             <Route path="/watch" element={<ProtectedRoute><Video /></ProtectedRoute>}> </Route>
+
+                            <Route path="/watch/:watchId">
+                                
+                                    <Route index element={<ProtectedRoute><SingleWatch /></ProtectedRoute>}></Route>
+                                   
+
+                            </Route>
+
+
+
                             <Route path="/message" element={<Message />}>
                                 <Route path=":profile/" element={<Profile />}></Route>
 

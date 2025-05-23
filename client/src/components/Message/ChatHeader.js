@@ -365,7 +365,9 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
                             <div className='chat-header-user-info'>
                                 <h4 className='chat-header-username'> {`${friendProfile == true ? (friendProfile?.fullName || '') : friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname}`}</h4>
                                 {
-                                    emotion && (<span className='chat-header-active-status text-capitalized'>{emotion}</span>)
+                                    emotion ? (<span className='chat-header-active-status text-capitalized'>{emotion}</span>) : <>
+                                     {lastSeen && <span className='chat-header-active-status text-capitalized'>Last Seen: {lastSeen}</span>}
+                                    </>
                                 }
 
                             </div>

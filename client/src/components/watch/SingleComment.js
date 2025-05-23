@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Moment from 'react-moment';
 import { Link } from 'react-router-dom';
-import SingleReply from "./singleReply";
+import SingleReply from "./SingleReply";
 import UserPP from "../UserPP";
 import $ from 'jquery'
 import api from '../../api/api';
