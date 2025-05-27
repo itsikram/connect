@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import checkImgLoading from '../../utils/checkImgLoading';
 import ImageSkleton from '../../skletons/ImageSkleton';
 import { useState } from 'react';
 import { useEffect } from 'react';
-const SingleImage = ({ imageData }) => {
+const SingleImage = ({ imageData, setImageIndex, setIsLightbox, imageIndex }) => {
     let [isLoaded, setIsloaded] = useState(false)
 
     useEffect(() => {
         checkImgLoading(imageData.photos, setIsloaded)
     }, [])
+
+    let handleImageClick = useCallback((e) => {
+        setIsLightbox(true)
+        setImageIndex(imageIndex)
+    })
 
     return (
 
@@ -17,29 +22,30 @@ const SingleImage = ({ imageData }) => {
             {
                 isLoaded ?
                     <>
-                        <div className='image-item'>
-                        <Link to={`/post/${imageData._id}`}>
+                        <div className='image-item' onClick={handleImageClick.bind(this)}>
                             <div className='profile-image-container'>
                                 <img src={imageData.photos} alt={imageData.caption || ''} />
                             </div>
-                        </Link>
-                    </div>
-        </>
+                            {/* <Link to={`/post/${imageData._id}`}>
+                            
+                        </Link> */}
+                        </div>
+                    </>
 
                     :
 
-<>
-    <ImageSkleton />
-</>
+                    <>
+                        <ImageSkleton />
+                    </>
             }
 
- </>
-        
-            
+        </>
 
 
 
-        
+
+
+
     );
 }
 

@@ -74,8 +74,10 @@ let CreatePost = ({ setNewsFeed }) => {
     var isMobile = useMediaQuery("(max-width: 768px)");
 
 
-    let profileName = profileData.user && profileData.user.firstName + ' ' + profileData.user.surname
-    let textInputPlaceHoder = "What's On Your Mind " + profileName + " ?"
+    let profileName = profileData.user && profileData.user.firstName + ' ' + profileData.user.surname || ''
+
+
+    let textInputPlaceHoder = "What's On Your Mind " + profileName + "?"
 
 
     // handling attachment button toggle
@@ -312,7 +314,7 @@ let CreatePost = ({ setNewsFeed }) => {
                                     <h3>{profileName}</h3>
                                 </div>
                                 <div className="cpm-feelings-container ml-2">
-                                    <select name="feelings" onChange={handleCaptionField} className="form-control">
+                                    <select name="feelings" onChange={handleCaptionField.bind(this)} className="form-control">
                                         <option value='0'>
                                             Select Feelings
                                         </option>

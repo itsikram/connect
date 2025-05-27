@@ -1,4 +1,4 @@
-import {ADD_MESSAGE,ADD_MESSAGES,NEW_MESSAGE,SEND_MESSAGE} from '../constants/messageConsts'
+import {ADD_MESSAGE,ADD_MESSAGES,NEW_MESSAGE,SEND_MESSAGE,SEEN_MESSAGE} from '../constants/messageConsts'
 
 export const addMessage = (message) => {
     return {
@@ -20,6 +20,14 @@ export const newMessage = (message => {
         payload: message,
     }
 })
+
+export const seenMessage = (contactId => {
+    return {
+        type: SEEN_MESSAGE,
+        payload: {contactId},
+    }
+})
+
 export const sendMessage = (message => {
     return {
         type: SEND_MESSAGE,

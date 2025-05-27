@@ -15,6 +15,7 @@ let settingSchema = new Schema({
         type: Number,
         default: 1
     },
+    actionEmoji: String,
     themeMode: {
         type: String,
         default: 'dark'

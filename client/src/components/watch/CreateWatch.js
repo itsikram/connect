@@ -138,7 +138,6 @@ let CreatePost = () => {
                     'content-type': 'multipart/form-data'
                 }
             })
-            console.log(uploadImageRes)
 
             if (uploadImageRes.status == 200) {
                 var uploadedImageUrl = uploadImageRes.data.secure_url;

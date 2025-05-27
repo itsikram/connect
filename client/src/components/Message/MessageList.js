@@ -33,7 +33,6 @@ const MessageList = () => {
     const [messageOption, setMessageOption] = useState(false)
     const messageMenuRef = useRef()
     let params = useParams();
-    let location = useLocation();
     let myProfile = useSelector(state => state.profile)
     let myId = myProfile._id
     let myContacts = useSelector(state => state.message)
@@ -138,7 +137,7 @@ const MessageList = () => {
                                 let isMsgSeen = (contactMessages[0] ? (contactMessages[0].senderId == myId ? true : contactMessages[0].isSeen) : false)
                                 let isFrndActive = activeFriends.includes(contactPerson._id)
                                 return <Link key={index} style={{ textDecoration: 'none' }} to={`/message/${contactPerson._id}`}>
-                                    <li className={`message-list-item ${isMsgSeen ? 'message-seen' : 'message-unseen'}`}>
+                                    <li className={`message-list-item ${isMsgSeen ? 'message-seen' : 'message-unseen'} ${contactPerson._id == params.profile ? 'active' : ''}`}>
                                         <div className={"user-profilePic"}>
                                             <UserPP profilePic={contactPerson.profilePic} profile={contactPerson._id} active={isFrndActive}></UserPP>
                                         </div>

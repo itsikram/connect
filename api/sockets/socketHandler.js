@@ -14,40 +14,8 @@ module.exports = function socketHandler(io) {
         console.log(`User connected: ${socket.id}`);
         let rooms = [socket.handshake.query.profile]
 
-        // socket.on('webcam_frame', async (data) => {
-        //     // console.log(data)
-        //     try {
-        //         // Convert base64 to image
-        //         const buffer = Buffer.from(data.replace(/^data:image\/\w+;base64,/, ''), 'base64');
-        //         const img = await canvas.loadImage(buffer);
-        //         const detection = await faceapi
-        //             .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-        //             .withFaceExpressions();
-
-        //         if (detection) {
-        //             const expressions = detection.expressions;
-        //             const topEmotion = Object.entries(expressions).reduce((a, b) =>
-        //                 a[1] > b[1] ? a : b
-        //             )[0];
-        //             console.log(topEmotion)
-        //             io.to(rooms).emit('face_emotion', { emotion: topEmotion, confidence: expressions[topEmotion] });
-        //         } else {
-        //             // socket.emit('face_emotion', { emotion: 'No face detected' });
-        //         }
-
-        //     } catch (e) {
-        //         console.log(e)
-        //     }
-        // })
-
-
-
-
-
-
-
+ 
         socket.on('viewPost', async({ visitorId, postId }) => {
-            console.log('Visited By :', visitorId, postId)
             let viewedPost = await Post.findOneAndUpdate({
                 _id: postId,
                 viewers: {$ne: visitorId}
@@ -82,7 +50,6 @@ module.exports = function socketHandler(io) {
 
 
         socket.on('leaveVideoCall', friendId => {
-            console.log(friendId)
             io.to(friendId).emit('videoCallEnd', friendId)
         })
 

@@ -46,7 +46,6 @@ let Post = ({ data, postContainer, index }) => {
     let [placedReacts, setPlacedReacts] = useState([]);
     let [isShareModal, setIsShareModal] = useState(false);
     let [isPostOption, setIsPostOption] = useState(false);
-    let [visitedPosts, setVisitedPost] = useState([])
     const [isLoaded, setIsloaded] = useState(false);
     let isMobile = useIsMobile();
     let navigate = useNavigate()
@@ -179,7 +178,7 @@ let Post = ({ data, postContainer, index }) => {
     let removeReact = async (postType = 'post', target = null) => {
 
         setTotalReacts(state => state - 1)
-            setReactType(false)
+        setReactType(false)
 
         let res = await api.post('/react/removeReact', { id: post._id, postType: 'post', reactor: myProfileId })
         if (res.status === 200) {
@@ -324,6 +323,9 @@ let Post = ({ data, postContainer, index }) => {
     let postHeaderClick = (e) => {
         navigate(`/post/${post._id}`)
     }
+    let gotoEdit = useCallback(e => {
+        navigate(`/post/${post._id}/edit`)
+    })
 
 
     let postAuthorPP = `${post.author.profilePic}`
@@ -365,7 +367,7 @@ let Post = ({ data, postContainer, index }) => {
     useEffect(() => {
         const handleVisible = (postId) => {
             console.log(`Post ${postId} is now visible — triggered once`);
-            socket.emit('viewPost',{visitorId: myProfileId, postId})
+            socket.emit('viewPost', { visitorId: myProfileId, postId })
             // Place your custom logic here (e.g. animation, API call, etc.)
         };
 
@@ -433,7 +435,7 @@ let Post = ({ data, postContainer, index }) => {
                                         {isPostOption && (
                                             <div className="post-option-menu" ref={postOptionMenu} >
                                                 <ul>
-                                                    {isAuth && (<><li><Link to={`/post/${post._id}/edit`}>Edit Post</Link></li><li>Edit Audience</li></>)}
+                                                    {isAuth && (<><li onClick={gotoEdit}>Edit Post</li><li>Edit Audience</li></>)}
                                                     <li>Report This Post</li>
                                                 </ul>
                                             </div>
@@ -473,6 +475,14 @@ let Post = ({ data, postContainer, index }) => {
                                                     <h4 className="author-name">
                                                         {post?.parentPost.author.fullName}
                                                     </h4>
+                                                    {
+                                                        post.feelings && <span className="post-feelings"> <small className="text-lowercase text-secondary">is felling</small> {post.feelings || ''}</span>
+
+                                                    }
+
+                                                    {
+                                                        post.location && <span className="post-location"> <small className="text-lowercase text-secondary"> at</small> {post.location || ''}</span>
+                                                    }
                                                 </Link>
                                                 <span className="post-time">
                                                     <Momemt fromNow >{post?.parentPost.createdAt}</Momemt>
@@ -694,7 +704,7 @@ let Post = ({ data, postContainer, index }) => {
 
 
                                             {
-                                                post.fellings && <span className="post-feelings"> <small className="text-lowercase text-secondary">is felling</small> {post.fellings || ''}</span>
+                                                post.feelings && <span className="post-feelings"> <small className="text-lowercase text-secondary">is felling</small> {post.feelings || ''}</span>
 
                                             }
 
@@ -713,7 +723,7 @@ let Post = ({ data, postContainer, index }) => {
                                     {isPostOption && (
                                         <div className="post-option-menu" ref={postOptionMenu} >
                                             <ul>
-                                                {isAuth && (<><li>Edit Post</li><li>Edit Audience</li></>)}
+                                                {isAuth && (<><li onClick={gotoEdit}>Edit Post</li><li>Edit Audience</li></>)}
                                                 <li>Report This Post</li>
                                             </ul>
                                         </div>

@@ -115,7 +115,6 @@ const StoryReacts = (props) => {
         if (e.keyCode === 13) {
             let res = await api.post('/comment/story/addComment', { body: commentText, storyId })
             if (res.status == 200) {
-                console.log(res)
 
             }
 

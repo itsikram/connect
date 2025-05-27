@@ -2,6 +2,8 @@ import React, {useState, useEffect, useCallback} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setModeShare, loadSettings } from '../../services/actions/settingsActions';
 import api from '../../api/api';
+import EmojiPicker from 'emoji-picker-react';
+
 
 const MessageSetting = () => {
 
@@ -35,7 +37,7 @@ const MessageSetting = () => {
                             <label for="username">First Name</label>
                             <input type="text" className="form-control" id="firstName" name='firstName' placeholder="Enter Frist Name" />
                         </div> */}
-
+                        {/* <EmojiPicker /> */}
                         <div className="form-check form-switch my-3">
                             <input checked={settings.showIsTyping === true ? true : false} type="checkbox" onChange={handleShowTypingChange.bind(this)} className="form-check-input" id="showTyping" />
                             <label className="form-check-label" for="showTyping">Show Typing</label>

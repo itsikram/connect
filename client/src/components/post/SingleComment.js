@@ -1,19 +1,21 @@
-import React, { useState, useEffect,useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Moment from 'react-moment';
 import { Link } from 'react-router-dom';
-import SingleReply from "./singleReply";
+import SingleReply from "./SingleReply";
 import UserPP from "../UserPP";
 import $ from 'jquery'
 import api from '../../api/api';
 
 
-const SingleComment = ({ comment, postData, myProfile,isEditMode }) => {
+const SingleComment = ({ comment, postData, myProfile, isEditMode }) => {
 
     let myId = myProfile._id
     let [totalComment, setTotalComment] = useState(0)
     let [isReacted, setIsReacted] = useState(false);
     let [isReply, setIsReply] = useState(false)
     let [replies, setReplies] = useState(comment?.replies)
+    let [isEdit, setIsEdit] = useState(false)
+    let [updatedComment, setUpdatedComment] = useState(comment.body)
     const post = postData // useMemo((postData) => postData,[])
 
 
@@ -121,6 +123,23 @@ const SingleComment = ({ comment, postData, myProfile,isEditMode }) => {
 
     }
 
+    let handleCommentChange = useCallback((e) => {
+        setUpdatedComment(e.target.value)
+    })
+
+    let handleUpdateComment = useCallback(async (e) => {
+        let res = await api.post('comment/updateComment', { commentId: comment._id, body: updatedComment })
+        if(res.status == 200) {
+            setUpdatedComment(res.data.body)
+            setIsEdit(false)
+
+        }
+    })
+
+    let editCommentClick = useCallback(e => {
+        setIsEdit(!isEdit)
+    })
+
 
     return (
         <>
@@ -136,7 +155,22 @@ const SingleComment = ({ comment, postData, myProfile,isEditMode }) => {
                                     {comment.author.user.firstName + ' ' + comment.author.user.surname}
                                 </Link>
                             </div>
-                            <p className="comment-text">{comment.body}</p>
+                            <p className="comment-text">
+
+                            {isEdit ? <>
+                                            <div className="comment-editor">
+                                                <textarea onChange={handleCommentChange.bind(this)} className="form-control w-100" value={updatedComment} />
+                                                <button onClick={handleUpdateComment.bind(this)} className="btn btn-primary mt-2">Update</button>
+                                            </div>
+                                        </>
+                                        : 
+
+                                        <>{updatedComment}</>
+                                        
+                                    
+                                    
+                                    }
+                            </p>
                             {
                                 comment.attachment &&
                                 <div className='comment-attachment-container'>
@@ -153,9 +187,14 @@ const SingleComment = ({ comment, postData, myProfile,isEditMode }) => {
                                 <div onClick={clickCommentOption} className="options-icon">
                                     <i className="far fa-ellipsis-h"></i>
                                     <div className='options-container'>
+                                        <button dataid={comment._id} onClick={editCommentClick.bind(this)} className="comment-option text-primary">
+                                            Edit Comment
+                                        </button>
+                                        
                                         <button dataid={comment._id} onClick={deleteComment.bind(this)} className="comment-option text-danger">
                                             Delete Comment
                                         </button>
+
                                     </div>
                                 </div>
                                 : ''

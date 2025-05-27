@@ -352,6 +352,15 @@ const SinglePost = () => {
                                             <h4 className="author-name">
                                                 {postData.author.fullName}
                                             </h4>
+
+                                            {
+                                                postData.feelings && <span className="post-feelings"> <small className="text-lowercase text-secondary">is felling</small> {postData.feelings || ''}</span>
+
+                                            }
+
+                                            {
+                                                postData.location && <span className="post-location"> <small className="text-lowercase text-secondary"> at</small> {postData.location || ''}</span>
+                                            }
                                         </Link>
                                         <span className="post-time">
                                             <Momemt fromNow >{postData.createdAt}</Momemt>
@@ -393,6 +402,14 @@ const SinglePost = () => {
                                                 <h4 className="author-name">
                                                     {postData.parentPost.author.fullName}
                                                 </h4>
+                                                {
+                                                postData.feelings && <span className="post-feelings"> <small className="text-lowercase text-secondary">is felling</small> {postData.feelings || ''}</span>
+
+                                            }
+
+                                            {
+                                                postData.location && <span className="post-location"> <small className="text-lowercase text-secondary"> at</small> {postData.location || ''}</span>
+                                            }
                                             </Link>
                                             <span className="post-time">
                                                 <Momemt fromNow >{postData.parentPost.createdAt}</Momemt>

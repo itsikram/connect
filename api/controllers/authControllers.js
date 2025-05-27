@@ -36,7 +36,7 @@ exports.signUp = async (req, res, next) => {
 
             if (profile) {
 
-                let updatedUser = await User.findOneAndUpdate({ _id: saveUser._id }, { profile: profile._id },{new: true})
+                let updatedUser = await User.findOneAndUpdate({ _id: saveUser._id }, { profile: profile._id }, { new: true })
 
 
                 if (updatedUser) {
@@ -91,7 +91,7 @@ exports.changePass = async (req, res, next) => {
             if (updatedUser) {
                 let profile = await Profile.findOne({ _id: myProfile._id }).populate('user')
                 let accessToken = jwt.sign({ user_id: userId.toString() }, SECRET_KEY, {
-                    expiresIn: '5d'
+                    expiresIn: '30d'
                 })
 
                 let resData = {
@@ -101,13 +101,41 @@ exports.changePass = async (req, res, next) => {
                     profile: profile._id,
                     accessToken
                 }
-                console.log(resData)
 
                 return res.json(resData).status(202)
             }
 
         }
 
+
+
+    } catch (e) {
+        next(e)
+    }
+
+}
+exports.changeEmail = async (req, res, next) => {
+    let { email } = req.body
+    let userId = req.profile.user._id || ''
+    try {
+        let updatedUser = await User.findOneAndUpdate({ _id: userId }, { email }, { new: true })
+
+        if (updatedUser) {
+
+
+            let accessToken = jwt.sign({ user_id: updatedUser._id }, SECRET_KEY, {
+                expiresIn: '30d'
+            })
+
+            return res.status(200).json({
+                firstName: updatedUser.firstName,
+                user_id: updatedUser._id,
+                surname: updatedUser.surname,
+                profile: updatedUser.profile,
+                accessToken
+            })
+
+        }
 
 
     } catch (e) {
@@ -141,7 +169,7 @@ exports.login = async (req, res, next) => {
 
 
         let accessToken = jwt.sign({ user_id: user._id }, SECRET_KEY, {
-            expiresIn: '5d'
+            expiresIn: '30d'
         })
 
         return res.status(202).json({
@@ -159,18 +187,18 @@ exports.login = async (req, res, next) => {
 
 }
 
-exports.deleteAccount = async(req,res,next) => {
+exports.deleteAccount = async (req, res, next) => {
     let userData = req.body.userData
     let profileId = userData.profile;
     let userId = userData.user_id
 
-    if(userId) {
+    if (userId) {
         await User.findByIdAndDelete(userId)
     }
 
-    if(profileId) {
+    if (profileId) {
         await Profile.findByIdAndDelete(profileId)
     }
 
-    return res.json({message: 'Account Deleted Successfully'})
+    return res.json({ message: 'Account Deleted Successfully' })
 }
