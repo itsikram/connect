@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import $ from 'jquery'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import UserPP from "../UserPP";
 import { Link, useNavigate } from "react-router-dom";
 import Momemt from 'react-moment'
@@ -14,6 +14,7 @@ import ModalContainer from "../modal/ModalContainer";
 import useIsMobile from "../../utils/useIsMobile"
 import checkImgLoading from "../../utils/checkImgLoading";
 import isValidUrl from "../../utils/isValiUrl";
+import { addPost } from "../../services/actions/postActions";
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
 const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
 const Rhaha = 'https://programmerikram.com/wp-content/uploads/2025/03/haha-icon.svg';
@@ -51,6 +52,8 @@ let Post = ({ data, postContainer, index }) => {
     let navigate = useNavigate()
     let nfPosts = useRef([]);
     let displayedPost = useRef();
+
+    let dispatch = useDispatch()
 
     // useEffect(() => {
     //     const observer = new IntersectionObserver(
@@ -312,9 +315,10 @@ let Post = ({ data, postContainer, index }) => {
 
         if (res.status == 200) {
             setTotalShares(state => state + 1)
+            dispatch(addPost(res.data.post))
             setIsShareModal(false)
         }
-    })
+    },[dispatch])
 
     let authProfilePicture = useSelector(state => state.profile.profilePic)
     let authProfileId = useSelector(state => state.profile._id)
@@ -325,7 +329,7 @@ let Post = ({ data, postContainer, index }) => {
     }
     let gotoEdit = useCallback(e => {
         navigate(`/post/${post._id}/edit`)
-    })
+    },[])
 
 
     let postAuthorPP = `${post.author.profilePic}`
@@ -346,7 +350,7 @@ let Post = ({ data, postContainer, index }) => {
 
     let postOptionClick = useCallback(e => {
         setIsPostOption(!isPostOption)
-    })
+    },[])
 
 
     // useEffect(() => {

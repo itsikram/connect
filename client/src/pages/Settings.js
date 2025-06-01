@@ -11,7 +11,7 @@ const Settings = () => {
     let handleClick = useCallback(async(e) => {
         $(e.currentTarget).addClass('active')
         $(e.currentTarget).siblings().removeClass('active')
-    })
+    },[])
 
     return (
         <div className='setting-page'>

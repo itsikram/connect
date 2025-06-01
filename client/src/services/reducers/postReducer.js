@@ -14,9 +14,10 @@ const postReducer = (state = initialPostState, action) => {
 
             ];
         case ADD_POST:
+            console.log(action.payload)
             return [
+                action.payload,
                 ...state,
-                action.payload
             ]
         case REMOVE_POST:
             let postId = action.payload.postId

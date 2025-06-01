@@ -14,7 +14,7 @@ const AccountSetting = () => {
             ...data,
             [name]: value
         })
-    })
+    },[])
 
     let handleSubmit = useCallback(async (e) => {
         e.preventDefault();
@@ -54,7 +54,7 @@ const AccountSetting = () => {
             localStorage.setItem('user', updatedUser)
             window.location.reload()
         }
-    })
+    },[])
 
     let deleteAccount = useCallback(async (e) => {
         e.preventDefault();
@@ -65,12 +65,12 @@ const AccountSetting = () => {
             alert(deletedAccountRes.data.message)
             window.location.reload();
         }
-    })
+    },[])
 
     let handleEditEmailClick = useCallback((e) => {
         e.preventDefault();
         setEditEmail(!editEmail)
-    })
+    },[])
 
     return (
         <>

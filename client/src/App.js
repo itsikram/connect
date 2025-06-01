@@ -1,39 +1,37 @@
-import React, { Fragment, useEffect } from 'react'
-import Main from './pages/Main'
+import React, { Fragment, useEffect } from 'react';
+import Main from './pages/Main';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './assets/fontawesome/css/all.min.css'
-import './assets/css/style.scss'
-// import './assets/css/portfolio-style.scss'
+import './assets/fontawesome/css/all.min.css';
+import './assets/css/style.scss';
 import process from 'process';
 import { useDispatch } from 'react-redux';
 import { setLogin } from './services/actions/authActions';
 import { useJwt } from 'react-jwt';
+
 window.process = process;
 
-
 function App() {
-  let dispatch = useDispatch()
-  const user = localStorage.getItem("user") || '{}'
-  const userJson = JSON.parse(user)
-  const { isExpired } = useJwt(userJson.accessToken)
-  dispatch(setLogin(userJson.accessToken))
+  const dispatch = useDispatch();
+  const user = localStorage.getItem("user") || '{}';
+  const userJson = JSON.parse(user);
+  const { isExpired } = useJwt(userJson.accessToken);
 
+  // ✅ Move dispatch to useEffect
   useEffect(() => {
+    if (userJson.accessToken) {
+      dispatch(setLogin(userJson.accessToken));
+    }
 
     if (isExpired) {
-      dispatch(setLogin(undefined))
-
+      dispatch(setLogin(undefined));
     }
-  }, [isExpired])
+  }, [dispatch, isExpired]);
 
   return (
     <Fragment>
       <Main />
-      {/* {!isExpired && (<Main/>)}
-        {isExpired && (<Login/>)} */}
     </Fragment>
-
   );
 }
 

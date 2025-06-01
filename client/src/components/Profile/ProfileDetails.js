@@ -94,7 +94,7 @@ let ProfileDetails = (props) => {
                     schools.map((school, index) => {
 
                         return (
-                            <div className="details-list-item">
+                            <div className="details-list-item" key={index}>
                                 <i className="fas fa-graduation-cap"></i>
                                 <span>
                                     Studied at <b>{school?.name} ({school?.degree})</b>

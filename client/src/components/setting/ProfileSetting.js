@@ -39,7 +39,7 @@ const ProfileSetting = () => {
             ...settings,
             [e.target.name]: e.target.value
         })
-    })
+    },[settings])
 
     let handleSubmitSettings = useCallback(async (e) => {
         e.preventDefault();
@@ -69,7 +69,7 @@ const ProfileSetting = () => {
 
             );
         }
-    })
+    },[])
     const [workPlaces, setWorkPlaces] = useState([{}]);
     const [schools, setSchools] = useState([{}]);
 

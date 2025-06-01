@@ -320,7 +320,7 @@ const SinglePost = () => {
                 caption: e.target.value
             }
         })
-    })
+    },[])
 
     let updateCaption = useCallback(async (e) => {
         let res = await api.post('/post/update', { postId, caption: postData.caption })
@@ -329,7 +329,7 @@ const SinglePost = () => {
             toast('Caption Updated')
         }
 
-    })
+    },[])
     let PostContent = () => {
         switch (postData.type) {
             case 'share':

@@ -1,15 +1,18 @@
 import React, { Fragment, useState, useEffect, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import ModalContainer from '../modal/ModalContainer'
 import UserPP from "../UserPP";
 import $, { post } from 'jquery'
 import api from "../../api/api";
+import { addPost } from "../../services/actions/postActions";
 
-let CreatePost = ({ setNewsFeed }) => {
+const loadingImgUrl = 'https://res.cloudinary.com/dz88yjerw/image/upload/v1743092084/i5lcu63atrbkpcy6oqam.gif'
 
-
+let CreatePost = ({ setPosts = null }) => {
     let profileData = useSelector(state => state.profile)
     let profileId = profileData._id
+
+    let dispatch = useDispatch()
 
 
     // setting visibilty state for post modal container
@@ -23,14 +26,15 @@ let CreatePost = ({ setNewsFeed }) => {
         setPostModal(false)
     }
 
-
-    let [postData, setPostData] = useState({
+    const postDataInit = {
         caption: '',
         attachments: null,
         urls: null,
         location: '',
         feelings: ''
-    })
+    }
+
+    let [postData, setPostData] = useState(postDataInit)
     let [attachmentType, setAttachmentType] = useState(false)
 
     const [hasStory, setHasStory] = useState(false);
@@ -55,7 +59,7 @@ let CreatePost = ({ setNewsFeed }) => {
             }
         })
 
-    }, [])
+    }, [postData])
 
 
     const useMediaQuery = (query) => {
@@ -89,7 +93,7 @@ let CreatePost = ({ setNewsFeed }) => {
     }
 
     // handle caption field change 
-    let handleCaptionField = (e) => {
+    let handleCaptionField = useCallback((e) => {
         let value = e.target.value
         let name = e.target.name
 
@@ -105,19 +109,19 @@ let CreatePost = ({ setNewsFeed }) => {
         })
 
 
-    }
+    }, [postData])
 
     // handle photo field update
 
     let handleAttachmentChange = useCallback((e) => {
         let currentTarget = e.currentTarget
+        setPostData({ ...postData, urls: loadingImgUrl })
         $(currentTarget).parents('.cpm-attachment-upload').slideUp()
         $(currentTarget).parents('.cpm-attachment-upload').siblings('.cpm-attachment-preview').slideDown()
-
         let attachments = e.target.files[0];
         handleUploadAttachment(attachments.type, attachments)
 
-    })
+    }, [postData])
 
     // handling post submit 
 
@@ -193,7 +197,7 @@ let CreatePost = ({ setNewsFeed }) => {
 
     let handlePostSubmit = useCallback(async (e) => {
         e.preventDefault()
-                        setPostModal(false)
+        setPostModal(false)
 
         try {
             switch (postData.type) {
@@ -213,6 +217,13 @@ let CreatePost = ({ setNewsFeed }) => {
                     })
 
                     if (res.status === 200) {
+
+                        console.log('npd', res.data.post)
+                        dispatch(addPost(res.data.post))
+                        setPostData(postDataInit)
+                        if (setPosts) {
+                            setPosts(posts => [res.data.post, ...posts])
+                        }
                         setPostModal(false)
                     }
 
@@ -227,6 +238,9 @@ let CreatePost = ({ setNewsFeed }) => {
                     })
 
                     if (watchRes.status === 200) {
+                        setPostData(postDataInit)
+                        dispatch(addPost(defaultRes.data.post))
+
                         setPostModal(false)
                     }
                     break;
@@ -246,6 +260,11 @@ let CreatePost = ({ setNewsFeed }) => {
                     })
 
                     if (defaultRes.status === 200) {
+                        setPostData(postDataInit)
+                        dispatch(addPost(defaultRes.data.post))
+                        if (setPosts) {
+                            setPosts(posts => [defaultRes.data.post, ...posts])
+                        }
                         setPostModal(false)
                     }
 
@@ -260,7 +279,7 @@ let CreatePost = ({ setNewsFeed }) => {
             console.log(error)
         }
 
-    })
+    }, [postData])
 
 
 
@@ -366,7 +385,7 @@ let CreatePost = ({ setNewsFeed }) => {
 
                                 </div>
                                 <div className="cpm-submit-button">
-                                    <button onClick={handlePostSubmit.bind(this)} className="button" disabled={isUploading} type="submit">  {postData.urls || postData.caption ? (isUploading == true ? 'Media Uploading....' : 'Post Now') : 'Upload'}  </button>
+                                    <button onClick={handlePostSubmit.bind(this)} className="button" disabled={isUploading} type="submit">  {(isUploading == true ? 'Media Uploading....' : 'Post Now')}  </button>
                                 </div>
                             </form>
                         </div>

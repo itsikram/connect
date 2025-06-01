@@ -16,7 +16,6 @@ import StoryReacts from "../components/story/StoryReacts.js";
 import StoryComments from "../components/story/StoryComments.js";
 import SingleStory from "../components/story/SingleStory";
 import SingleWatch from "../components/watch/SingleWatch.js";
-import Call from './Call.js'
 import ProfileAbout from "../components/Profile/ProfileAbout";
 import PorfilePosts from "../components/Profile/PorfilePosts";
 import ProfileFriends from "../components/Profile/ProfileFriends";
@@ -48,7 +47,6 @@ import { addNotification, addNotifications } from "../services/actions/notificat
 import { addMessage, addMessages, newMessage } from "../services/actions/messageActions.js";
 import { setBodyHeight, setHeaderHeight, setLoading } from "../services/actions/optionAction";
 import Settings from "./Settings";
-import ProfileIkramul from "./ProfileIkramul";
 import socket from '../common/socket.js'
 
 
@@ -62,7 +60,10 @@ import MessageSetting from "../components/setting/MessageSetting.js";
 import PreferenceSetting from "../components/setting/PreferenceSetting.js";
 import SoundSetting from "../components/setting/SoundSetting.js";
 
-import Face from "../components/faceDetection/Face.js";
+import VideoCallPage from "./VideoCallPage.js";
+
+
+
 
 function showNotification(msg, receiverId) {
     const notification = new Notification("New Message!", {
@@ -158,7 +159,7 @@ const Main = () => {
             dispatch(addMessages(data.reverse(), true))
         })
 
-        socket.on('newMessage', ({updatedMessage, senderName, senderPP}) => {
+        socket.on('newMessage', ({ updatedMessage, senderName, senderPP }) => {
             dispatch(newMessage(updatedMessage))
             notify(updatedMessage.message, senderName, senderPP, '/message/' + updatedMessage.senderId)
 
@@ -244,11 +245,30 @@ const Main = () => {
             // dispatch(setLoading(false))
         }
 
-        setTimeout(() => {
-            socket.emit('update_last_login', userInfo.user_id)
-        }, 5000)
+
 
     }, [params, token])
+
+    useEffect(() => {
+
+        if(!isTabActive) return
+        if (userInfo.user_id) {
+            socket.emit('update_last_login', userInfo.user_id)
+
+        }
+
+        setInterval(() => {
+            // alert('called')
+            if (userInfo.user_id) {
+                socket.emit('update_last_login', userInfo.user_id)
+
+            }
+        }, 3 * 60 * 1000)
+
+        return () => {
+            socket.off('update_last_login')
+        }
+    },[isTabActive])
 
 
 
@@ -267,10 +287,11 @@ const Main = () => {
                 <Header />
 
                 <div id="main-container" className={isLoading ? 'loading' : ''}>
-                                                {/* <Face /> */}
+                    {/* <Face /> */}
 
                     <Routes>
                         <Route path="/">
+                            <Route path="video-call" element={<VideoCallPage />}></Route>
                             <Route path="login" element={<Login />}></Route>
                             <Route path="signup" element={<SignUP />}></Route>
                             {/* <Route path="face" element={<ProtectedRoute><Face /></ProtectedRoute>}></Route> */}
@@ -296,10 +317,10 @@ const Main = () => {
                             <Route path="/story/" element={<ProtectedRoute><Story /></ProtectedRoute>}> </Route>
 
                             <Route path="/story/:storyId">
-                                
-                                    <Route index element={<ProtectedRoute><SingleStory /></ProtectedRoute>}></Route>
-                                    <Route path="comments/" element={<ProtectedRoute><StoryComments /></ProtectedRoute>}></Route>
-                                    <Route path="reacts/" element={<ProtectedRoute><StoryReacts /></ProtectedRoute>}></Route>
+
+                                <Route index element={<ProtectedRoute><SingleStory /></ProtectedRoute>}></Route>
+                                <Route path="comments/" element={<ProtectedRoute><StoryComments /></ProtectedRoute>}></Route>
+                                <Route path="reacts/" element={<ProtectedRoute><StoryReacts /></ProtectedRoute>}></Route>
 
                             </Route>
 
@@ -320,9 +341,9 @@ const Main = () => {
                             <Route path="/watch" element={<ProtectedRoute><Video /></ProtectedRoute>}> </Route>
 
                             <Route path="/watch/:watchId">
-                                
-                                    <Route index element={<ProtectedRoute><SingleWatch /></ProtectedRoute>}></Route>
-                                   
+
+                                <Route index element={<ProtectedRoute><SingleWatch /></ProtectedRoute>}></Route>
+
 
                             </Route>
 

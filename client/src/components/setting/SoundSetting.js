@@ -29,7 +29,7 @@ const SoundSetting = () => {
             }
         })
 
-    })
+    },[])
 
 
     let handleSettingSubmitBtnClick = useCallback(async (e) => {
@@ -38,7 +38,7 @@ const SoundSetting = () => {
         if (updateSetting.status == 200) {
             dispatch(loadSettings(updateSetting.data))
         }
-    })
+    },[])
     return (
         <>
             <div className='profile-setting'>

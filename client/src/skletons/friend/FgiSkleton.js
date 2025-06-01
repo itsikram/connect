@@ -3,9 +3,9 @@ import ImageSkleton from '../ImageSkleton';
 
 const FgiSkleton = ({ count = 1 }) => {
     return Array(count).fill(0).map((_, index) => (
-        <div className="friend-grid-item" style={{minHeight: 'unset'}}>
+        <div className="friend-grid-item" key={index} style={{minHeight: 'unset'}}>
 
-            <div key={index}className="skeleton-card" style={{marginBottom: '0px'}}>
+            <div className="skeleton-card" style={{marginBottom: '0px'}}>
                 {/* Header */}
                 {/* <div className="skeleton-header">
             <div className="skeleton-avatar" />

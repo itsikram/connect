@@ -60,15 +60,15 @@ const Chat = ({ socket }) => {
         if (msgListRef.current != null) {
             let isLastMsg = setInterval(() => {
                 let lastMsg = document.querySelector('#chatMessageList .chat-message-container:last-child')
-                    lastMsg?.scrollIntoView({ behavior: "smooth" });
+                lastMsg?.scrollIntoView({ behavior: "smooth" });
             }, 500)
 
-            msgListRef.current.addEventListener('scroll',e => {
+            msgListRef.current.addEventListener('scroll', e => {
                 let scrollBottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
-                console.log('scrl', e.target.scrollHeight, e.target.scrollTop,scrollBottom)
+                console.log('scrl', e.target.scrollHeight, e.target.scrollTop, scrollBottom)
 
-                if(scrollBottom <= 5) {
-                clearInterval(isLastMsg)
+                if (scrollBottom <= 5) {
+                    clearInterval(isLastMsg)
 
                 }
 
@@ -90,9 +90,9 @@ const Chat = ({ socket }) => {
     let params = useParams()
     let friendId = params.profile;
 
-    useEffect(()=> {
+    useEffect(() => {
         dispatch(seenMessage(params.profile))
-    },[params])
+    }, [params])
 
     const [listContainerHeight, setListContainerHeight] = useState(chatBoxHeight - chatHeaderHeight - chatFooterHeight);
     const [cmlStyles, setCmlStyles] = useState({
@@ -151,9 +151,36 @@ const Chat = ({ socket }) => {
     useEffect(() => {
         socket.emit('is_active', { profileId: friendId, myId: userId });
         socket.on('is_active', (data, ls) => {
-            setIsActive(data)
-            let lastSeenTime = moment(ls)
-            const formattedTime = lastSeenTime.format("hh:mm A")
+
+            let lastSeenTimeStamp = moment(ls)
+            let currentTimeStamp = moment(Date.now())
+
+            let diffDays = currentTimeStamp.diff(lastSeenTimeStamp, 'days')
+            let diffYears = currentTimeStamp.diff(lastSeenTimeStamp, 'days')
+
+            setIsActive(data === true ? true : false)
+
+            let lastSeenTime;
+            let formattedTime;
+            if (diffDays === 0) {
+                lastSeenTime = moment(ls)
+                formattedTime = lastSeenTime.format("hh:mm A")
+            } else if (diffYears > 0) {
+                lastSeenTime = moment(ls)
+                formattedTime = lastSeenTime.format("MM/YY hh:mm A")
+            }
+
+            else {
+                lastSeenTime = moment(ls)
+                formattedTime = lastSeenTime.format("DD/MM hh:mm A")
+            }
+
+
+
+
+
+
+
             setLastSeen(formattedTime)
         })
 
@@ -226,7 +253,7 @@ const Chat = ({ socket }) => {
             setMessages(msgs);
             setHasMoreMessages(true)
         });
-        socket.on('newMessage', ({updatedMessage, senderName, senderPP}) => {
+        socket.on('newMessage', ({ updatedMessage, senderName, senderPP }) => {
             if (updatedMessage.receiverId == userId && updatedMessage.senderId == friendId) {
                 setMessages((prevMessages) => [...prevMessages, updatedMessage]);
 
@@ -279,6 +306,7 @@ const Chat = ({ socket }) => {
                 let lastMessage = messages[messages.length - 1];
                 if (lastMessage.senderId !== userId) {
                     socket.emit('seenMessage', lastMessage);
+                    dispatch(seenMessage(friendId))
                 }
             }, 2000);
         }
@@ -294,7 +322,7 @@ const Chat = ({ socket }) => {
 
 
 
-    let footerProps = { chatFooter, room, friendId, setIsTyping, setIsReplying, isReplying, chatNewAttachment, messageActionButtonContainer, userId, messageInput, replyData, isPreview, setIsPreview, setReplyData }
+    let footerProps = { chatFooter, room, friendId, setIsTyping, setIsReplying, isReplying, chatNewAttachment, messageActionButtonContainer, userId, messageInput, replyData, isPreview, setIsPreview, setReplyData, messages }
 
     return (
         <div>
@@ -310,13 +338,13 @@ const Chat = ({ socket }) => {
                             messages.length > 0 ? messages.map((msg, index) => {
 
                                 return (
-                                    <SingleMessage key={index} msg={msg} friendProfile={friendProfile} messages={messages} isActive={isActive} setIsReplying={setIsReplying} setReplyData={setReplyData} isPreview={isPreview} setIsPreview={setIsPreview} msgListRef={msgListRef} isMsgLoading={isMsgLoading}/>
+                                    <SingleMessage key={index} msg={msg} friendProfile={friendProfile} messages={messages} isActive={isActive} setIsReplying={setIsReplying} setReplyData={setReplyData} isPreview={isPreview} setIsPreview={setIsPreview} msgListRef={msgListRef} isMsgLoading={isMsgLoading} />
                                 )
-                            }): <SingleMsgSkleton count={10} />
+                            }) : <SingleMsgSkleton count={10} />
 
-                        } 
+                        }
 
-                       
+
 
                         {
                             isTyping && (
@@ -327,7 +355,14 @@ const Chat = ({ socket }) => {
                                     <div className='chat-message'>
 
                                         <p className='message-container mb-0'>
-                                            {typeMessage || '...'}
+
+                                            {typeMessage || <div className='typing-indicator'>
+
+                                                <span className='typing-dots'></span>
+                                                <span className='typing-dots'></span>
+                                                <span className='typing-dots'></span>
+
+                                            </div>}
                                         </p>
                                     </div>
 

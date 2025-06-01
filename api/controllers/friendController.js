@@ -1,5 +1,7 @@
 const Profile = require('../models/Profile')
-const {saveNotification} = require('./notificationController')
+const { saveNotification } = require('./notificationController')
+const sendEmailNotification = require('../utils/sendEmailNotification.js')
+const checkIsActive = require('../utils/checkIsActive.js')
 exports.postFrndReq = async (req, res, next) => {
     try {
         let profile = req.body.profile
@@ -18,7 +20,7 @@ exports.postFrndReq = async (req, res, next) => {
             'friends': {
                 $ne: myProfile._id,
             }
-        })
+        }).populate('user')
 
         if (frndProfile.friendReqs.includes(myProfile._id)) {
             return res.json({
@@ -27,7 +29,7 @@ exports.postFrndReq = async (req, res, next) => {
         }
 
         let frndReq = await Profile.findOneAndUpdate({
-            _id: frndProfile._id, 
+            _id: frndProfile._id,
             friendReqs: {
                 $ne: myProfile._id,
             }
@@ -35,17 +37,32 @@ exports.postFrndReq = async (req, res, next) => {
             $push: {
                 friendReqs: myProfile._id,
             }
-        })
+        }, { new: true })
 
-        let notificationData = {
-            receiverId: profile,
-            text: myProfile.fullName + ' Sent you friend Request',
-            link: '/'+myProfile._id,
-            icon: myProfile.profilePic,
-            type: 'friendReq'
+
+
+        let {
+            isActive,
+            lastLogin
+        } = await checkIsActive(profile)
+
+
+        if (isActive) {
+            let notificationData = {
+                receiverId: profile,
+                text: myProfile.fullName + ' Sent you friend Request',
+                link: '/' + myProfile._id,
+                icon: myProfile.profilePic,
+                type: 'friendReq'
+            }
+
+            saveNotification(io, notificationData)
+        } else {
+            sendEmailNotification(frndProfile?.user?.email, 'You\'ve received a friend requiest', myProfile.fullName + ' Sent you friend Request On Connect', myProfile.fullName)
+
         }
 
-        saveNotification(io,notificationData)
+
         return res.json(frndReq)
 
 
@@ -61,17 +78,17 @@ exports.postBlockFrnd = async (req, res, next) => {
         let friendId = req.body.friendId
         let profile = req.profile;
 
-        let updateProfile = await Profile.findOneAndUpdate({_id: profile._id},{
+        let updateProfile = await Profile.findOneAndUpdate({ _id: profile._id }, {
             $push: {
                 blockedUsers: friendId
             }
         })
 
-        if(updateProfile) {
-            return res.status(200).json({message: 'User Block Successfully'})
+        if (updateProfile) {
+            return res.status(200).json({ message: 'User Block Successfully' })
         }
 
-        return res.status(400).json({message: 'User Cannot Be blocked'})
+        return res.status(400).json({ message: 'User Cannot Be blocked' })
 
 
 
@@ -85,17 +102,17 @@ exports.postUnblockFrnd = async (req, res, next) => {
         let friendId = req.body.friendId
         let profile = req.profile;
 
-        let updateProfile = await Profile.findOneAndUpdate({_id: profile._id},{
+        let updateProfile = await Profile.findOneAndUpdate({ _id: profile._id }, {
             $pull: {
                 blockedUsers: friendId
             }
         })
 
-        if(updateProfile) {
-            return res.status(200).json({message: 'User Unlock Successfully'})
+        if (updateProfile) {
+            return res.status(200).json({ message: 'User Unlock Successfully' })
         }
 
-        return res.status(400).json({message: 'User Cannot Be unblocked'})
+        return res.status(400).json({ message: 'User Cannot Be unblocked' })
 
 
 
@@ -127,7 +144,7 @@ exports.getProfileFrnd = async (req, res, next) => {
     try {
         let profile = req.query.profile
 
-        if(profile == false) return next();
+        if (profile == false) return next();
         let isSingle = req.query.single && req.query.single
         if (isSingle) {
             let friendData = await profile.findOne({ _id: profile })
@@ -180,10 +197,10 @@ exports.getProfileSuggetions = async (req, res, next) => {
 exports.postFrndAccept = async (req, res, next) => {
     try {
         let profile = req.body.profile
-        
+
         let myProfile = req.profile
         let io = req.app.get('io')
-        console.log('postFrndAccept',profile)
+        console.log('postFrndAccept', profile)
         let updateFrndProfile = await Profile.findOneAndUpdate({
             _id: profile,
             friends: {
@@ -216,12 +233,12 @@ exports.postFrndAccept = async (req, res, next) => {
         let notificationData = {
             receiverId: profile,
             text: myProfile.fullName + ' Accepted your friend Request',
-            link: '/'+myProfile._id,
+            link: '/' + myProfile._id,
             icon: myProfile.profilePic,
             type: 'friendReqAccept'
         }
 
-        saveNotification(io,notificationData)
+        saveNotification(io, notificationData)
 
         return res.status(200).json({
             message: 'Friend Request Accepted'

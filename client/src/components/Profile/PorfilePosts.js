@@ -1,4 +1,4 @@
-import React, {Fragment, useCallback, useEffect,useState,useRef} from "react";
+import React, { Fragment, useCallback, useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import CreatePost from "../post/CreatePost";
@@ -10,27 +10,27 @@ import PostSkeleton from "../../skletons/post/PostSkeleton";
 
 
 let PorfilePosts = () => {
-    let {profile} = useParams()
+    let { profile } = useParams()
     let myProfileData = useSelector(state => state.profile) || {}
     let isAuth = myProfileData._id === profile
     let [profileData, setProfileData] = useState(false)
-    const [posts,setPosts] = useState([])
-    const [bio,setBio] = useState(myProfileData.bio)
+    const [posts, setPosts] = useState([])
+    const [bio, setBio] = useState(myProfileData.bio)
     let navigate = useNavigate()
     let postContainer = useRef(null)
 
     useEffect(() => {
-        api.get('/post/myPosts',{
+        api.get('/post/myPosts', {
             params: {
                 profile
             }
         }).then(res => {
-            if(res.status === 200) {
+            if (res.status === 200) {
                 setPosts(res.data)
             }
         })
 
-        
+
         api.get('/profile', {
             params: {
                 profileId: profile
@@ -40,7 +40,7 @@ let PorfilePosts = () => {
 
         }).catch(e => console.log(e))
 
-    },[profile])
+    }, [profile])
 
 
     useEffect(() => {
@@ -62,19 +62,19 @@ let PorfilePosts = () => {
     let updateBioData = (e) => {
         setBio(e.target.value)
     }
-    let handleEditBio = async(e)=> {
+    let handleEditBio = async (e) => {
         try {
             let target = e.currentTarget
 
-            if($(target).hasClass('edit-button')){
+            if ($(target).hasClass('edit-button')) {
                 $(target).siblings('.bio-text').hide()
                 $(target).siblings('.bio-text-textarea').show()
                 $(target).siblings('.bio-text-textarea').val(bio)
                 $(target).removeClass('edit-button')
                 $(target).addClass('save-button')
                 $(target).text('Save Bio')
-            }else {
-                let res = await api.post('/profile/update/bio',{bio})
+            } else {
+                let res = await api.post('/profile/update/bio', { bio })
                 $(target).text('Edit Bio')
                 $(target).siblings('.bio-text').show()
                 $(target).removeClass('save-button')
@@ -84,18 +84,18 @@ let PorfilePosts = () => {
             }
 
 
-        }catch (e){
+        } catch (e) {
             console.log(e)
         }
     }
 
     let handleEditProfileDetails = useCallback(e => {
         navigate('/settings/')
-    }) 
+    }, [])
 
-    
 
-    return(
+
+    return (
         <Fragment>
             <div id="profile-post-content">
                 <div className="intro">
@@ -105,34 +105,34 @@ let PorfilePosts = () => {
                             {bio}
                         </p>
                         <textarea onChange={updateBioData} value={bio} className={"bio-text-textarea"}>
-                            
+
                         </textarea>
                         {
-                            isAuth &&  <div onClick={handleEditBio} className="edit-button"> Edit bio</div>
+                            isAuth && <div onClick={handleEditBio} className="edit-button"> Edit bio</div>
                         }
-                       
+
                     </div>
                     <div className="details">
-                        <ProfileDetails/>
+                        <ProfileDetails />
                         {
-                            isAuth &&   <div onClick={handleEditProfileDetails} className="edit-button"> Edit Details</div>
+                            isAuth && <div onClick={handleEditProfileDetails} className="edit-button"> Edit Details</div>
 
                         }
                     </div>
                 </div>
                 <div ref={postContainer} className="posts-container">
                     {
-                        isAuth && <CreatePost setNewsFeed={setPosts}></CreatePost>
+                        isAuth && <CreatePost setPosts={setPosts} posts={posts}></CreatePost>
                     }
-                    
-                    {posts.length > 0 ? posts.map((data,index) => {
+
+                    {posts.length > 0 ? posts.map((data, index) => {
                         return <Post key={index} myProfile={myProfileData} postContainer={postContainer} data={data}></Post>
                     })
-                    :
-                    <PostSkeleton  count={3}/>
-                
-                }
-                    
+                        :
+                        <PostSkeleton count={3} />
+
+                    }
+
                 </div>
             </div>
         </Fragment>

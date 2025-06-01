@@ -3,9 +3,9 @@ import React from 'react';
 
 const StoryListSkleton = ({ count = 1 }) => {
   return Array(count).fill(0).map((_, index) => (
-    <div className="nf-story">
+    <div key={index} className="nf-story">
 
-      <div key={index} className="skeleton-card" style={{ margin: '0px',marginRight: '20px', padding: '5px', maxWidth: '150px', height:'100%', float: 'left' }}>
+      <div className="skeleton-card" style={{ margin: '0px',marginRight: '20px', padding: '5px', maxWidth: '150px', height:'100%', float: 'left' }}>
         {/* Header */}
         <div className="skeleton-header" style={{margin: 0}}>
           <div className="skeleton-avatar" />

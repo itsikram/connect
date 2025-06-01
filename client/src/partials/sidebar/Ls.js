@@ -1,16 +1,20 @@
 
-import React, {Fragment}  from 'react';
-import {Button,ButtonGroup} from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import React, {Fragment, useCallback}  from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector,useDispatch } from 'react-redux';
 import UserPP from '../../components/UserPP';
 
 let LeftSidebar = () => {
     
     let profileData = useSelector(state => state.profile)
+    let navigate = useNavigate();
 
     let userInfo = JSON.parse((localStorage.getItem('user')||'{}'))
     const profilePath = "/"+userInfo.profile+"/"
+
+    let goToProfilePath = useCallback(e => {
+        navigate(profilePath)
+    },[Date.now()])
 
 
     return (
@@ -18,7 +22,7 @@ let LeftSidebar = () => {
             <div id="left-sidebar" className='text-left'>
                 <ul className="ls-nav-menu">
                     <li>
-                        <Link to={profilePath} className='text-decoration-none'>
+                        <div onClick={goToProfilePath} className='text-decoration-none'>
                             <div className='ls-nav-menu-item'>
                                 <div className='ls-profile-img'>
                                     <UserPP profilePic={profileData.profilePic} profile={profileData._id}></UserPP>
@@ -26,7 +30,7 @@ let LeftSidebar = () => {
                                 
                                 <div className='ls-text user-name'>{profileData.user &&  profileData.user.firstName} {profileData.user && profileData.user.surname}</div>
                             </div>
-                        </Link>
+                        </div>
                         
                     </li>
                     <li>

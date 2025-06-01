@@ -20,7 +20,11 @@ const Header = () => {
 
     const hrProps = { dispatch, useSelector }
 
-    dispatch(setHeaderHeight(height))
+
+    useEffect(() => {
+        dispatch(setHeaderHeight(height))
+
+    }, [height, dispatch])
 
     let [match, setMatch] = useState(window.matchMedia('(max-width: 768px)').matches)
 

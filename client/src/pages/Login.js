@@ -55,13 +55,11 @@ let Login = (props) => {
         } catch (error) {
             console.log(error)
         }
-    })
+    },[inputs])
 
     let handlePortfolioClick = useCallback(e => {
         navigate('/portfolio')
-    })
-
-
+    },[])
 
 
     return (

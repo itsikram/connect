@@ -21,7 +21,6 @@ let HeaderRight = ({ dispatch, useSelector }) => {
     let [totalNotifications, setTotalNotifications] = useState(0)
     let [totalMessages, setTotalMessages] = useState(0)
     let location = useLocation();
-    const [imageExists, setImageExists] = useState(null);
     let [ppUrl, setPpUrl] = useState('https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png')
     let navigate = useNavigate()
 
@@ -31,13 +30,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
 
     let notificationMenuHeight = optionData.bodyHeight - optionData.headerHeight - 100
     let notificationMenuStyle = { maxHeight: notificationMenuHeight + 'px', overflowY: 'scroll' }
-    const checkImage = (url) => {
-        const img = new Image();
-        img.src = url;
 
-        img.onload = () => setImageExists(true);
-        img.onerror = () => setImageExists(false);
-    };
 
     useEffect(() => {
 
@@ -61,7 +54,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
             if (data.messages.length > 0) {
 
                 if(  data.messages[0].isSeen == false) {
-                    if(data.messages[0].receiverId == data.person._id) {
+                    if(data.messages[0].receiverId == profileData._id) {
                         return true
                     }
                 }
@@ -95,7 +88,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
         if (updatedNotification.status == 200) {
             dispatch(viewNotification(notificationId))
         }
-    })
+    },[])
 
     let handleNotificationToggleClick = useCallback(async () => {
         if (notificationOption == true) {
@@ -105,7 +98,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
             setNotificationOption(true)
 
         }
-    })
+    },[])
 
     let markAllAsRead = useCallback(async (e) => {
 
@@ -122,7 +115,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
         })
 
 
-    })
+    },[])
 
     let handleNotiDelete = useCallback(async (e) => {
         let deletedNotification = await api.post('/notification/deleteall', { profile: profileData._id })
@@ -131,7 +124,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
             setIsNotificationMenu(false)
         }
 
-    })
+    },[])
 
 
     useEffect(() => {
@@ -145,6 +138,10 @@ let HeaderRight = ({ dispatch, useSelector }) => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    let goToProfilePath = useCallback(e => {
+        navigate(profilePath)
+    },[])
 
 
     let NoficationOptionMenu = () => {
@@ -250,7 +247,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
                     )}
                     <li onClick={clickProfileBtn} className="header-quick-menu-item item-profile" title="">
                         <div className="profile-pic">
-                            <img src={ppUrl} alt="Author Name" />
+                            <img src={ppUrl} alt="" />
 
                         </div>
 
@@ -258,7 +255,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
                     {isProfileMenu && (
                         <MegaMC style={{ right: '50%', transform: 'translateX(50%)', top: '101%', width: '300px', backgroundColor: '#242526', borderRadius: '5px', display: 'block', boxShadow: '0px 0px 2px 0px rgba(255,255,255,0.3)' }} className="hr-mega-menu">
                             <div className="hr-mm-container">
-                                <Link to={profilePath}>
+                                <div onClick={goToProfilePath}>
 
                                     <div className="all-profiles">
                                         {
@@ -267,7 +264,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
                                         }
                                         <span className="text-capitalize"> {profileData.fullName ? profileData.fullName : profileData.user && profileData.user.firstName + ' ' + profileData.user.surname} </span>
                                     </div>
-                                </Link>
+                                </div>
                                 <div className="profile-menus">
                                     <Link to="/settings" className="profile-menu-item">
                                         <div className="menu-item-icon">

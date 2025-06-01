@@ -21,7 +21,7 @@ const PreferenceSetting = () => {
             }
         })
 
-    })
+    },[settings])
 
     // useEffect(() => {
     //     if(oldSettings.themeMode) {
@@ -37,7 +37,7 @@ const PreferenceSetting = () => {
         if (updateSetting.status == 200) {
             dispatch(loadSettings(updateSetting.data))
         }
-    })
+    },[])
     return (
         <>
             <div className='profile-setting'>

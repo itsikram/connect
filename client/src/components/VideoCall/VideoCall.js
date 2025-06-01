@@ -108,7 +108,7 @@ const VideoCall = ({ myId }) => {
 
 
 
-    const answerCall = () => {
+    const answerCall = useCallback(() => {
         stopRingtone();
         if (!callerSignal) {
             console.warn("No caller signal to answer");
@@ -145,7 +145,7 @@ const VideoCall = ({ myId }) => {
 
         }
 
-    };
+    },[socket,stream]);
 
 
     useEffect(() => {
@@ -181,16 +181,16 @@ const VideoCall = ({ myId }) => {
             connectionRef.current.destroy();
             connectionRef.current = null;
         }
-    })
+    },[Date.now()])
 
     let handleMicrophoneClick = useCallback(() => {
 
         setIsMicrophone(!isMicrophone)
-    })
+    },[isMicrophone])
 
     let handleSwitchClick = useCallback(() => {
         setIsBackCamera(!isBackCamera)
-    })
+    },[isBackCamera])
 
 
 
@@ -225,7 +225,7 @@ const VideoCall = ({ myId }) => {
                             callAccepted && <>
                                 <button onClick={handleMicrophoneClick.bind(this)} className='call-button-microphone call-button'>
                                     {
-                                        isMicrophone ? <i className="fa fa-microphone"></i> : <i class="fa fa-microphone-slash"></i>
+                                        isMicrophone ? <i className="fa fa-microphone"></i> : <i className="fa fa-microphone-slash"></i>
                                     }
                                 </button>
                                 <button onClick={handleSwitchClick.bind(this)} className='call-button-switch call-button'>

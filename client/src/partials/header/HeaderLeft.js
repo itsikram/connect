@@ -1,5 +1,5 @@
-import React, { Fragment, useState, useEffect } from "react";
-import { Link, useLocation } from 'react-router-dom';
+import React, { Fragment, useState, useEffect, useCallback } from "react";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import $ from 'jquery';
 import api from "../../api/api";
 import UserPP from "../../components/UserPP";
@@ -17,6 +17,7 @@ let HeaderLeft = () => {
   let [searchQuery, setSearchQuery] = useState('')
   let location = useLocation();
   let isMobile = useIsMobile();
+  let navigate = useNavigate();
   useEffect(() => {
     setIsMegaMenu(false)
   }, [location])
@@ -120,6 +121,10 @@ let HeaderLeft = () => {
     setMobileSearchMenu(false)
   }
 
+  let goToItem = useCallback(e => {
+    navigate('/' + e.currentTarget.dataset.id)
+  },[])
+
   return (
     <Fragment>
       <div className="header-left">
@@ -154,7 +159,7 @@ let HeaderLeft = () => {
 
                 return (
                   <li className="search-result-item" key={index} onClick={() => { setHasSearchResult(false); setMobileSearchMenu(false) }}>
-                    <Link to={'/' + item._id}>
+                    <div data-id={item._id} onClick={goToItem.bind(this)}>
                       <div className="user-profile-pic">
                         <UserPP profilePic={item.profilePic} profile={item._id}></UserPP>
                       </div>
@@ -163,7 +168,7 @@ let HeaderLeft = () => {
 
                       </div>
 
-                    </Link>
+                    </div>
                   </li>
                 )
 

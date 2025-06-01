@@ -154,10 +154,10 @@ const ChatBox = (props) => {
                         <div className='chat-message'> Message Receive </div>
                         <div className='chat-message-options'>
                             <div className='chat-message-options-button reply'> 
-                                <i class="fas fa-reply"></i>
+                                <i className="fas fa-reply"></i>
                             </div>
                             <div className='chat-message-options-button reply'> 
-                                <i class="fas fa-ellipsis-v"></i>
+                                <i className="fas fa-ellipsis-v"></i>
                             </div>
                         </div>
                         <div className='chat-message-seen-status'>
@@ -169,10 +169,10 @@ const ChatBox = (props) => {
                         <div className='chat-message-container message-receive'>
                         <div className='chat-message-options'>
                                     <div className='chat-message-options-button reply'> 
-                                        <i class="fas fa-reply"></i>
+                                        <i className="fas fa-reply"></i>
                                     </div>
                                     <div className='chat-message-options-button reply'> 
-                                        <i class="fas fa-ellipsis-v"></i>
+                                        <i className="fas fa-ellipsis-v"></i>
                                     </div>
                                 </div>
                             <div className='chat-message'> Message Receive </div>

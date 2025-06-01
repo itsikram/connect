@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useState, useRef, useCallback } from "react
 import UserPP from "../UserPP";
 import api from "../../api/api";
 import { useSelector } from "react-redux";
-import { Link, useParams, useLocation } from "react-router-dom";
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import socket from "../../common/socket";
 import Moment from "react-moment";
 import MsgListSkleton from "../../skletons/message/MsgListSkleton";
@@ -36,29 +36,35 @@ const MessageList = () => {
     let myProfile = useSelector(state => state.profile)
     let myId = myProfile._id
     let myContacts = useSelector(state => state.message)
+    let navigate = useNavigate();
     useEffect(() => {
+
+        if(myContacts.length == 0) return;
 
         myContacts && myContacts.map((contact, index) => {
 
             setContactPerson(contact.person)
             setContactMessages(contact.messages)
 
-            socket.emit('is_active', { profileId: contactPerson._id, myId: profileId })
+            // alert(contactPerson._id)
+            // alert(contact?.person._id)
+            socket.emit('is_active', { profileId: contact?.person._id, myId: profileId })
             socket.on('is_active', (isUserActive, lastLogin, activeProfileId) => {
-                if (isUserActive == true) {
+                if (isUserActive === true) {
+                    // alert(activeProfileId)
                     if (!activeFriends.includes(activeProfileId)) {
                         return setActiveFriends([...activeFriends, activeProfileId])
                     }
                 }
 
             })
-            return () => socket.off('is_active');
+            // return () => socket.off('is_active');
 
         })
 
         return () => socket.off('is_active');
 
-    }, [])
+    }, [myContacts])
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -74,7 +80,7 @@ const MessageList = () => {
 
     let markAllMsgAsRead = useCallback(async (e) => {
         return;
-    })
+    },[])
 
     let handleMsgOptionClick = useCallback(async (e) => {
         // if (messageOption) {
@@ -82,7 +88,11 @@ const MessageList = () => {
 
         // }
         setMessageOption(!messageOption)
-    })
+    },[])
+
+    let goToLink = useCallback(e => {
+        navigate(`/message/${e.currentTarget.dataset.id}`)
+    }, [])
 
 
     let MessageOptionMenu = () => {
@@ -134,9 +144,9 @@ const MessageList = () => {
                                 let contactPerson = (contactItem.person)
                                 let contactMessages = (contactItem.messages || [])
                                 let authorFullName = contactPerson?.fullName
-                                let isMsgSeen = (contactMessages[0] ? (contactMessages[0].senderId == myId ? true : contactMessages[0].isSeen) : false)
+                                let isMsgSeen = (contactMessages[0] ? (contactMessages[0].isSeen && contactMessages[0].receiverId == myId ? true : contactMessages[0].isSeen) : true)
                                 let isFrndActive = activeFriends.includes(contactPerson._id)
-                                return <Link key={index} style={{ textDecoration: 'none' }} to={`/message/${contactPerson._id}`}>
+                                return <div key={index} style={{ textDecoration: 'none' }} data-id={contactPerson._id} onClick={goToLink.bind(this)}>
                                     <li className={`message-list-item ${isMsgSeen ? 'message-seen' : 'message-unseen'} ${contactPerson._id == params.profile ? 'active' : ''}`}>
                                         <div className={"user-profilePic"}>
                                             <UserPP profilePic={contactPerson.profilePic} profile={contactPerson._id} active={isFrndActive}></UserPP>
@@ -148,7 +158,7 @@ const MessageList = () => {
                                                 {contactMessages && contactMessages.length > 0 ? (<span className={"last-msg-time"}>| <Moment fromNow>{contactMessages && contactMessages[0].timestamp}</Moment></span>) : <></>}
                                             </p>
                                         </div>
-                                    </li></Link>
+                                    </li></div>
 
                             }) : <MsgListSkleton count={5} /> // <h4 className={"data-not-found"}>No Message List to Show</h4>
                         }

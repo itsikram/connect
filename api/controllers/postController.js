@@ -114,8 +114,46 @@ exports.sharePost = async (req, res, next) => {
                     shares: profileId
                 }
             })
+
+            let getPost = await Post.findOne({ _id: savedPost._id }).populate([
+                {
+                    path: 'author',
+                    model: Profile,
+                    populate: {
+                        path: 'user'
+                    }
+                },
+                {
+                    path: 'parentPost',
+                    model: Post,
+                    populate: [{
+                        path: 'author',
+                        model: Profile
+                    }, {
+                        path: 'author.user'
+                    }]
+                },
+                {
+                    path: 'comments',
+                    model: Comment,
+                    populate: [{
+                        path: 'author',
+                        select: ['profilePic', 'user'],
+                        populate: {
+                            path: 'user',
+                            select: ['firstName', 'surname']
+                        }
+                    }, {
+                        path: 'replies',
+                        Model: CmntReply,
+                        populate: {
+                            path: 'author',
+                            model: Profile
+                        }
+                    }]
+                }]).sort({ 'createdAt': -1 })
             if (updatePost) {
-                return res.status(200).json({ message: 'Post Shared Succesfully', post: savedPost })
+                return res.status(200).json({ message: 'Post Shared Succesfully', post: getPost })
 
             }
         }
@@ -247,16 +285,16 @@ exports.getSinglePost = async (req, res, next) => {
     }
 }
 
-exports.updatePost = async(req,res,next) => {
-    let {postId, caption} = req.body
+exports.updatePost = async (req, res, next) => {
+    let { postId, caption } = req.body
 
-    console.log(postId,caption)
+    console.log(postId, caption)
     try {
-        let updatedPost = await Post.findOneAndUpdate({_id: postId}, {
+        let updatedPost = await Post.findOneAndUpdate({ _id: postId }, {
             caption
-        }, {new: true})
+        }, { new: true })
 
-        res.json({message: 'Caption Updated Successfully'}).status(200)
+        res.json({ message: 'Caption Updated Successfully' }).status(200)
     } catch (error) {
         next(error)
     }

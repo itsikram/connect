@@ -48,7 +48,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
 
     let handleMicrophoneClick = useCallback(() => {
         setIsMicrophone(!isMicrophone)
-    })
+    },[])
 
     let closeVideoCall = e => {
         return;
@@ -160,7 +160,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
         let receiverId = e.currentTarget.dataset.id
         setReceiverId(receiverId)
         playCallingBeep();
-    })
+    },[socket])
 
     let handleLeaveCall = useCallback(() => {
         stopCallingBeep();
@@ -184,7 +184,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
             connectionRef.current = null;
         }
 
-    })
+    },[Date.now()])
 
 
     const startVideo = () => {
@@ -251,7 +251,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
 
     let handleBumpBtnClick = useCallback((e) => {
         socket.emit('bump', friendProfile, profile)
-    })
+    },[Date.now()])
 
     useEffect(() => {
         if (room) {
@@ -332,7 +332,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
         if (blockRes.status == 200) {
             alert('User Blocked')
         }
-    })
+    },[])
     let handleUnBlockUser = useCallback(async (e) => {
         let blockRes = await api.post('friend/unblock', { friendId })
         if (blockRes.status == 200) {
@@ -364,13 +364,44 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
                         <>
                             <div className='chat-header-user-info'>
                                 <h4 className='chat-header-username'> {`${friendProfile == true ? (friendProfile?.fullName || '') : friendProfile.user && friendProfile.user.firstName + ' ' + friendProfile.user.surname}`}</h4>
-                                {
-                                    emotion ? (<span className='chat-header-active-status text-capitalized'>{emotion}</span>) : <>
-                                     {lastSeen && <span className='chat-header-active-status text-capitalized'>Last Seen: {lastSeen}</span>}
-                                    </>
-                                }
 
-                            </div>
+                                {
+
+                                    isMobile ?
+                                        <>
+
+                                            {
+                                                emotion ? (<span className='chat-header-active-status text-capitalized'>{emotion}</span>)
+
+
+
+                                                    :
+
+                                                    (<>
+                                                        {lastSeen && <span className='chat-header-active-status text-capitalized'>Last Seen: {lastSeen}</span>}
+
+                                                    </>)
+
+
+                                            }
+
+
+                                        </>
+
+
+                                        : (
+                                            <>
+
+                                                {
+                                                    emotion && (<span className='chat-header-active-status text-capitalized'>{emotion} |</span>)}
+
+                                                {lastSeen && <span className='chat-header-active-status text-capitalized'> Last Seen: {lastSeen}</span>}
+
+
+                                            </>
+                                        )
+
+                                } </div>
                         </>
                         :
                         <>
@@ -441,7 +472,7 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
                                 callAccepted && <>
                                     <button onClick={handleMicrophoneClick.bind(this)} className='call-button-microphone call-button'>
                                         {
-                                            isMicrophone ? <i className="fa fa-microphone"></i> : <i class="fa fa-microphone-slash"></i>
+                                            isMicrophone ? <i className="fa fa-microphone"></i> : <i className="fa fa-microphone-slash"></i>
                                         }
                                     </button>
                                     <button onClick={handleSwitchClick.bind(this)} className='call-button-switch call-button'>

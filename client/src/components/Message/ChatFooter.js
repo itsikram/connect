@@ -7,7 +7,7 @@ import { loadSettings } from '../../services/actions/settingsActions';
 import { sendMessage } from '../../services/actions/messageActions';
 import EmojiPicker from 'emoji-picker-react';
 
-const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatNewAttachment, messageActionButtonContainer, setIsReplying, userId, messageInput, replyData, setReplyData, isPreview, setIsPreview, msgListRef }) => {
+const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatNewAttachment, messageActionButtonContainer, setIsReplying, userId, messageInput, replyData,messages, setReplyData, isPreview, setIsPreview, msgListRef }) => {
 
     const dispatch = useDispatch()
     const [mInputWith, setmInputWith] = useState(true);
@@ -17,11 +17,12 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
     const [isImojiChangeContainer, setIsEmojiChangeContainer] = useState(false)
     const [actionEmoji, setActionEmoji] = useState('👍')
     const imageInput = useRef(null);
+    const uploadFileInput = useRef(null);
     const settings = useSelector(state => state.setting)
 
     useEffect(() => {
         setActionEmoji(settings.actionEmoji || '👍')
-    },[settings])
+    }, [settings])
     const scrollToLastMessage = e => {
         if (msgListRef?.current != null || msgListRef?.current != undefined) {
             let isLastMsg = setInterval(() => {
@@ -77,7 +78,7 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
         setAttachmentUrl('')
         setReplyData({ messageId: null, body: null })
         setIsPreview(false)
-    })
+    },[messages,inputValue,attachmentUrl])
 
 
 
@@ -131,7 +132,7 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
     }
 
 
-    let handleMessageImageButtonClick = async (e) => {
+    let handleMessageImageButtonClick = useCallback(async (e) => {
         let clickEvent = new MouseEvent('click', { bubbles: true, cancelable: false })
         let attachmentInput = document.createElement('input')
         attachmentInput.type = 'file'
@@ -164,7 +165,7 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
             attachmentInput.dispatchEvent(clickEvent)
         }
 
-    }
+    },[attachmentUrl,isPreview])
 
     let handleMessageImageChange = async (e) => {
 
@@ -172,16 +173,16 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
 
     let handleEmojiBtnClick = useCallback(() => {
         setIsEmojiContainer(true)
-    })
+    },[isImojiContainer])
 
     let emojiChangeClick = useCallback(() => {
         setIsEmojiChangeContainer(true)
-    })
+    },[isImojiChangeContainer])
 
     let handleEmojiClick = useCallback(emojiObj => {
 
         setInputValue(inputValue + emojiObj.emoji)
-    })
+    },[inputValue])
 
     let handleEmojiChangeClick = useCallback(emojiObj => {
 
@@ -190,7 +191,42 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
         setIsEmojiContainer(false)
         updateActionEmojiChange(emojiObj.emoji)
         // setInputValue(inputValue + emojiObj.emoji)
-    })
+    },[])
+
+
+    let handleAttachmentButtonClick = useCallback(e => {
+        uploadFileInput.current.dispatchEvent(new MouseEvent('click', {
+            bubbles: true
+        }))
+    }, [attachmentUrl])
+
+    let handleFileChange = useCallback(async (e) => {
+
+        let rawFile = e.target.files[0]
+        if (rawFile) {
+            let rawFile = new FormData();
+            rawFile.append('file', rawFile)
+            setAttachmentUrl('https://res.cloudinary.com/dz88yjerw/image/upload/v1743092084/i5lcu63atrbkpcy6oqam.gif')
+            // setIsPreview(true)
+
+            let uploadAttachmentRes = await api.post('/upload/file', rawFile, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+
+            console.log('fu res', uploadAttachmentRes)
+
+            if (uploadAttachmentRes.status === 200) {
+                let attachmentUrl = uploadAttachmentRes.data.secure_url;
+                if (attachmentUrl) {
+                    setAttachmentUrl(attachmentUrl)
+                }
+            }
+
+        }
+
+    },[socket])
 
     let emogiListContainer = useRef(null)
     let emogiChangeContainer = useRef(null)
@@ -220,12 +256,12 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
     }, []);
 
 
-    let updateActionEmojiChange = useCallback(async(emoji) => {
+    let updateActionEmojiChange = useCallback(async (emoji) => {
         let updateSetting = await api.post('setting/update', { actionEmoji: emoji })
         if (updateSetting.status == 200) {
             dispatch(loadSettings(updateSetting.data))
         }
-    })
+    },[settings])
 
 
     return (
@@ -262,8 +298,9 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
                     <div ref={chatNewAttachment} className='chat-new-attachment'>
                         <div className='chat-atachment-button-container'>
 
-                            <div className='chat-attachment-button'>
+                            <div className='chat-attachment-button' onClick={handleAttachmentButtonClick.bind(this)}>
                                 <i className="fas fa-plus-circle"></i>
+                                <input type='file' name='uploaded_file' onChange={handleFileChange.bind(this)} ref={uploadFileInput} style={{ display: 'none' }} />
                             </div>
 
                             <div className='chat-attachment-button' onClick={handleMessageImageButtonClick.bind(this)}>
@@ -276,7 +313,7 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
                             </div> */}
 
                             <div onClick={handleEmojiBtnClick.bind(this)} className='message-action-emoji-container chat-attachment-button'>
-                                <i style={{color: '#F4D52F'}} className="fas fa-smile-beam"></i>
+                                <i style={{ color: '#F4D52F' }} className="fas fa-smile-beam"></i>
 
                                 {
                                     isImojiContainer && <>

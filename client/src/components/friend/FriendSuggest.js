@@ -28,6 +28,8 @@ let FriendsSuggest = () => {
         })
     }, [myProfile._id])
 
+    console.log('frnds',friends)
+
     useEffect(() => { }, [])
 
     return (
@@ -44,6 +46,10 @@ let FriendsSuggest = () => {
                                 {
 
                                     friends.map((friend, index) => {
+
+                                        if(!friend.user) {
+                                            return <></>
+                                        }
 
                                         if (myProfile.friendReqs && myProfile.friendReqs.includes(friend._id)) {
                                             return <FGI key={index} profileReqs={friend.friendReqs} type="req" id={friend._id} profilePic={friend.profilePic} fullName={friend.user.firstName + ' ' + friend.user.surname}></FGI>

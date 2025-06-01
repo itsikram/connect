@@ -14,7 +14,7 @@ const SingleImage = ({ imageData, setImageIndex, setIsLightbox, imageIndex }) =>
     let handleImageClick = useCallback((e) => {
         setIsLightbox(true)
         setImageIndex(imageIndex)
-    })
+    },[])
 
     return (
 

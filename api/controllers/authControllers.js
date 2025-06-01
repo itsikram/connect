@@ -146,7 +146,7 @@ exports.changeEmail = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
     let password = req.body.password;
-    let email = (req.body.email).toLowerCase();
+    let email = (req.body.email)?.toLowerCase();
 
     try {
 

@@ -17,7 +17,7 @@ const MessageSetting = () => {
         if (updateSetting.status == 200) {
             dispatch(loadSettings(updateSetting.data))
         }
-    })
+    },[])
 
     let handleShowTypingChange = useCallback(async(e) => {
         let isChecked = e.currentTarget.checked
@@ -25,7 +25,7 @@ const MessageSetting = () => {
         if (updateSetting.status == 200) {
             dispatch(loadSettings(updateSetting.data))
         }
-    })
+    },[])
 
     return (
         <>

@@ -98,11 +98,11 @@ let SignUP = () => {
         } catch (e) {
             console.log(e)
         }
-    })
+    },[inputs])
 
     let handlePortfolioClick = useCallback(e => {
         navigate('/portfolio')
-    })
+    },[])
 
 
     return (
@@ -120,7 +120,7 @@ let SignUP = () => {
                         </div>
                         <div className="form-group">
                             <input onChange={handleChange} name="email" className="email field" type="text" placeholder="Email address or phone number" />
-                            <div class="invalid-feedback pb-2 fw-bold">
+                            <div className="invalid-feedback pb-2 fw-bold">
                                 Please provide a valid email.
                             </div>
                         </div>
@@ -129,7 +129,7 @@ let SignUP = () => {
                         <div className="input-group">
                             <input onChange={handleChange} ref={cnfmPass} name="confirmPassword" type="password" className="confirm-password field" placeholder="Confirm Password" />
 
-                            <div class="invalid-feedback pb-2 fw-bold">
+                            <div className="invalid-feedback pb-2 fw-bold">
                                 Please Match Password With Confirm Password.
                             </div>
                         </div>

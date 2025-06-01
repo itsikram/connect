@@ -6,7 +6,6 @@ exports.getSetting = async(req,res,next) => {
     let settings = await Setting.findOne({profile: profileId})
 
     if(settings) {
-        console.log('all setings',settings)
 
         res.json(settings).status(200)
     }

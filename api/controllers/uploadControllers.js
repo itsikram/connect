@@ -52,6 +52,17 @@ exports.uploadVideo = async (req, res, next) => {
 };
 
 
-exports.getPost = async (req, res, next) => {
+exports.uploadFile = async (req, res, next) => {
+
+    try {
+        // return console.log(req.file)
+
+        res.json({
+            url: req.file.path, // the cloudinary URL
+            public_id: req.file.filename, // public ID for deletion
+        }).status(200);
+    } catch (err) {
+        res.status(500).json({ error: 'Upload failed' });
+    }
 
 }

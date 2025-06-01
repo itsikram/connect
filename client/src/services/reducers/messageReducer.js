@@ -1,4 +1,4 @@
-import { ADD_MESSAGE, ADD_MESSAGES, NEW_MESSAGE,SEND_MESSAGE,SEEN_MESSAGE } from "../constants/messageConsts";
+import { ADD_MESSAGE, ADD_MESSAGES, NEW_MESSAGE, SEND_MESSAGE, SEEN_MESSAGE } from "../constants/messageConsts";
 let initialState = []
 const messageReducer = (state = initialState, action) => {
     switch (action.type) {
@@ -43,24 +43,28 @@ const messageReducer = (state = initialState, action) => {
             let otherContacts = state.filter(state => state.person._id !== contactId)
 
             let updatedContact = state.filter(state => state.person._id === contactId)
-            updatedContact.messages = [newMsg]
-            console.log(updatedContact)
+
+            updatedContact[0].messages = [newMsg]
             return [
                 ...updatedContact,
                 ...otherContacts,
             ];
-            
+
             break;
 
-            case SEEN_MESSAGE: 
+        case SEEN_MESSAGE:
 
             let seenContactId = action.payload.contactId
+            // alert('s m'+seenContactId)
 
             let usOtherContacts = state.filter(state => state?.person?._id !== seenContactId)
 
             let seenContact = state.filter(state => state.person._id === seenContactId)
-            if(seenContact.messages) {
-                seenContact.messages[0].isSeen = true
+
+            if (seenContact.length > 0 && seenContact[0]?.messages.length > 0) {
+                console.log('s c', seenContact[0].messages[0])
+
+                seenContact[0].messages[0].isSeen = true
 
             }
 

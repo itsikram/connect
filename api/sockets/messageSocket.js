@@ -1,27 +1,11 @@
 const { isValidObjectId } = require('mongoose');
 const Message = require('../models/Message')
 const Profile = require('../models/Profile')
-const User = require('../models/User')
-const axios = require('axios');
+const checkIsActive = require('../utils/checkIsActive')
 
-let sendEmailNotification = async(email, message, senderName, senderPP) => {
 
-    try {
-        const response = await axios.post('https://programmerikram.com/wp-json/connect/v1/send-mail', {
-          name: senderName,
-          email,
-          message,
-          subject: `New message from ${senderName} On Connect`,
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-    
-      } catch (err) {
-        console.error('Error sending mail:', err.response?.data || err.message);
-      }
-}
+const sendEmailNotification = require('../utils/sendEmailNotification')
+
 module.exports = function messageSocket(io, socket) {
 
     socket.on('fetchMessages', async (profileId) => {
@@ -36,8 +20,8 @@ module.exports = function messageSocket(io, socket) {
         if (myProfile?.friends !== null) {
             for (const friendProfile of myProfile.friends) {
                 const messages = await Message.find({
-                    senderId: profileId,
-                    receiverId: friendProfile._id
+                    senderId: friendProfile._id,
+                    receiverId: profileId
                 }).limit(1).sort({ timestamp: -1 })
 
                 profileContacts.push({ person: friendProfile, messages })
@@ -133,28 +117,18 @@ module.exports = function messageSocket(io, socket) {
         if (!profileData) return;
         let senderName = profileData.user?.firstName + ' ' + profileData.user?.surname;
         let senderPP = profileData.profilePic || 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
-        io.to([receiverId,room]).emit('newMessage', {updatedMessage, senderName, senderPP});
+        io.to(room).emit('newMessage', {updatedMessage, senderName, senderPP});
+        io.to(receiverId).emit('newMessage', {updatedMessage, senderName, senderPP});
 
-        let isActive = false
+        let receiverProfile = await Profile.findById(receiverId).populate('user')
 
-        let profile;
-        if (receiverId) {
-            profile = await Profile.findById(receiverId).populate('user');
+        let {isActive , lastLogin} = await checkIsActive(receiverId)
 
-            if (profile.user.lastLogin) {
-                userLastLogin = new Date(profile.user.lastLogin).getTime();
-            }
-        }
-        let currentTime = Date.now()
-
-        const diff = Math.abs(userLastLogin - currentTime);
-        const fiveMinutes = 5 * 60 * 1000;
-        if (diff > fiveMinutes) {
-            let receiverEmail = profile.user.email;
-            sendEmailNotification(receiverEmail, updatedMessage.message, senderName, senderPP);
-        } else {
-            isActive = true;
-        }
+         if(!isActive) {
+            let receiverEmail = receiverProfile.user.email;
+            return sendEmailNotification(receiverEmail, null, updatedMessage.message, senderName, senderPP);
+         }
+       
     });
 
     socket.on('emotion_change', async ({ profileId, emotion, friendId }) => {
@@ -178,7 +152,6 @@ module.exports = function messageSocket(io, socket) {
 
     socket.on('seenMessage', async (message) => {
         // let msgId = message._id;
-
         if (message?._id) {
             let msg = await Message.findOneAndUpdate({ _id: message._id }, { isSeen: true }, { new: true });
             if (msg) {

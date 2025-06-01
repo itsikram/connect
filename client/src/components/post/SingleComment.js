@@ -125,7 +125,7 @@ const SingleComment = ({ comment, postData, myProfile, isEditMode }) => {
 
     let handleCommentChange = useCallback((e) => {
         setUpdatedComment(e.target.value)
-    })
+    },[])
 
     let handleUpdateComment = useCallback(async (e) => {
         let res = await api.post('comment/updateComment', { commentId: comment._id, body: updatedComment })
@@ -138,7 +138,7 @@ const SingleComment = ({ comment, postData, myProfile, isEditMode }) => {
 
     let editCommentClick = useCallback(e => {
         setIsEdit(!isEdit)
-    })
+    },[])
 
 
     return (

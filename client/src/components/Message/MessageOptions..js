@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 import SingleMedia from './SingleMedia';
 import Lightbox from './Lightbox';
 const MessageOptions = () => {
-    let [messageMedias, setMessageMedias] = useState([])
     let [images, setImages] = useState([])
     let [isLightBox, setIsLightbox] = useState(false);
     let [imageIndex, setImageIndex] = useState(0);
@@ -13,9 +12,10 @@ const MessageOptions = () => {
     let params = useParams()
     useEffect(() => {
 
+        setImages([])
+
         api.get(`message/media/?profileId=${params.profile}`).then((res) => {
             console.log('data', res.data)
-            setMessageMedias(res.data)
             setImages([...res.data.map((media) => media.attachment)])
         })
 
@@ -31,6 +31,7 @@ const MessageOptions = () => {
                     <ResponsiveMasonry>
                         <Masonry columnsCount={2} gutter="10px">
                             {images && images.map((image, index) => (
+
                                 <SingleMedia setIsLightbox={setIsLightbox} setImageIndex={setImageIndex} images={images} key={index} index={index} src={image} />
 
                             ))}

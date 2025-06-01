@@ -3,6 +3,7 @@ const { notificationSocket } = require('../controllers/notificationController')
 const Profile = require('../models/Profile')
 const User = require('../models/User')
 const Post = require('../models/Post')
+const checkIsActive = require('../utils/checkIsActive')
 // const faceapi = require('face-api.js');
 // const canvas = require('canvas');
 // const { Canvas, Image, ImageData } = canvas;// const tf = require('@tensorflow/tfjs-node');
@@ -63,33 +64,20 @@ module.exports = function socketHandler(io) {
 
         socket.on('update_last_login', async function (userId) {
             if (!userId) return;
-            await User.findOneAndUpdate({ _id: userId }, { lastLogin: new Date(Date.now()).getTime() }, { new: true });
+            console.log('updated last login')
+            let updatedUser = await User.findOneAndUpdate({ _id: userId }, { lastLogin: Date.now() }, { new: true });
         })
         socket.on('is_active', async (data) => {
-            let isActive = false
-            let userLastLogin = false;
             let profileId = data.profileId
-            if (profileId && profileId.length < 5) return;
+            if (!profileId || profileId.length < 5) return;
             let myId = data.myId
+            let {
+            isActive,
+            lastLogin
+        } = await checkIsActive(profileId) 
 
-            if (profileId) {
-                let profile = await Profile.findById(profileId).populate('user');
-
-                if (profile.user.lastLogin) {
-                    userLastLogin = new Date(profile.user.lastLogin).getTime();
-                }
-            }
-            let currentTime = Date.now()
-
-            const diff = Math.abs(userLastLogin - currentTime);
-            const fiveMinutes = 5 * 60 * 1000;
-            if (diff > fiveMinutes) {
-                isActive = false
-            } else {
-                isActive = true;
-            }
-            // console.log(profileId,isActive);
-            return io.to(myId).emit('is_active', isActive, userLastLogin, profileId);
+            console.log(profileId,isActive);
+            return io.to(myId).emit('is_active', isActive, lastLogin, profileId);
         })
 
         socket.on('disconnect', () => {

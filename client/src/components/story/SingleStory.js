@@ -183,13 +183,13 @@ const SingleStory = (props) => {
 
                                     <span className='option-button reacts'>
                                         <Link to='reacts'>
-                                        <i class="fa fa-heart"></i>
+                                        <i className="fa fa-heart"></i>
 
                                         </Link>
                                     </span>
                                     <span className='option-button comments'>
                                         <Link to='comments'>
-                                        <i class="fa fa-comments"></i>
+                                        <i className="fa fa-comments"></i>
 
                                         </Link>
                                     </span>
