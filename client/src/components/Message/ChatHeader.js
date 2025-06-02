@@ -39,7 +39,6 @@ const ChatHeader = ({ friendProfile, isActive, room, lastSeen, friendProfilePic 
     const callEndBtn = useRef();
     const callingBeepAudio = useRef();
     const isMobile = useIsMobile();
-    const params = useParams();
     const navigate = useNavigate();
     const settings = useSelector(state => state.setting);
     const profile = useSelector(state => state.profile);

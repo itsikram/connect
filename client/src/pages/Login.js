@@ -7,15 +7,19 @@ import { useCallback } from "react";
 import { setLogin } from "../services/actions/authActions";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useJwt } from "react-jwt";
 let Login = (props) => {
 
-    let dispatch = useDispatch();
     let navigate = useNavigate();
-    let {token} = useSelector(state => state.auth)
+
+    const user = localStorage.getItem("user") || '{}';
+    const userJson = JSON.parse(user);
+    //   const { isExpired } = useJwt();
 
     useEffect(() => {
-        if(token) navigate('/')
-    },[token])
+        // alert('ie'+isExpired)
+        if (userJson.accessToken) navigate('/')
+    }, [userJson])
     let showSignup = (e) => {
         return navigate('/signup')
 
@@ -43,23 +47,28 @@ let Login = (props) => {
 
             if (res.status === 202) {
                 let userData = JSON.stringify(res.data);
-                dispatch(setLogin(res.data.accessToken))
                 localStorage.setItem('user', userData)
-                navigate('/')
+                // dispatch(setLogin(res.data.accessToken))
                 window.location.reload()
+
+
+                // setTimeout(() => {
+                //     // navigate('/')
+                // }, 1000)
+
             } else {
                 // alert(res.data.message)
-                setError({message: res.data.message})
+                setError({ message: res.data.message })
             }
 
         } catch (error) {
             console.log(error)
         }
-    },[inputs])
+    }, [inputs])
 
     let handlePortfolioClick = useCallback(e => {
         navigate('/portfolio')
-    },[])
+    }, [])
 
 
     return (

@@ -69,7 +69,7 @@ const ProfileSetting = () => {
 
             );
         }
-    },[])
+    },[settings])
     const [workPlaces, setWorkPlaces] = useState([{}]);
     const [schools, setSchools] = useState([{}]);
 

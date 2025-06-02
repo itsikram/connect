@@ -88,7 +88,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
         if (updatedNotification.status == 200) {
             dispatch(viewNotification(notificationId))
         }
-    },[])
+    },[notificaitonData])
 
     let handleNotificationToggleClick = useCallback(async () => {
         if (notificationOption == true) {
@@ -98,7 +98,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
             setNotificationOption(true)
 
         }
-    },[])
+    },[notificationOption])
 
     let markAllAsRead = useCallback(async (e) => {
 
@@ -115,7 +115,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
         })
 
 
-    },[])
+    },[notificaitonData])
 
     let handleNotiDelete = useCallback(async (e) => {
         let deletedNotification = await api.post('/notification/deleteall', { profile: profileData._id })
@@ -124,7 +124,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
             setIsNotificationMenu(false)
         }
 
-    },[])
+    },[notificaitonData])
 
 
     useEffect(() => {
@@ -175,7 +175,7 @@ let HeaderRight = ({ dispatch, useSelector }) => {
     let logOutBtn = (e) => {
         // navigate('/login')
         localStorage.removeItem('user')
-        dispatch(logOut())
+        // dispatch(logOut())
         window.location.reload();
     }
     return (

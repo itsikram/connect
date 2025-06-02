@@ -5,7 +5,7 @@ import api from '../../api/api';
 
 const AccountSetting = () => {
     let myProfile = useSelector(state => state.profile)
-    let [data, setData] = useState({ userEmail: myProfile.user && myProfile.user.email })
+    let [data, setData] = useState({ userEmail: myProfile?.user && myProfile.user.email })
     let [editEmail, setEditEmail] = useState(false)
     let handleInputChange = useCallback(async (e) => {
         let name = e.target.id;
@@ -30,14 +30,14 @@ const AccountSetting = () => {
             if (emailChangeRes.status == 200) {
                 let updatedUser = JSON.stringify(emailChangeRes.data);
                 localStorage.setItem('user', updatedUser)
-                window.location.reload()
+                return window.location.reload()
 
             }
 
         }
 
 
-        if (data.confirmPassword.length < 2) return;
+        if (data.confirmPassword && data.confirmPassword.length < 2) return;
 
         if (data.newPassword !== data.confirmPassword) {
             return alert('Your New password and Confirm Password is not same')
@@ -54,7 +54,7 @@ const AccountSetting = () => {
             localStorage.setItem('user', updatedUser)
             window.location.reload()
         }
-    },[])
+    },[data])
 
     let deleteAccount = useCallback(async (e) => {
         e.preventDefault();
@@ -65,12 +65,12 @@ const AccountSetting = () => {
             alert(deletedAccountRes.data.message)
             window.location.reload();
         }
-    },[])
+    },[myProfile])
 
     let handleEditEmailClick = useCallback((e) => {
         e.preventDefault();
         setEditEmail(!editEmail)
-    },[])
+    },[editEmail])
 
     return (
         <>

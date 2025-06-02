@@ -15,9 +15,8 @@ function App() {
   const dispatch = useDispatch();
   const user = localStorage.getItem("user") || '{}';
   const userJson = JSON.parse(user);
-  const { isExpired } = useJwt(userJson.accessToken);
+  const { isExpired } = useJwt(userJson.accessToken || null);
 
-  // ✅ Move dispatch to useEffect
   useEffect(() => {
     if (userJson.accessToken) {
       dispatch(setLogin(userJson.accessToken));

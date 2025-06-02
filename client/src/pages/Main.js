@@ -92,7 +92,7 @@ const Main = () => {
     const dispatch = useDispatch();
     let { token } = useSelector(state => state.auth)
     const isLoading = useSelector(state => state.option.isLoading);
-    const settings = useSelector(state => state.setting)
+    // const settings = useSelector(state => state.setting)
     const params = useParams();
     const audioElement = useRef(null)
 
@@ -242,16 +242,16 @@ const Main = () => {
 
         if (window.location.pathname == '/') {
         } else {
-            // dispatch(setLoading(false))
+            dispatch(setLoading(false))
         }
 
 
 
-    }, [params, token])
+    }, [params, token, dispatch])
 
     useEffect(() => {
 
-        if(!isTabActive) return
+        if (!isTabActive) return
         if (userInfo.user_id) {
             socket.emit('update_last_login', userInfo.user_id)
 
@@ -268,7 +268,7 @@ const Main = () => {
         return () => {
             socket.off('update_last_login')
         }
-    },[isTabActive])
+    }, [isTabActive])
 
 
 
