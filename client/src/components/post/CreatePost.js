@@ -361,7 +361,7 @@ let CreatePost = ({ setPosts = null }) => {
                                 <div className="cpm-attachment-control">
                                     <div className="cpm-attachment-preview">
                                         {
-                                            postData.type === 'video' && <video src={postData.urls}></video>
+                                            postData.type === 'video' && <video style={{width: '100%'}} src={postData.urls}></video>
                                         }
 
                                         {postData.type === 'image' && <img src={postData.urls && postData.urls} alt="attachment preview" />

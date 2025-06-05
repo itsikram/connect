@@ -1,6 +1,6 @@
 {
-  "short_name": "Connect",
-  "name": "Connect By Ikramul Islam",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
     {
       "src": "favicon.ico",

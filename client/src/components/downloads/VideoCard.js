@@ -20,7 +20,8 @@ const VideoCard = ({ videoData, videoUrl }) => {
     }
     if(!videoData) return;
     return (
-        <div className='col-md-3'>
+        <div className='col-md-4'>
+            
             <div className='saved-video-card card bg-dark text-white' onClick={gotoSingleVideo}>
 
                 <video className="card-img-top" src={videoUrl} style={{width: '100%'}} />

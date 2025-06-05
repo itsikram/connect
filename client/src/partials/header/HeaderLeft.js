@@ -131,6 +131,10 @@ let HeaderLeft = () => {
     navigate(e.currentTarget.dataset.url)
   }, [])
 
+  function truncateToFourWords(text) {
+  return text.split(/\s+/).slice(0, 4).join(' ');
+}
+
   return (
     <Fragment>
       <div className="header-left">
@@ -212,8 +216,8 @@ let HeaderLeft = () => {
                             <div className="user-profile-pic">
                               <UserPP profilePic={item.author.profilePic} profile={item.author._id}></UserPP>
                             </div>
-                            <div className="user-details">
-                              {item.caption}
+                            <div className="user-details fs-6">
+                              {truncateToFourWords(item.caption)}
 
                             </div>
 
@@ -246,7 +250,7 @@ let HeaderLeft = () => {
                               <UserPP profilePic={item.author.profilePic} profile={item.author._id}></UserPP>
                             </div>
                             <div className="user-details">
-                              {item.caption}
+                              {truncateToFourWords(item.caption)}
 
                             </div>
 
