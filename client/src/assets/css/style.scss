@@ -264,7 +264,8 @@ body {
 
         .call-button-receive {}
 
-        .call-button-microphone,.call-button-camera {
+        .call-button-microphone,
+        .call-button-camera {
             i {
                 color: $pc;
             }
@@ -334,27 +335,47 @@ body {
                     left: 0;
                     padding: 15px;
                     background-color: $profilebg;
-                    list-style: none;
+
                     margin: 0;
                     z-index: 9999;
                     border-radius: 10px;
+
+                    .search-result-title {
+                        font-size: 24px;
+                        font-weight: bold;
+                        text-indent: 5px;
+
+                    }
+
+                    .search-results-user {
+
+                        .search-results-list-container {
+                            list-style: none;
+                            margin: 0;
+                            padding: 0;
+                        }
+                    }
+
+                    .search-results-list-container {
+                        list-style: none;
+                        margin: 0;
+                        padding: 0;
+                    }
 
                     .search-result-item {
                         margin: 10px 0;
                         transition: 0.3s;
                         padding: 5px;
                         border-radius: 5px;
+                        cursor: pointer;
 
-                        a {
-                            text-decoration: none;
-                            color: $tc;
-
+                        .item-container {
                             display: flex;
+                            justify-content: flex-start;
                             align-items: center;
 
-
                             .user-profile-pic {
-                                margin-right: 10px;
+                                margin-right: 5px !important;
 
                             }
 
@@ -365,7 +386,19 @@ body {
                                 color: $tc;
 
                             }
+
+                            a {
+                                text-decoration: none;
+                                color: $tc;
+
+                                display: flex;
+                                align-items: center;
+
+
+
+                            }
                         }
+
 
                     }
 
@@ -2618,10 +2651,18 @@ body {
     }
 }
 
+.saved-videos-container {
+
+    .saved-video-card {
+        
+    }
+}
+
 .setting-page {
     .form-text {
         color: #888 !important;
     }
+
     .setting-groups-container {
         .setting-groups {
             list-style: none;

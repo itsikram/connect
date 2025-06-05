@@ -62,6 +62,11 @@ import SoundSetting from "../components/setting/SoundSetting.js";
 
 import VideoCallPage from "./VideoCallPage.js";
 
+import Youtebe from "./Youtebe.js";
+
+import SingleVideo from "../components/downloads/SingleVideo.js";
+import SavedVideos from "./SavedVideos.js";
+
 
 
 
@@ -292,6 +297,9 @@ const Main = () => {
                     <Routes>
                         <Route path="/">
                             <Route path="video-call" element={<VideoCallPage />}></Route>
+                            <Route path="youtube" element={<Youtebe />}></Route>
+                            <Route path="downloads" element={<SavedVideos />}></Route>
+                            <Route path="downloads/:videoId" element={<SingleVideo />}></Route>
                             <Route path="login" element={<Login />}></Route>
                             <Route path="signup" element={<SignUP />}></Route>
                             {/* <Route path="face" element={<ProtectedRoute><Face /></ProtectedRoute>}></Route> */}

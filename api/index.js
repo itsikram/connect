@@ -14,6 +14,7 @@ const routes = require('./Routes/routes')
 let app = express();
 const socketHandler = require('./sockets/socketHandler')
 const httpServer = createServer(app)
+const path = require('path')
 
 app.use(cors());
 
@@ -35,9 +36,15 @@ routes(app)
 
 app.set('io',io)
 
-app.get('/', async (req, res) => {
-  return res.json({ message: 'workign fine' });
-})
+app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+// app.get('/', async (req, res) => {
+//   return res.json({ message: 'workign fine' });
+// })
 
 // Root route should serve index.html
 

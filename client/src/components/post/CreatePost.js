@@ -360,7 +360,12 @@ let CreatePost = ({ setPosts = null }) => {
                                 </div>
                                 <div className="cpm-attachment-control">
                                     <div className="cpm-attachment-preview">
-                                        <img src={postData.urls && postData.urls} alt="attachment preview" />
+                                        {
+                                            postData.type === 'video' && <video src={postData.urls}></video>
+                                        }
+
+                                        {postData.type === 'image' && <img src={postData.urls && postData.urls} alt="attachment preview" />
+                                        }
                                     </div>
                                     <div className="cpm-attachment-upload">
                                         <div className="cpm-attachment-upload-overlay">

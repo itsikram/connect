@@ -7,7 +7,7 @@ const CmntReply = require('../models/CmntReply')
 const mongoose = require('mongoose')
 const Post = require('../models/Post')
 
-exports.createWatch = async(req,res,next) => {
+exports.createWatch = async (req, res, next) => {
     let profileId = req.profile._id
     let caption = req.body.caption
     let videoUrl = req.body.videoUrl
@@ -33,16 +33,16 @@ exports.createWatch = async(req,res,next) => {
 
 }
 
-exports.deleteWatch = async (req,res,next) => {
+exports.deleteWatch = async (req, res, next) => {
     try {
         let profileId = req.profile._id
         let watchId = req.body.watchId
         let authorId = req.body.authorId;
-         
-        if(profileId == authorId) {
-            let deleteWatch = await Watch.findOneAndDelete({_id: watchId})
 
-            if(deleteWatch) {
+        if (profileId == authorId) {
+            let deleteWatch = await Watch.findOneAndDelete({ _id: watchId })
+
+            if (deleteWatch) {
                 res.json({
                     message: 'Watch Deleted Successfully'
                 }).status(200)
@@ -53,13 +53,13 @@ exports.deleteWatch = async (req,res,next) => {
 
 
 
-        
+
     } catch (error) {
         next(error)
     }
 }
 
-exports.getRelatedWatchs = async(req,res,next) => {
+exports.getRelatedWatchs = async (req, res, next) => {
 
     try {
         let profile_id = req.query.profile;
@@ -76,14 +76,14 @@ exports.getRelatedWatchs = async(req,res,next) => {
             {
                 path: 'comments',
                 model: Comment,
-                populate:[ {
+                populate: [{
                     path: 'author',
-                    select: ['profilePic','user'],
+                    select: ['profilePic', 'user'],
                     populate: {
                         path: 'user',
-                        select: ['firstName','surname']
+                        select: ['firstName', 'surname']
                     }
-                },{
+                }, {
                     path: 'replies',
                     Model: CmntReply,
                     populate: {
@@ -91,66 +91,25 @@ exports.getRelatedWatchs = async(req,res,next) => {
                         model: Profile
                     }
                 }]
-            }]).sort({'createdAt': -1})
+            }]).sort({ 'createdAt': -1 })
 
         res.json(watches).status(200)
-        
+
     } catch (error) {
         next(error)
     }
 }
 
-exports.getMyWatchs = async(req,res,next) => {
+exports.getMyWatchs = async (req, res, next) => {
 
     try {
         let profile_id = req.query.profile;
-        if(profile_id == req.profile.username) {
+        if (profile_id == req.profile.username) {
             profile_id = req.profile._id
         }
 
-        if(!mongoose.isValidObjectId(profile_id)) return res.json().status(400)
-        let watchs = await Watch.find({author: profile_id}).populate([
-            {
-                path: 'author',
-                model: Profile,
-                populate: {
-                    path: 'user'
-                }
-            },
-            {
-                path: 'comments',
-                model: Comment,
-                populate:[ {
-                    path: 'author',
-                    select: ['profilePic','user'],
-                    populate: {
-                        path: 'user',
-                        select: ['firstName','surname']
-                    }
-                },{
-                    path: 'replies',
-                    Model: CmntReply,
-                    populate: {
-                        path: 'author',
-                        model: Profile
-                    }
-                }]
-            }]).sort({'createdAt': -1})
-
-        res.json(watchs).status(200)
-        
-    } catch (error) {
-        next(error)
-    }
-}
-
-exports.getSingleWatch= async(req,res,next) => {
-
-    try {
-
-        let {watchId} = req.query
-
-        let watch = await Watch.findOne({_id: watchId}).populate([
+        if (!mongoose.isValidObjectId(profile_id)) return res.json().status(400)
+        let watchs = await Watch.find({ author: profile_id }).populate([
             {
                 path: 'author',
                 model: Profile,
@@ -163,12 +122,53 @@ exports.getSingleWatch= async(req,res,next) => {
                 model: Comment,
                 populate: [{
                     path: 'author',
-                    select: ['profilePic','user'],
+                    select: ['profilePic', 'user'],
                     populate: {
                         path: 'user',
-                        select: ['firstName','surname']
+                        select: ['firstName', 'surname']
                     }
-                },{
+                }, {
+                    path: 'replies',
+                    Model: CmntReply,
+                    populate: {
+                        path: 'author',
+                        model: Profile
+                    }
+                }]
+            }]).sort({ 'createdAt': -1 })
+
+        res.json(watchs).status(200)
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.getSingleWatch = async (req, res, next) => {
+
+    try {
+
+        let { watchId } = req.query
+
+        let watch = await Watch.findOne({ _id: watchId }).populate([
+            {
+                path: 'author',
+                model: Profile,
+                populate: {
+                    path: 'user'
+                }
+            },
+            {
+                path: 'comments',
+                model: Comment,
+                populate: [{
+                    path: 'author',
+                    select: ['profilePic', 'user'],
+                    populate: {
+                        path: 'user',
+                        select: ['firstName', 'surname']
+                    }
+                }, {
                     path: 'replies',
                     Model: CmntReply,
                     populate: {
@@ -177,20 +177,42 @@ exports.getSingleWatch= async(req,res,next) => {
                     }
                 }]
             }
-            
+
         ])
 
-        if(watch) {
+        if (watch) {
             return res.json(watch).status(200)
         }
-        
+
     } catch (error) {
         console.log(error)
     }
 }
 
+exports.updateWatch = async (req, res, next) => {
 
-exports.getProfileWatch = async(req,res,next) => {
+    try {
+
+        let {watchId, caption} = req.body
+
+        let updatedWatch = await Watch.findOneAndUpdate({
+            _id: watchId,
+        }, {
+            caption
+        })
+
+        if(updatedWatch) {
+            return res.json({message: 'Caption Updated'}).status(200)
+        }
+
+    } catch (error) {
+        console.log(error)
+
+    }
+}
+
+
+exports.getProfileWatch = async (req, res, next) => {
     let profile = req.profile
     let pageNumber = req.query.pageNumber
     let limit = 3
@@ -209,12 +231,12 @@ exports.getProfileWatch = async(req,res,next) => {
                 model: Comment,
                 populate: [{
                     path: 'author',
-                    select: ['profilePic','user'],
+                    select: ['profilePic', 'user'],
                     populate: {
                         path: 'user',
-                        select: ['firstName','surname']
+                        select: ['firstName', 'surname']
                     }
-                },{
+                }, {
                     path: 'replies',
                     Model: CmntReply,
                     populate: {
@@ -223,14 +245,14 @@ exports.getProfileWatch = async(req,res,next) => {
                     }
                 }]
             }
-            
-        ]).skip((pageNumber - 1) * limit).limit(limit).sort({'createdAt': -1})
 
-        let nextWatchs = await Watch.find().skip((pageNumber) * limit).limit(limit).sort({'createdAt': -1})
+        ]).skip((pageNumber - 1) * limit).limit(limit).sort({ 'createdAt': -1 })
+
+        let nextWatchs = await Watch.find().skip((pageNumber) * limit).limit(limit).sort({ 'createdAt': -1 })
 
         let hasNewWatch = nextWatchs.length == 0 ? false : true
-        res.json({watchs: newsFeedWatchs, hasNewWatch}).status(200)
-        
+        res.json({ watchs: newsFeedWatchs, hasNewWatch }).status(200)
+
     } catch (error) {
         console.log(error)
         next(error)

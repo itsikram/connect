@@ -10,7 +10,7 @@ const logo_src = 'https://programmerikram.com/wp-content/uploads/2025/05/ics_log
 
 
 let HeaderLeft = () => {
-  let [searchedUsers, setSearchedUsers] = useState([])
+  let [searchedData, setSearchedData] = useState([])
   let [hasSearchResult, setHasSearchResult] = useState(false)
   let [mobileSearchMenu, setMobileSearchMenu] = useState(false)
   let [isMegaMenu, setIsMegaMenu] = useState(false);
@@ -86,7 +86,12 @@ let HeaderLeft = () => {
     }
     // setMobileSearchMenu(false)
     // setSearchedUsers([])
-    setSearchQuery('')
+    // setSearchQuery('')
+    if(searchQuery.length > 0) {
+        return  setHasSearchResult(true)
+
+    }
+    setHasSearchResult(false)
 
 
   }
@@ -99,11 +104,12 @@ let HeaderLeft = () => {
         }
       })
       if (searchResult.status === 200) {
-        setSearchedUsers(searchResult.data)
-        setHasSearchResult(searchResult.data.length > 0)
+        console.log('data', searchResult.data)
+        setSearchedData(searchResult.data)
+        setHasSearchResult(searchResult.data.users !== null || searchResult.data.posts !== null || searchResult.data.videos !== null)
       }
     } else {
-      setSearchedUsers([])
+      setSearchedData([])
       setHasSearchResult(false)
 
     }
@@ -122,8 +128,8 @@ let HeaderLeft = () => {
   }
 
   let goToItem = useCallback(e => {
-    navigate('/' + e.currentTarget.dataset.id)
-  },[])
+    navigate(e.currentTarget.dataset.url)
+  }, [])
 
   return (
     <Fragment>
@@ -153,30 +159,113 @@ let HeaderLeft = () => {
           <i className="fal fa-search header-search-icon" onClick={headerSearchIcon.bind(this)}></i>
           <input value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value) }} onBlur={onSearchFocusOut} onFocus={onSearchFocus} onKeyUp={handleKeyUp.bind(this)} id="header-search" type="search" placeholder="Search ICS"></input>
 
-          {hasSearchResult && (
-            <ul className="header-search-results">
-              {searchedUsers && searchedUsers.map((item, index) => {
+          {hasSearchResult && (<>
+            <div className="header-search-results">
 
-                return (
-                  <li className="search-result-item" key={index} onClick={() => { setHasSearchResult(false); setMobileSearchMenu(false) }}>
-                    <div data-id={item._id} onClick={goToItem.bind(this)}>
-                      <div className="user-profile-pic">
-                        <UserPP profilePic={item.profilePic} profile={item._id}></UserPP>
-                      </div>
-                      <div className="user-details">
-                        {item.fullName}
+              {searchedData.users.length > 0 && (<>
 
-                      </div>
+                <div className="search-results-user">
 
-                    </div>
-                  </li>
-                )
+                  <h3 className="search-result-title">Users</h3>
+                  <ul className="search-results-list-container">
 
-              })}
+                    {searchedData.users && searchedData.users.map((item, index) => {
 
-              {searchedUsers.length === 0 && <p className="text-small text-muted mb-0 text-center">No Profile Found</p>}
+                      return (
+                        <li className="search-result-item" key={index} onClick={() => { setHasSearchResult(false); setMobileSearchMenu(false) }}>
+                          <div className="item-container" data-url={`/${item._id}`} onClick={goToItem.bind(this)}>
+                            <div className="user-profile-pic">
+                              <UserPP profilePic={item.profilePic} profile={item._id}></UserPP>
+                            </div>
+                            <div className="user-details">
+                              {item.fullName}
 
-            </ul>
+                            </div>
+
+                          </div>
+                        </li>
+                      )
+
+                    })}
+
+                   
+
+                  </ul>
+
+                </div>
+
+              </>)}
+
+
+              {searchedData.videos.length > 0 && (<>
+
+                <div className="search-results-videos">
+
+                  <h3 className="search-result-title">Videos</h3>
+                  <ul className="search-results-list-container">
+
+                    {searchedData.videos && searchedData.videos.map((item, index) => {
+
+                      return (
+                        <li className="search-result-item" key={index} onClick={() => { setHasSearchResult(false); setMobileSearchMenu(false) }}>
+                          <div className="item-container" data-url={`/watch/${item._id}`} onClick={goToItem.bind(this)}>
+                            <div className="user-profile-pic">
+                              <UserPP profilePic={item.author.profilePic} profile={item.author._id}></UserPP>
+                            </div>
+                            <div className="user-details">
+                              {item.caption}
+
+                            </div>
+
+                          </div>
+                        </li>
+                      )
+
+                    })}
+
+
+                  </ul>
+
+                </div>
+
+              </>)}
+
+              {searchedData.posts.length > 0 && (<>
+
+                <div className="search-results-posts">
+
+                  <h3 className="search-result-title">Posts</h3>
+                  <ul className="search-results-list-container">
+
+                    {searchedData.posts && searchedData.posts.map((item, index) => {
+
+                      return (
+                        <li className="search-result-item" key={index} onClick={() => { setHasSearchResult(false); setMobileSearchMenu(false) }}>
+                          <div className="item-container" data-url={`/post/${item._id}`} onClick={goToItem.bind(this)}>
+                            <div className="user-profile-pic">
+                              <UserPP profilePic={item.author.profilePic} profile={item.author._id}></UserPP>
+                            </div>
+                            <div className="user-details">
+                              {item.caption}
+
+                            </div>
+
+                          </div>
+                        </li>
+                      )
+
+                    })}
+
+
+                  </ul>
+
+                </div>
+
+              </>)}
+
+            </div>
+
+          </>
           )}
 
         </div>

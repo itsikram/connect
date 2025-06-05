@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import $ from 'jquery'
 import { useSelector } from 'react-redux'
 import UserPP from "../UserPP";
@@ -12,6 +12,7 @@ import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS
 import socket from "../../common/socket";
 import WatchSkeleton from "../../skletons/watch/WatchSkeleton";
 import ImageSkleton from "../../skletons/ImageSkleton";
+import { saveVideoFromUrl } from "../../utils/useSavedVideos";
 
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
 const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
@@ -296,6 +297,12 @@ const Watch = ({ watch }) => {
         });
     }, [])
 
+    let handleDownloadVideoClick = useCallback((e) => {
+
+        if(!watch?.videoUrl) return;
+        saveVideoFromUrl(watch._id,watch.videoUrl, watch)
+    }, [watch])
+
     return (
         <>
             <div ref={nfwatch}  className={`nf-watch ${type}`}>
@@ -330,6 +337,7 @@ const Watch = ({ watch }) => {
 
                         </div>
                         <div className="right">
+                             <button onClick={handleDownloadVideoClick} className="watch-three-dot"><i className="fas fa-download"></i></button>
                             {
                                 isAuth && <button className="watch-three-dot"><i className="far fa-ellipsis-h"></i></button>
                             }

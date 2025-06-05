@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ImageSkleton from '../../skletons/post/ImageSkleton';
 import { useParams } from 'react-router-dom';
 import api from '../../api/api';
@@ -23,7 +23,8 @@ const SinglePost = (watch) => {
     let [watchData, setWatchData] = useState(false)
     const [watchUrl, setWatchUrl] = useState(watch.videoUrl)
     let displayedWatch = useRef(null)
-    const {watchId} = useParams()
+    let captionTextarea = useRef(null)
+    const { watchId } = useParams()
     let loadData = async () => {
 
         let res = await api.get('watch/single', { params: { watchId } })
@@ -46,6 +47,8 @@ const SinglePost = (watch) => {
     let [totalShares, setTotalShares] = useState(watchData && watchData.shares.length)
     let [totalComments, setTotalComments] = useState(watchData && watchData.comments.length)
     let [reactType, setReactType] = useState(false);
+    let [isAuthor, setIsAuthor] = useState(watchData?.author?._id === myProfile?._id)
+    let [isEditCaption, setIsEditCaption] = useState(false)
     let [placedReacts, setPlacedReacts] = useState([]);
     const [imageExists, setImageExists] = useState(null);
     const [thumbExists, setThumbExists] = useState(null);
@@ -281,6 +284,29 @@ const SinglePost = (watch) => {
         })
     }, [])
 
+    useEffect(() => {
+        if (myProfile?.id && watchData?.author && watchData?.author._id) {
+            setIsAuthor(myProfile._id === watchData.author._id)
+        }
+    }, [myProfile, watchData])
+
+
+    let handleUpdateCaption = useCallback(async (e) => {
+        if (captionTextarea?.current && watchData?._id) {
+            let newCaption = captionTextarea.current.value
+            let response = await api.post('/watch/update', { caption: newCaption, watchId: watchData._id })
+            if (response.status === 200) {
+                setWatchData({...watchData, caption: newCaption})
+                // window.location.reload();
+            }
+
+        }
+    }, [captionTextarea, watchData])
+
+    let handleCaptionEditBtnClick = () => {
+
+    }
+
 
 
 
@@ -338,9 +364,23 @@ const SinglePost = (watch) => {
 
                                         </div>
                                         <div className="body">
-                                            <p className="caption">
-                                                {watchData.caption}
-                                            </p>
+                                            <div className="caption" style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
+                                                {isAuthor && isEditCaption && <>
+                                                    <textarea style={{ width: '90%' }} ref={captionTextarea} />
+
+                                                </>}
+                                                {!isEditCaption && <p style={{ margin: 0, marginRight: 20 }}>{watchData.caption}</p>}
+                                                {
+                                                    isAuthor && <button style={{}} className={`btn ${isEditCaption ? 'btn-primary' : 'btn-danger'}`} onClick={(e) => { setIsEditCaption(!isEditCaption) }}>
+                                                        {
+                                                            isEditCaption ? <><i onClick={handleUpdateCaption} className='fas fa-check'></i></> : <>
+                                                                <i onClick={handleCaptionEditBtnClick} className='fas fa-pen'></i>
+
+                                                            </>
+                                                        }
+                                                    </button>
+                                                }
+                                            </div>
                                             {
                                                 (watchUrl &&
                                                     <div className="attachment">
@@ -358,7 +398,7 @@ const SinglePost = (watch) => {
                                                     </>
 
                                                 )
-                                            }ß
+                                            }
 
                                         </div>
                                         <div className="footer">
