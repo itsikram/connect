@@ -28,7 +28,6 @@ let FriendsSuggest = () => {
         })
     }, [myProfile._id])
 
-    console.log('frnds',friends)
 
     useEffect(() => { }, [])
 

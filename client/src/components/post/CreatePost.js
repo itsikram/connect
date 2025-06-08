@@ -218,7 +218,6 @@ let CreatePost = ({ setPosts = null }) => {
 
                     if (res.status === 200) {
 
-                        console.log('npd', res.data.post)
                         dispatch(addPost(res.data.post))
                         setPostData(postDataInit)
                         if (setPosts) {

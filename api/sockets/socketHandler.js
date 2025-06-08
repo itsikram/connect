@@ -64,7 +64,6 @@ module.exports = function socketHandler(io) {
 
         socket.on('update_last_login', async function (userId) {
             if (!userId) return;
-            console.log('updated last login')
             let updatedUser = await User.findOneAndUpdate({ _id: userId }, { lastLogin: Date.now() }, { new: true });
         })
         socket.on('is_active', async (data) => {
@@ -76,7 +75,6 @@ module.exports = function socketHandler(io) {
             lastLogin
         } = await checkIsActive(profileId) 
 
-            console.log(profileId,isActive);
             return io.to(myId).emit('is_active', isActive, lastLogin, profileId);
         })
 

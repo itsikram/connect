@@ -224,7 +224,6 @@ exports.getMyPosts = async (req, res, next) => {
 }
 
 exports.getSinglePost = async (req, res, next) => {
-    console.log('postId')
 
     try {
 
@@ -287,8 +286,6 @@ exports.getSinglePost = async (req, res, next) => {
 
 exports.updatePost = async (req, res, next) => {
     let { postId, caption } = req.body
-
-    console.log(postId, caption)
     try {
         let updatedPost = await Post.findOneAndUpdate({ _id: postId }, {
             caption

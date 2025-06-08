@@ -9,6 +9,7 @@ let watchSchema = new Schema({
         type: String,
         maxLength: 500,
     },
+    thumbnail: String,
     videoUrl: String,
     reacts: [{
         type: Object,

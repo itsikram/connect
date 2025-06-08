@@ -6,6 +6,7 @@ import api from '../../api/api';
 import { loadSettings } from '../../services/actions/settingsActions';
 import { sendMessage } from '../../services/actions/messageActions';
 import EmojiPicker from 'emoji-picker-react';
+import { useParams } from 'react-router-dom';
 
 const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatNewAttachment, messageActionButtonContainer, setIsReplying, userId, messageInput, replyData,messages, setReplyData, isPreview, setIsPreview, msgListRef }) => {
 
@@ -16,9 +17,16 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
     const [isImojiContainer, setIsEmojiContainer] = useState(false)
     const [isImojiChangeContainer, setIsEmojiChangeContainer] = useState(false)
     const [actionEmoji, setActionEmoji] = useState('👍')
+    const [isAi, setIsAi] = useState(false);
     const imageInput = useRef(null);
     const uploadFileInput = useRef(null);
     const settings = useSelector(state => state.setting)
+    const {profile} = useParams();
+
+    useEffect(() => {
+        if(profile === 'ai-chat') setIsAi(true)
+    },[profile])
+
 
     useEffect(() => {
         setActionEmoji(settings.actionEmoji || '👍')
@@ -32,7 +40,6 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
 
             msgListRef?.current.addEventListener('scroll', e => {
                 let scrollBottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
-                console.log('scrl', e.target.scrollHeight, e.target.scrollTop, scrollBottom)
 
                 if (scrollBottom <= 5) {
                     clearInterval(isLastMsg)
@@ -56,13 +63,13 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
         if (room) {
 
             if (isReplying) {
-                let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: replyData.messageId }
+                let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: replyData.messageId, isAi }
                 socket.emit('sendMessage', data);
                 setIsTyping(false)
                 dispatch(sendMessage(data))
                 scrollToLastMessage();
             } else {
-                let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: false }
+                let data = { room, senderId: userId, receiverId: friendId, message: inputValue, attachment: attachmentUrl, parent: false, isAi }
                 socket.emit('sendMessage', data);
                 setIsTyping(false)
                 dispatch(sendMessage(data))
@@ -215,7 +222,6 @@ const ChatFooter = ({ chatFooter, room, isReplying, friendId, setIsTyping, chatN
                 }
             })
 
-            console.log('fu res', uploadAttachmentRes)
 
             if (uploadAttachmentRes.status === 200) {
                 let attachmentUrl = uploadAttachmentRes.data.secure_url;

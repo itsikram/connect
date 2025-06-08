@@ -2,7 +2,7 @@ const { v2: cloudinary } = require('cloudinary')
 const streamifier = require('streamifier');
 
 
-cloudinary.config({ cloud_name: 'dz88yjerw', api_key: '148133121975522', api_secret: 'yS79oXe6ZmIuNWG1fXnOCpdOAH4' }); // Use multer to store files in memory 
+cloudinary.config({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME || '', api_key: process.env.CLOUDINARY_API_KEY || '', api_secret: process.env.CLOUDINARY_API_SECRET  }); // Use multer to store files in memory 
 
 exports.uploadImage = async (req, res, next) => {
 
@@ -19,14 +19,12 @@ exports.uploadImage = async (req, res, next) => {
 }
 exports.uploadVideo = async (req, res, next) => {
 
-    console.log('video upload....', req.file.mimetype)
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
 
     // Optional: validate file type before uploading
     const fileType = req.file.mimetype.split('/')[0];
-    console.log('video upload stream....', fileType)
 
     if (fileType !== 'video') {
         return res.status(400).json({ error: 'Uploaded file is not a video' });

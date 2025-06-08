@@ -11,6 +11,7 @@ import Momemt from 'react-moment'
 import SingleReactor from './SingleReactor';
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS
+import { saveVideoFromUrl } from '../../utils/useSavedVideos';
 
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
 const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
@@ -296,7 +297,7 @@ const SinglePost = (watch) => {
             let newCaption = captionTextarea.current.value
             let response = await api.post('/watch/update', { caption: newCaption, watchId: watchData._id })
             if (response.status === 200) {
-                setWatchData({...watchData, caption: newCaption})
+                setWatchData({ ...watchData, caption: newCaption })
                 // window.location.reload();
             }
 
@@ -307,7 +308,11 @@ const SinglePost = (watch) => {
 
     }
 
+    let handleDownloadVideoClick = useCallback((e) => {
 
+        if (!watch?.videoUrl) return;
+        saveVideoFromUrl(watchData._id, watchData.videoUrl, watchData)
+    }, [watch])
 
 
 
@@ -354,6 +359,8 @@ const SinglePost = (watch) => {
 
                                                 </div>
                                                 <div className="right">
+                                                    <button onClick={handleDownloadVideoClick} className="watch-three-dot"><i className="fas fa-download"></i></button>
+
                                                     {
                                                         isAuth && <button className="post-three-dot"><i className="far fa-ellipsis-h"></i></button>
                                                     }

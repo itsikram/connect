@@ -46,13 +46,25 @@ let LeftSidebar = () => {
                         </Link>
                     </li>
                     <li>
-                        <Link to="/groups/" className='text-decoration-none'>
+                        <Link to="/downloads/" className='text-decoration-none'>
+                        <div className='ls-nav-menu-item'>
+                            <div className='ls-icon lsi-downloads'>
+                                
+                            </div>
+                            <div className='ls-text'>
+                                Saved Videos
+                            </div>
+                        </div>
+                        </Link>
+                    </li>
+                     <li>
+                        <Link to="/downloads/" className='text-decoration-none'>
                         <div className='ls-nav-menu-item'>
                             <div className='ls-icon lsi-group'>
                                 
                             </div>
                             <div className='ls-text'>
-                                Groups
+                                Group
                             </div>
                         </div>
                         </Link>

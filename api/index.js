@@ -1,4 +1,5 @@
 
+
 require('dotenv').config();
 const express = require('express')
 const PORT = process.env.PORT || 4000;
@@ -14,7 +15,12 @@ const routes = require('./Routes/routes')
 let app = express();
 const socketHandler = require('./sockets/socketHandler')
 const httpServer = createServer(app)
-const path = require('path')
+const path = require('path');
+
+
+
+
+
 
 app.use(cors());
 

@@ -55,11 +55,9 @@ exports.getProfileImages = async function (req, res, next) {
 exports.profileGet = async function (req, res, next) {
     let profileId = req.query.profileId
     if (profileId == false) return;
-    console.log('usernasme not exits')
 
     let hasUsername = await Profile.findOne({ username: profileId })
     if (hasUsername) {
-        console.log('usernasme exits')
         let profileData = await Profile.findOne({ username: profileId }).populate('user')
         return res.json(profileData).status(200)
 
@@ -101,7 +99,6 @@ exports.profilePost = async (req, res, next) => {
 
     } catch (error) {
         next(error)
-        console.log(error)
     }
 
 }
@@ -191,7 +188,6 @@ exports.updateProfile = async (req, res, next) => {
 
         }
 
-        console.log(reqData)
 
         let updateProfile = await Profile.findByIdAndUpdate({
             _id: req.profile._id

@@ -15,7 +15,6 @@ const MessageOptions = () => {
         setImages([])
 
         api.get(`message/media/?profileId=${params.profile}`).then((res) => {
-            console.log('data', res.data)
             setImages([...res.data.map((media) => media.attachment)])
         })
 

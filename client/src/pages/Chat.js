@@ -340,7 +340,9 @@ const Chat = ({ socket }) => {
                                 return (
                                     <SingleMessage key={index} msg={msg} friendProfile={friendProfile} messages={messages} isActive={isActive} setIsReplying={setIsReplying} setReplyData={setReplyData} isPreview={isPreview} setIsPreview={setIsPreview} msgListRef={msgListRef} isMsgLoading={isMsgLoading} />
                                 )
-                            }) : <SingleMsgSkleton count={10} />
+                            }) : <> 
+                             {<SingleMsgSkleton count={10} /> } 
+                            </>
 
                         }
 

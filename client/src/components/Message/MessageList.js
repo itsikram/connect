@@ -39,7 +39,7 @@ const MessageList = () => {
     let navigate = useNavigate();
     useEffect(() => {
 
-        if(myContacts.length == 0) return;
+        if (myContacts.length == 0) return;
 
         myContacts && myContacts.map((contact, index) => {
 
@@ -80,7 +80,7 @@ const MessageList = () => {
 
     let markAllMsgAsRead = useCallback(async (e) => {
         return;
-    },[])
+    }, [])
 
     let handleMsgOptionClick = useCallback(async (e) => {
         // if (messageOption) {
@@ -88,7 +88,7 @@ const MessageList = () => {
 
         // }
         setMessageOption(!messageOption)
-    },[])
+    }, [])
 
     let goToLink = useCallback(e => {
         navigate(`/message/${e.currentTarget.dataset.id}`)
@@ -139,6 +139,20 @@ const MessageList = () => {
                 </div>
                 <div className={"message-list-container"}>
                     <ul className={"message-list"}>
+                         {/* <div style={{ textDecoration: 'none' }} data-id={'ai-chat'} onClick={goToLink.bind(this)}>
+                            <li className={`message-list-item message-seen'} ${'ai-chat' == params.profile ? 'active' : ''}`}>
+                                <div className={"user-profilePic"}>
+                                    <UserPP profilePic={'https://programmerikram.com/wp-content/uploads/2025/05/ics_logo.png'}  active={true}></UserPP>
+                                </div>
+                                <div className={'user-data'}>
+                                    <h4 className={"message-author-name"}>Ai Chat</h4>
+                                    <p className={"last-message-data"}>
+                                        <span className={"last-message"}>{truncateString(contactMessages && contactMessages[0]?.message || '', 45)} </span>
+                                        {contactMessages && contactMessages.length > 0 ? (<span className={"last-msg-time"}>| <Moment fromNow>{contactMessages && contactMessages[0].timestamp}</Moment></span>) : <></>}
+                                    </p>
+                                </div>
+                            </li>
+                        </div> */}
                         {
                             myContacts.length > 0 ? myContacts.map((contactItem, index) => {
                                 let contactPerson = (contactItem.person)
@@ -158,7 +172,8 @@ const MessageList = () => {
                                                 {contactMessages && contactMessages.length > 0 ? (<span className={"last-msg-time"}>| <Moment fromNow>{contactMessages && contactMessages[0].timestamp}</Moment></span>) : <></>}
                                             </p>
                                         </div>
-                                    </li></div>
+                                    </li>
+                                </div>
 
                             }) : <MsgListSkleton count={5} /> // <h4 className={"data-not-found"}>No Message List to Show</h4>
                         }

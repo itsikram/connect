@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken')
 const CmntReply = require('../models/CmntReply')
 const mongoose = require('mongoose')
 const Post = require('../models/Post')
+const generateAndUploadThumbnail = require('../utils/generateThumbnail')
 
 exports.createWatch = async (req, res, next) => {
     let profileId = req.profile._id
@@ -14,10 +15,21 @@ exports.createWatch = async (req, res, next) => {
     try {
 
 
+        let getThumbnail = async (videoUrl) => {
+            let result = await generateAndUploadThumbnail(videoUrl)
+
+            let thumbnail_url = result.secure_url;
+            return thumbnail_url
+        }
+
+        let thumbnail = await getThumbnail(videoUrl)
+
+
         let watch = new Watch({
             caption,
             videoUrl: videoUrl,
-            author: profileId
+            author: profileId,
+            thumbnail
 
         })
 
@@ -193,7 +205,7 @@ exports.updateWatch = async (req, res, next) => {
 
     try {
 
-        let {watchId, caption} = req.body
+        let { watchId, caption } = req.body
 
         let updatedWatch = await Watch.findOneAndUpdate({
             _id: watchId,
@@ -201,8 +213,8 @@ exports.updateWatch = async (req, res, next) => {
             caption
         })
 
-        if(updatedWatch) {
-            return res.json({message: 'Caption Updated'}).status(200)
+        if (updatedWatch) {
+            return res.json({ message: 'Caption Updated' }).status(200)
         }
 
     } catch (error) {

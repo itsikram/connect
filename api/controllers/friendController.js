@@ -200,7 +200,6 @@ exports.postFrndAccept = async (req, res, next) => {
 
         let myProfile = req.profile
         let io = req.app.get('io')
-        console.log('postFrndAccept', profile)
         let updateFrndProfile = await Profile.findOneAndUpdate({
             _id: profile,
             friends: {

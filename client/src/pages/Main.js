@@ -67,6 +67,23 @@ import Youtebe from "./Youtebe.js";
 import SingleVideo from "../components/downloads/SingleVideo.js";
 import SavedVideos from "./SavedVideos.js";
 
+import MicRecorder from 'mic-recorder-to-mp3';
+// const recorder = new MicRecorder({ bitRate: 128 });
+// recorder.start().then(() => {
+//   console.log("Recording...");
+// });
+
+// // Stop and send to backend
+// recorder.stop().getMp3().then(([buffer, blob]) => {
+//   const file = new File(buffer, 'voice.mp3');
+//   const reader = new FileReader();
+//   reader.onload = () => {
+//     const audioBase64 = reader.result.split(',')[1];
+//     socket.emit('audio', audioBase64); // send base64 audio
+//   };
+//   reader.readAsDataURL(file);
+// });
+
 
 
 

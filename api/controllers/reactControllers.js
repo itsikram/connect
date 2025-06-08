@@ -41,7 +41,6 @@ exports.postAddReact = async (req, res, next) => {
 
 
                 if ((friendProfile._id).toString() !== profile) {
-                    console.log((friendProfile._id).toString() , profile)
                     let postReactNotification = {
                         receiverId: friendProfile._id,
                         text: `${myProfileData.fullName} Reacted your post`,

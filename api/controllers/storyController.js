@@ -16,7 +16,6 @@ exports.postStory = async(req,res,next) => {
 
         let savedData = await story.save()
         if(savedData) {
-            console.log(savedData)
             return res.json({
                 message: 'Story Created Successfully'
             }).status(200)

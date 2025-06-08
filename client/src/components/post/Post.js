@@ -370,7 +370,6 @@ let Post = ({ data, postContainer, index }) => {
     const triggeredSet = useRef(new Set()); // Keeps track of already-triggered items
     useEffect(() => {
         const handleVisible = (postId) => {
-            console.log(`Post ${postId} is now visible — triggered once`);
             socket.emit('viewPost', { visitorId: myProfileId, postId })
             // Place your custom logic here (e.g. animation, API call, etc.)
         };

@@ -13,6 +13,7 @@ import socket from "../../common/socket";
 import WatchSkeleton from "../../skletons/watch/WatchSkeleton";
 import ImageSkleton from "../../skletons/ImageSkleton";
 import { saveVideoFromUrl } from "../../utils/useSavedVideos";
+import checkImgLoading from "../../utils/checkImgLoading";
 
 const Rlike = 'https://programmerikram.com/wp-content/uploads/2025/03/like-icon.svg';
 const Rlove = 'https://programmerikram.com/wp-content/uploads/2025/03/love-icon.svg';
@@ -29,12 +30,25 @@ const Watch = ({ watch }) => {
     let [totalShares, setTotalShares] = useState(watch.shares.length)
     let [totalComments, setTotalComments] = useState(watch.comments.length)
     let [isActive, setIsActive] = useState(false)
+    let [playWatch, setPlayWatch] = useState(false)
     let [reactType, setReactType] = useState(false);
+    let [thumbnailLoaded, setThumbnailLoaded] = useState(false)
     let [placedReacts, setPlacedReacts] = useState([]);
     const [imageExists, setImageExists] = useState(false);
     const [watchUrl, setWatchUrl] = useState(watch.videoUrl)
     const displayedWatch = useRef(null) // document.getElementById(`watch-${watch._id}`)
     const nfwatch = useRef(null) // document.getElementById(`watch-${watch._id}`)
+
+    useEffect(() => {
+
+        if (watch?.thumbnail) {
+            checkImgLoading(watch.thumbnail, setThumbnailLoaded)
+        }
+
+
+
+
+    }, [watch])
 
     useEffect(() => {
 
@@ -278,10 +292,10 @@ const Watch = ({ watch }) => {
     let watchAuthorPP = `${watch?.author.profilePic}`
 
     function isElementNearTop(el, offset = 10) {
-        if(el == null) return;
+        if (el == null) return;
         const rect = el.getBoundingClientRect();
         return rect.top <= offset;
-      }
+    }
 
 
     useEffect(() => {
@@ -292,20 +306,21 @@ const Watch = ({ watch }) => {
                 document.querySelectorAll('.watch-video').forEach((element => {
                     element.pause();
                 }))
-                displayedWatch.current.play()
+
+                displayedWatch.current !== null && displayedWatch.current.play()
             }
         });
     }, [])
 
     let handleDownloadVideoClick = useCallback((e) => {
 
-        if(!watch?.videoUrl) return;
-        saveVideoFromUrl(watch._id,watch.videoUrl, watch)
+        if (!watch?.videoUrl) return;
+        saveVideoFromUrl(watch._id, watch.videoUrl, watch)
     }, [watch])
 
     return (
         <>
-            <div ref={nfwatch}  className={`nf-watch ${type}`}>
+            <div ref={nfwatch} className={`nf-watch ${type}`}>
                 <div className="header">
                     {
                         type === 'profilePic' &&
@@ -337,7 +352,7 @@ const Watch = ({ watch }) => {
 
                         </div>
                         <div className="right">
-                             <button onClick={handleDownloadVideoClick} className="watch-three-dot"><i className="fas fa-download"></i></button>
+                            <button onClick={handleDownloadVideoClick} className="watch-three-dot"><i className="fas fa-download"></i></button>
                             {
                                 isAuth && <button className="watch-three-dot"><i className="far fa-ellipsis-h"></i></button>
                             }
@@ -352,10 +367,10 @@ const Watch = ({ watch }) => {
                         {watch.caption}
                     </p>
                     {
-                        (watchUrl &&
+                        (!watch?.thumbnail && watchUrl &&
                             <div className="attachment">
                                 <Link to={`/watch/${watch._id}`}>
-                                    <video id={`watch-${watch._id}`} ref={displayedWatch}  className="w-100 watch-video" controls src={`${watchUrl}`}></video>
+                                    <video id={`watch-${watch._id}`} ref={displayedWatch} className="w-100 watch-video" controls src={`${watchUrl}`}></video>
                                     {/* <img src={watchPhoto} alt="watch" /> */}
 
                                 </Link>
@@ -364,10 +379,30 @@ const Watch = ({ watch }) => {
                             ||
 
                             <>
-                                <ImageSkleton />
+                                {!watch?.thumbnail && !watchUrl && <ImageSkleton />}
                             </>
 
                         )
+
+
+                    }
+                    {
+                        watch?.thumbnail && thumbnailLoaded && !playWatch ? <>
+
+                            <div className="attachment">
+                                <Link to={`/watch/${watch._id}`}>
+                                    <img className="w-100" onClick={() => {setPlayWatch(true)}} src={watch.thumbnail} alt="" />
+
+                                </Link>
+                            </div> </> : <>
+                            {!watch?.thumbnail && !watchUrl && <ImageSkleton />}
+
+                        </>
+
+
+
+
+
                     }
 
                 </div>

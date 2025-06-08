@@ -17,7 +17,6 @@ exports.postAddComment = async (req, res, next) => {
 
 
         if(!mongoose.isValidObjectId(post) || !mongoose.isValidObjectId(profile)) {
-            console.log(post,profile)
             return res.json({message: 'Post Comment Failed'}).status(400)
         }
         
@@ -99,7 +98,6 @@ exports.storyAddComment = async (req, res, next) => {
                 comments: savedCommentData._id
             }
         }, { new: true }).populate('author')
-        console.log(updateStory,profile)
 
         if((updateStory.author._id).toString() !== (profile).toString()) {
             let notification = {
@@ -298,7 +296,6 @@ exports.removeReplyReact = async (req, res, next) => {
 exports.postDeleteComment = async (req, res, next) => {
     try {
         let commentId = req.body.commentId
-        console.log(commentId)
         let deleteComment = await Comment.findOneAndDelete({ _id: commentId })
         if (deleteComment) {
             await Post.findByIdAndUpdate({

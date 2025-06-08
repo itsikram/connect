@@ -2,6 +2,7 @@ const { isValidObjectId } = require('mongoose');
 const Message = require('../models/Message')
 const Profile = require('../models/Profile')
 const checkIsActive = require('../utils/checkIsActive')
+const axios = require('axios')
 
 
 const sendEmailNotification = require('../utils/sendEmailNotification')
@@ -102,7 +103,36 @@ module.exports = function messageSocket(io, socket) {
         }
     });
 
-    socket.on('sendMessage', async ({ room, senderId, receiverId, message, attachment, parent }) => {
+    socket.on('sendMessage', async ({ room, senderId, receiverId, message, attachment, parent, isAi = false }) => {
+
+
+        if (isAi) {
+            try {
+                const response = await axios.post(
+                    'https://api.openai.com/v1/chat/completions',
+                    {
+                        model: 'gpt-3.5-turbo',
+                        messages: [{ role: 'user', content: message }],
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+                const reply = response.data.choices[0].message.content;
+                console.log('ai reply', response.data)
+
+                return io.to(room).emit('newMessage', { reply, senderName: 'Chat Gpt', senderPP: 'https://programmerikram.com/wp-content/uploads/2025/05/ics_logo.png' });
+
+
+            } catch (error) {
+                return console.error(error.response?.data || error.message);
+            }
+
+        }
 
         let newMessage;
         if (parent == false) {
@@ -117,18 +147,18 @@ module.exports = function messageSocket(io, socket) {
         if (!profileData) return;
         let senderName = profileData.user?.firstName + ' ' + profileData.user?.surname;
         let senderPP = profileData.profilePic || 'https://programmerikram.com/wp-content/uploads/2025/03/default-profilePic.png';
-        io.to(room).emit('newMessage', {updatedMessage, senderName, senderPP});
-        io.to(receiverId).emit('newMessage', {updatedMessage, senderName, senderPP});
+        io.to(room).emit('newMessage', { updatedMessage, senderName, senderPP });
+        io.to(receiverId).emit('newMessage', { updatedMessage, senderName, senderPP });
 
         let receiverProfile = await Profile.findById(receiverId).populate('user')
 
-        let {isActive , lastLogin} = await checkIsActive(receiverId)
+        let { isActive, lastLogin } = await checkIsActive(receiverId)
 
-         if(!isActive) {
+        if (!isActive) {
             let receiverEmail = receiverProfile.user.email;
             return sendEmailNotification(receiverEmail, null, updatedMessage.message, senderName, senderPP);
-         }
-       
+        }
+
     });
 
     socket.on('emotion_change', async ({ profileId, emotion, friendId }) => {
