@@ -17,13 +17,7 @@ const socketHandler = require('./sockets/socketHandler')
 const httpServer = createServer(app)
 const path = require('path');
 
-
-
-
-
-
 app.use(cors());
-
 
 const io = socketIo(httpServer, {
   cors: {
@@ -31,6 +25,7 @@ const io = socketIo(httpServer, {
     methods: ["GET", "POST"]
   }
 });
+
 socketHandler(io)
 
 // Setting up middilewares
@@ -54,7 +49,7 @@ app.get('*', (req, res) => {
 
 // Root route should serve index.html
 
-mongoose.connect(process.env.PROD_MONGODB_URI, {}).then(e => {
+mongoose.connect(process.env.PROD_MONGODB_URI, {}).then(async(e) => {
 
   httpServer.listen(PORT, (e) => {
     console.log(`Server is running on port ${PORT}`)

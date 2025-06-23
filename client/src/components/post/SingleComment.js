@@ -9,6 +9,8 @@ import api from '../../api/api';
 
 const SingleComment = ({ comment, postData, myProfile, isEditMode }) => {
 
+
+    if(comment.author == null) return(<></>);
     let myId = myProfile._id
     let [totalComment, setTotalComment] = useState(0)
     let [isReacted, setIsReacted] = useState(false);

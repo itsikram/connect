@@ -21,6 +21,13 @@ let StoryContainer = ({children}) => {
 
         api.get('/story/').then(res => {
             if (res.status === 200) {
+                console.log('stories',res.data)
+                // [...res.data].forEach(story => {
+                //     console.log(story)
+                //     if(story?.author == null) {
+                //         alert(storyId)
+                //     }
+                // })
                 setStories(res.data)
             }
         })

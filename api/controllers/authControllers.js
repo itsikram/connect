@@ -1,8 +1,33 @@
 const User = require('../models/User')
 const Profile = require('../models/Profile')
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const Story = require('../models/Story');
+const Post = require('../models/Post');
+const Watch = require('../models/Watch');
+const Message = require('../models/Message');
+const Comment = require('../models/Comment');
+const CmntReply = require('../models/CmntReply');
+const Setting = require('../models/Setting');
+const FaceEndCoding = require('../models/FaceEncoding');
 const SECRET_KEY = process.env.JWT_SECRET_KEY;
+
+
+let deleteUserData = async (profileId) => {
+    await Story.deleteMany({ author: profileId })
+    await Post.deleteMany({
+        author: profileId
+    })
+    await Watch.deleteMany({ author: profileId })
+    await Message.deleteMany({
+        senderId: profileId,
+        receiverId: profileId
+    })
+    await Comment.deleteMany({ author: profileId })
+    await CmntReply.deleteMany({ author: profileId })
+    await Setting.deleteMany({ profile: profileId })
+    await FaceEndCoding.deleteMany({ profile: profileId })
+}
 
 
 exports.signUp = async (req, res, next) => {
@@ -189,16 +214,31 @@ exports.login = async (req, res, next) => {
 
 exports.deleteAccount = async (req, res, next) => {
     let userData = req.body.userData
-    let profileId = userData.profile;
     let userId = userData.user_id
 
-    if (userId) {
-        await User.findByIdAndDelete(userId)
+    try {
+
+        let getUser = await User.findById(userId)
+
+        if (getUser) {
+            await User.findByIdAndDelete(userId)
+            let profileId = getUser.profile
+
+            if (profileId) {
+                await Profile.findByIdAndDelete(profileId)
+                await deleteUserData(profileId)
+                return res.json({ message: 'Account Deleted Successfully' })
+            }
+        }
+
+    } catch (error) {
+        console.log(error)
+        return res.json({ message: 'Account Deletion Failed' })
+
     }
 
-    if (profileId) {
-        await Profile.findByIdAndDelete(profileId)
-    }
 
-    return res.json({ message: 'Account Deleted Successfully' })
+
+
+
 }
